@@ -1,0 +1,4 @@
+include ':bugtest'
+include ':BugMedia'
+include ':app'
+rootProject.name = "Slower"
