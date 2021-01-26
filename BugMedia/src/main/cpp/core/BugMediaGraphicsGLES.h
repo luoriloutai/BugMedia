@@ -15,33 +15,70 @@ extern "C"
 #include <GLES2/gl2ext.h>
 
 
-
 #ifdef __cplusplus
 }
 #endif
 
 
-
 class BugMediaGraphicsGLES {
+
 public:
+    class Shader {
+    public:
+        Shader(GLenum type, const GLchar *const *source);
 
-    BugMediaGraphicsGLES(GLuint vertexShader, GLuint fragmentShader);
+        ~Shader();
 
-    GLuint getProgram();
+        void release();
 
-    //void attachShader(GLuint shader);
+        GLuint instance();
+
+    private:
+        GLuint handler = 0;
+
+        GLboolean isRelease = GL_FALSE;
+    };
+
+    class Program {
+    public:
+        Program(Shader *vertexShader, Shader *fragmentShader);
+
+        ~Program();
+
+        void active();
+        GLuint instance();
+
+        void release();
+
+    private:
+        GLuint handler = 0;
+        GLboolean isRelease = GL_FALSE;
+
+        GLboolean checkGLError(const char *op);
+    };
+
+    BugMediaGraphicsGLES();
 
     void release();
+
     void setViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+
+    void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
+
+    void activeProgram();
 
     ~BugMediaGraphicsGLES();
 
+
 private:
-    GLuint program = 0;
 
     GLboolean checkGLError(const char *op);
 
     GLboolean isRelease = GL_FALSE;
+    Shader *pVertexShader = NULL;
+    Shader *pFragmentShader = NULL;
+    Program *pProgram = NULL;
+
 };
 
 

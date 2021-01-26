@@ -3,28 +3,12 @@
 //
 
 #include "BugMediaGraphics.h"
-#include "BugMediaGraphicsCommon.h"
 
 BugMediaGraphics::BugMediaGraphics() {
     pEGL = new BugMediaGraphicsEGL();
+    pGLES = new BugMediaGraphicsGLES();
 }
 
-void BugMediaGraphics::setFragmentShader(const char **const source) {
-    // 这种情况不用手动释放指针
-    //BugMediaGraphicsShader fragShader(GL_FRAGMENT_SHADER, source);
-    //pFragmentShader = &fragShader;
-
-    pFragmentShader = new BugMediaGraphicsShader(GL_FRAGMENT_SHADER, source);
-
-}
-
-void BugMediaGraphics::setVertexShader(const char **const source) {
-    // 这种情况不用手动释放指针
-//    BugMediaGraphicsShader vertShader(GL_VERTEX_SHADER, source);
-//    pVertextShader = &vertShader;
-
-    pVertextShader = new BugMediaGraphicsShader(GL_VERTEX_SHADER, source);
-}
 
 void BugMediaGraphics::setWindowSurface(JNIEnv *env, jobject jSurface) {
     pEGL->setWindowSurface(env, jSurface);
@@ -35,28 +19,8 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 }
 
 
-void BugMediaGraphics::prepareProgram() {
-    if (pVertextShader == NULL || pFragmentShader == NULL) {
-        throw "必须先设置着色器：调用setXXXShader()方法";
-    }
-    GLuint vertexShader = pVertextShader->getShader();
-    GLuint fragmentShader = pFragmentShader->getShader();
-    pGLES = new BugMediaGraphicsGLES(vertexShader, fragmentShader);
-    GLuint program = pGLES->getProgram();
-
-    // 着色器链接到着色程序后就可以删除了
-    pVertextShader->release();
-    pFragmentShader->release();
-    // 自己实现绘制前的准备工作
-    onProgramPrepared();
-
-    // 激活着色程序
-    glUseProgram(program);
-}
-
-
 void BugMediaGraphics::draw() {
-
+    pGLES->activeProgram();
     onDraw();
     //
     EGLDisplay display = pEGL->getDisplay();
@@ -66,18 +30,12 @@ void BugMediaGraphics::draw() {
     }
     EGLSurface windowSurface = pEGL->getWindowSurface();
     if (windowSurface != NULL) {
-        eglSwapBuffers(display, windowSurface);
+        eglSwapBuffers(display, windowSurface);// 只有windowSurface才可以交换
     }
 }
 
 void BugMediaGraphics::release() {
     if (!isRelease) {
-
-
-        delete pVertextShader;
-        pVertextShader = NULL;
-        delete pFragmentShader;
-        pFragmentShader = NULL;
         delete pGLES;
         pGLES = NULL;
         delete pEGL;
@@ -95,9 +53,27 @@ BugMediaGraphics::~BugMediaGraphics() {
 }
 
 void BugMediaGraphics::makeCurrent() {
-    pEGL->makeCurrent();
+    if (pEGL != NULL) {
+        pEGL->makeCurrent();
+    }
+
 }
 
 void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
+    if (pGLES == NULL) {
+        return;
+    }
     pGLES->setViewport(x, y, width, height);
 }
+
+void
+BugMediaGraphics::setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource) {
+    if (pGLES == NULL) {
+        return;
+    }
+    pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
+}
+
+
+
+

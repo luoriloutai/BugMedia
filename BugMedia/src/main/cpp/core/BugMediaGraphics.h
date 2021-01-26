@@ -26,25 +26,22 @@ extern "C"
 
 #include "BugMediaGraphicsEGL.h"
 #include "BugMediaGraphicsGLES.h"
-#include "BugMediaGraphicsShader.h"
+
 
 class BugMediaGraphics {
 public:
     BugMediaGraphics();
 
-    void setVertexShader(const char **const source);
-
-    void setFragmentShader(const char **const source);
+    void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
 
     void setWindowSurface(JNIEnv *env, jobject jSurface);
 
     void setPBufferSurface(EGLint width, EGLint height);
 
-    void prepareProgram();
+    // 绘制之前的配置等不变的东西在这里写
+    virtual void prepare();
 
-
-    virtual void onProgramPrepared() {};
-
+    // 真正绘制的地方
     virtual void onDraw() {};
 
     void release();
@@ -60,8 +57,6 @@ protected:
 
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsGLES *pGLES = NULL;
-    BugMediaGraphicsShader *pVertextShader = NULL;
-    BugMediaGraphicsShader *pFragmentShader = NULL;
     GLboolean isRelease = GL_FALSE;
 };
 
