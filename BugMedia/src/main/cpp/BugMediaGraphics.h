@@ -128,6 +128,7 @@ public:
 
 protected:
     void makeCurrent();
+    void setViewPort(GLint x,GLint y,GLsizei width,GLsizei height);
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsProgram *pGLESProgram = NULL;
     BugMediaGraphicsShader *pVertextShader = NULL;

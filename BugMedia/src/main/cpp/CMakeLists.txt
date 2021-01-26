@@ -99,6 +99,10 @@ add_library( # Sets the name of the library.
 
         BugMediaGraphics.cpp
         BugMediaBitmapRenderer.cpp
+        core/BugMediaGraphicsShader.cpp
+        core/BugMediaGraphicsGLES.cpp
+        core/BugMediaGraphicsEGL.cpp
+        core/BugMediaGraphics.cpp
         )
 
 

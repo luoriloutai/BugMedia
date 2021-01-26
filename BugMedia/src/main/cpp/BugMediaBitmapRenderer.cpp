@@ -55,6 +55,47 @@ void BugMediaBitmapRenderer::onProgramPrepared() {
     // 启用顶点属性变量，默认是禁止的
     glEnableVertexAttribArray(aPosition);
 
+    glViewport(0,0,500,300);
+
+    // 纹理操作
+    // glGenTextures(1, &texId);
+    // glBindTexture(GL_TEXTURE_2D, texId);
+    // 在最后释放纹理glBindTexture(GL_TEXTURE_2D, 0);这里不释放只作说明
+    //
+    // 设置纹理缩放效果
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //
+    // 设置纹理在S和T方向上的排列效果,这是设置OpenGL纹理，左下角为原点，屏幕是左上角为原点
+    // GL_CLAMP_TO_EDGE表示坐标夹在边界内，换句话说超过了边界1就设为1，小于0就设为0，总之就是不能超出去
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //
+    //解码图片得到pixels数组
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    // 纹理绘制到屏幕
+    // *设置着色器
+    // 规定窗口的大小： glViewport(0, 0, screenWidth, screenHeight)
+    // *创建着色程序，使用它glUseProgram(mGLProgId);
+    // *设置物体坐标
+    // GLfloat vertices[] = { -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f };
+    // glVertexAttribPointer(mGLVertexCoords, 2, GL_FLOAT, 0, 0, vertices);
+    // glEnableVertexAttribArray(mGLVertexCoords);
+    // *设置纹理坐标，textCoods1是opengl纹理坐标，textCoods2是屏幕纹理坐标，要判断纹理来自于哪里选择正确的纹理坐标，
+    //  如果是把磁盘上的图片显示到屏幕就用第二个，否则第一个
+    // GLfloat texCoords1[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
+    // GLfloat texCoords2[] = { 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f };
+    // glVertexAttribPointer(mGLTextureCoords, 2, GL_FLOAT, 0, 0, texCoords2);
+    // glEnableVertexAttribArray(mGLTextureCoords);
+    // *指定将要绘制的纹理对象并且传递给对应的FragmentShader
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, texId);
+    // glUniform1i(mGLUniformTexture, 0);
+    // 执行绘制操作：
+    // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    // 不需要纹理时删除
+    // glDeleteTextures(1, &texId);
+
     /*
      * 演示使用glDrawElements
      *
@@ -99,6 +140,14 @@ void BugMediaBitmapRenderer::setVertexShader() {
                                       "void main() {"
                                       "  gl_Position = aPosition;"
                                       "}";
+    const char* source= "attribute vec4 position; \n"
+                        "attribute vec2 texcoord; \n"
+                        "varying vec2 v_texcoord; \n"
+                         "void main(void) \n"
+                         "{ \n"
+                         " gl_Position = position; \n"
+                         " v_texcoord = texcoord; \n"
+                         "} \n";
     BugMediaGraphics::setFragmentShader(&vertextShaderSource);
 }
 
@@ -108,6 +157,12 @@ void BugMediaBitmapRenderer::setFragmentShader() {
                                    "void main() {"
                                    "  gl_FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
                                    "}";
+   const char* source = "precision highp float; \n"
+                      "varying highp vec2 v_texcoord; \n"
+                      "uniform sampler2D texSampler; \n"
+                      "void main() { \n"
+                            " gl_FragColor = texture2D(texSampler, v_texcoord); \n"
+                       "} \n";
     BugMediaGraphics::setFragmentShader(&fragShaderSource);
 }
 

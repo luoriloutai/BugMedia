@@ -121,6 +121,9 @@ EGLBoolean BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) 
 }
 
 void BugMediaGraphicsEGL::release() {
+    if (window!=NULL){
+        ANativeWindow_release(window);
+    }
     if (windowSurface != NULL) {
         eglDestroySurface(display, windowSurface);
         windowSurface = NULL;
@@ -318,6 +321,7 @@ void BugMediaGraphics::prepareProgram() {
     pFragmentShader->release();
     // 自己实现绘制前的准备工作
     onProgramPrepared();
+
     // 激活着色程序
     glUseProgram(program);
 }
@@ -364,6 +368,10 @@ BugMediaGraphics::~BugMediaGraphics() {
 
 void BugMediaGraphics::makeCurrent() {
     pEGL->makeCurrent();
+}
+
+void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
+
 }
 
 

@@ -20,6 +20,9 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
+    // 这个变量定义在方法外面，是因为在回调函数里初始化不能放在方法里面
+    //private GraphicsEngine engine = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,14 +81,35 @@ public class MainActivity extends AppCompatActivity {
                 "}";
 
         SurfaceView playView3 = findViewById(R.id.playerView3);
-        GraphicsEngine engine=new GraphicsEngine();
-        //SurfaceTexture texture = new SurfaceTexture();
-        engine.setWindowSurface(playView2.getHolder().getSurface());
 
-        engine.draw();
-//        GraphicsEngine.initGraphics(vertextShaderSource,fragShaderSource);
-//        GraphicsEngine.setWindowSurface(playView2.getHolder().getSurface());
-//        GraphicsEngine.draw();
+        SurfaceHolder v3Holder = playView3.getHolder();
+
+GraphicsEngine engine=new GraphicsEngine();
+
+        v3Holder.addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                engine.setWindowSurface(surfaceHolder.getSurface());
+engine.draw();
+
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+
+            }
+        });
+
+//        GraphicsEngine engine=new GraphicsEngine();
+//        //SurfaceTexture texture = new SurfaceTexture();
+//        engine.setWindowSurface(playView2.getHolder().getSurface());
+//
+
 
 
     }
