@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         SurfaceView playView3 = findViewById(R.id.playerView3);
         GraphicsEngine engine=new GraphicsEngine();
         //SurfaceTexture texture = new SurfaceTexture();
-        engine.setWindowSurface(playView3.getHolder().getSurface());
+        engine.setWindowSurface(playView2.getHolder().getSurface());
 
         engine.draw();
 //        GraphicsEngine.initGraphics(vertextShaderSource,fragShaderSource);

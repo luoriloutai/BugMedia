@@ -20,10 +20,10 @@ void BugMediaBitmapRenderer::onProgramPrepared() {
             0, 1.0
     };
 
-    GLsizeiptr vertexSize=sizeof(vertexCoords);
+    GLsizeiptr vertexSize = sizeof(vertexCoords);
     GLsizeiptr eleSize = sizeof(GLfloat);
     // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
-    setVertexDim(2,vertexSize,eleSize);
+    setVertexDim(2, vertexSize, eleSize);
 
 
     // 分配顶点缓冲区
@@ -50,10 +50,41 @@ void BugMediaBitmapRenderer::onProgramPrepared() {
     // 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
     // 第五个参数是步长，或叫跨度，即一个顶点所占用的字节数,即 顶点维度*数组中每个元素的大小
     // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。由于位置数据在数组的开头，所以这里是0。
-    glVertexAttribPointer(aPosition, vertexDim, GL_FLOAT, GL_FALSE, vertexDim*eleSize,(void*)0);
+    glVertexAttribPointer(aPosition, vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, (void *) 0);
 
     // 启用顶点属性变量，默认是禁止的
     glEnableVertexAttribArray(aPosition);
+
+    /*
+     * 演示使用glDrawElements
+     *
+     // 矩形顶点
+     float vertices[] = {
+            0.5f, 0.5f, 0.0f,   // 右上角
+            0.5f, -0.5f, 0.0f,  // 右下角
+            -0.5f, -0.5f, 0.0f, // 左下角
+            -0.5f, 0.5f, 0.0f   // 左上角
+    };
+    // 该数组指定顶点的渲染顺序，哪几个连接在一起组成一个三角形
+     GLfloat int indices[] = { // 注意索引从0开始!
+            0, 1, 3, // 第一个三角形
+            1, 2, 3  // 第二个三角形
+    };
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    // 缓冲类型为GL_ELEMENT_ARRAY_BUFFER
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // ...
+    // 这里绘制时使用glDrawElements();
+    // 参数一：绘制模式
+    // 参数二：顶点数。定义了4个顶点，这里要绘制6个
+    // 参数三：数组元素的类型
+    // 参数四：在EBO中的偏移量
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+*/
+
 
 }
 
@@ -84,7 +115,7 @@ void BugMediaBitmapRenderer::bindCurrentThread() {
     makeCurrent();
 }
 
-void BugMediaBitmapRenderer::setVertexDim(GLint dim,GLsizeiptr vertexSize,GLsizeiptr eleSize) {
+void BugMediaBitmapRenderer::setVertexDim(GLint dim, GLsizeiptr vertexSize, GLsizeiptr eleSize) {
     vertexDim = dim;
 
     GLint vertexLen = vertexSize / eleSize;

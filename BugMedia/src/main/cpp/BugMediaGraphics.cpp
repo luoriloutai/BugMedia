@@ -51,11 +51,11 @@ EGLBoolean BugMediaGraphicsEGL::init() {
     }
 
     // android下的配置
-    const EGLint configAttribs[] = {EGL_BUFFER_SIZE, 32,
-                                    EGL_ALPHA_SIZE, 8,
-                                    EGL_BLUE_SIZE, 8,
+    const EGLint configAttribs[] = {EGL_RED_SIZE, 8,
                                     EGL_GREEN_SIZE, 8,
-                                    EGL_RED_SIZE, 8,
+                                    EGL_BLUE_SIZE, 8,
+                                    EGL_ALPHA_SIZE, 8,
+                                    EGL_BUFFER_SIZE, 32,
                                     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
                                     EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
                                     EGL_NONE}; // 必须以EGL_NONE结尾
@@ -78,7 +78,7 @@ EGLBoolean BugMediaGraphicsEGL::init() {
             EGL_CONTEXT_CLIENT_VERSION, 2,
             EGL_NONE};
 
-    if (!(context = eglCreateContext(display, config, NULL, contextAttribs))) {
+    if (!(context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs))) {
         LOGE("eglCreateContext() returned error %d", eglGetError());
         return EGL_FALSE;
     }
@@ -102,6 +102,7 @@ EGLBoolean BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
     return EGL_TRUE;
 }
 
+// 只有windowSurface可以显示
 EGLBoolean BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) {
 
     EGLint format;
@@ -159,6 +160,7 @@ void BugMediaGraphicsEGL::makeCurrent() {
     if (windowSurface != NULL) {
         eglMakeCurrent(display, windowSurface, windowSurface, context);
     }
+    // PBufferSurface不能swap,只能复制或绑定到纹理
     if (PBufferSurface != NULL) {
         eglMakeCurrent(display, PBufferSurface, PBufferSurface, context);
     }
