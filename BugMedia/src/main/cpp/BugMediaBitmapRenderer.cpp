@@ -231,3 +231,4 @@ JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsEngine_bindCurrentThread(JNIEnv *env, jobject clazz) {
     renderer.bindCurrentThread();
 }
+

@@ -1,20 +1,88 @@
 //
 // Created by Gshine on 2021/1/27.
 //
-
+#include "BugMediaGraphicsInterface.h"
+#include <jni.h>
 #include "BugMediaGraphicsPainter.h"
 
-BugMediaGraphicsPainter::BugMediaGraphicsPainter(IBugMediaGraphicsRender *render) {
-    this->render=render;
-    render->setViewPort(0.0,500,300);
-    render->setWindowSurface(JNIEnv,jsurface);
-    render->draw();
+//^^^^^^^^^^^ jni ^^^^^^^^^^^^
+
+extern "C" {
+
+// 这个要与Java里的值对应
+enum rendererType {
+    TRIANGLE_RENDERER = 1,
+    BITMAP_RENDERER = 2,
+    VIDEO_RENDERER = 3
+};
+
+
+IBugMediaGraphicsRenderer *renderer = NULL;
+
+void initRenderer(int renderType) {
+    if (renderType == TRIANGLE_RENDERER) {
+
+    } else if (renderType == BITMAP_RENDERER) {
+
+    } else if (renderType == VIDEO_RENDERER) {
+
+    }
 }
 
-BugMediaGraphicsPainter::~BugMediaGraphicsPainter() {
 
+} // extern C
+
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jclass clazz, jobject surface) {
+    if (renderer!=NULL){
+        renderer->setWindowSurface(env,surface);
+    }
 }
 
-void BugMediaGraphicsPainter::paint() {
-
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jclass clazz, jint x, jint y, jint width, jint height) {
+    if (renderer != NULL) {
+        renderer->setViewPort(x, y, width, height);
+    }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jclass clazz, jint width, jint height) {
+    if (renderer != NULL) {
+        renderer->setPBufferSurface(width, height);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jclass clazz) {
+
+    if (renderer != NULL) {
+        renderer->draw();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_selectRenderer(JNIEnv *env, jclass clazz, jint rendererType) {
+
+    initRenderer(rendererType);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_stop(JNIEnv *env, jclass clazz) {
+    if (renderer != NULL) {
+        delete renderer;
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jclass clazz) {
+    // TODO: implement pause()
+}
+

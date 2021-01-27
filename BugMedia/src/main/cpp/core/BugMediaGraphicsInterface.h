@@ -6,8 +6,8 @@
 #define SLOWER_BUGMEDIAGRAPHICSINTERFACE_H
 #include "BugMediaGraphics.h"
 
-class IBugMediaGraphicsRender: public BugMediaGraphics{
+class IBugMediaGraphicsRenderer: public BugMediaGraphics{
 public:
-    virtual ~IBugMediaGraphicsRender(){}
+    virtual ~IBugMediaGraphicsRenderer(){}
 };
 #endif //SLOWER_BUGMEDIAGRAPHICSINTERFACE_H
