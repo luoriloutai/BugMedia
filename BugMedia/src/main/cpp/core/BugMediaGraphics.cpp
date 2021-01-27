@@ -3,6 +3,9 @@
 //
 
 #include "BugMediaGraphics.h"
+#include <thread>
+
+using namespace std;
 
 BugMediaGraphics::BugMediaGraphics() {
     pEGL = new BugMediaGraphicsEGL();
@@ -21,17 +24,18 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 
 void BugMediaGraphics::draw() {
     pGLES->activeProgram();
-    onDraw();
+
+    // 线程中不断绘制直至结束
     //
-    EGLDisplay display = pEGL->getDisplay();
-    EGLSurface PBufferSurface = pEGL->getPBufferSurface();
-    if (PBufferSurface != NULL) {
-        eglSwapBuffers(display, PBufferSurface);
-    }
-    EGLSurface windowSurface = pEGL->getWindowSurface();
-    if (windowSurface != NULL) {
-        eglSwapBuffers(display, windowSurface);// 只有windowSurface才可以交换
-    }
+    //std::thread drawingThread(&BugMediaGraphics::drawingFunction);// 调用类成员函数作为线程函数，要取函数地址
+    // 匿名函数方式,[]内为捕获列表，参数可以放在这里,在此范围内的函数就可以使用，调用不需加this->...
+    std::thread drawBackground([this] {
+        makeCurrent();
+        onDraw();
+        //
+        pEGL->swapBuffers();
+    });
+
 }
 
 void BugMediaGraphics::release() {
@@ -72,6 +76,10 @@ BugMediaGraphics::setShaderSource(const GLchar **const vertexShadersource, const
         return;
     }
     pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
+}
+
+void BugMediaGraphics::drawingFunction() {
+
 }
 
 

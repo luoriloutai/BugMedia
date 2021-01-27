@@ -29,9 +29,8 @@ public:
     EGLBoolean setWindowSurface(JNIEnv *env, jobject jSurface);
 
     EGLBoolean setPBufferSurface(EGLint width, EGLint height);
-    EGLDisplay getDisplay();
-    EGLSurface getWindowSurface();
-    EGLSurface getPBufferSurface();
+
+    EGLBoolean swapBuffers();
 
     void makeCurrent();
 

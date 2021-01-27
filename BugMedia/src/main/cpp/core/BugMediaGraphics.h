@@ -39,20 +39,23 @@ public:
     void setPBufferSurface(EGLint width, EGLint height);
 
     // 绘制之前的配置等不变的东西在这里写
-    virtual void prepare();
+    virtual void prepare() = 0;
 
-    // 真正绘制的地方
-    virtual void onDraw() {};
+    // 真正绘制的地方调用draw()会调用
+    virtual void onDraw() = 0;
+
 
     void release();
 
-    ~BugMediaGraphics();
+    virtual ~BugMediaGraphics(); // 防止多态性导致的子类析构函数不执行。有虚方法的类的析构函数一般应定义为虚析构函数
 
     void draw();
 
     void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
-protected:
+private:
+    void drawingFunction();
+    // 绘制时开启一个线程，然后调用该方法将上下文绑定至线程
     void makeCurrent();
 
     BugMediaGraphicsEGL *pEGL = NULL;

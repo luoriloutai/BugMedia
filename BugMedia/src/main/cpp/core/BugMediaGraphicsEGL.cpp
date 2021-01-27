@@ -83,8 +83,6 @@ EGLBoolean BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
         return EGL_FALSE;
     }
 
-    // Surface和Context绑定到当前线程
-    //eglMakeCurrent(display, PBufferSurface, PBufferSurface, context);
     return EGL_TRUE;
 }
 
@@ -102,7 +100,7 @@ EGLBoolean BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) 
         LOGE("eglCreateWindowSurface() returned error %d", eglGetError());
         return EGL_FALSE;
     }
-    //eglMakeCurrent(display, windowSurface, windowSurface, context);
+
     return EGL_TRUE;
 }
 
@@ -133,18 +131,6 @@ BugMediaGraphicsEGL::~BugMediaGraphicsEGL() {
 
 }
 
-EGLDisplay BugMediaGraphicsEGL::getDisplay() {
-    return display;
-}
-
-EGLSurface BugMediaGraphicsEGL::getWindowSurface() {
-    return windowSurface;
-}
-
-EGLSurface BugMediaGraphicsEGL::getPBufferSurface() {
-    return PBufferSurface;
-}
-
 void BugMediaGraphicsEGL::makeCurrent() {
     if (windowSurface != NULL) {
         eglMakeCurrent(display, windowSurface, windowSurface, context);
@@ -153,4 +139,10 @@ void BugMediaGraphicsEGL::makeCurrent() {
     if (PBufferSurface != NULL) {
         eglMakeCurrent(display, PBufferSurface, PBufferSurface, context);
     }
+
+}
+
+EGLBoolean BugMediaGraphicsEGL::swapBuffers() {
+    // 只有windowSurface能交换显示缓冲
+    return eglSwapBuffers(display, windowSurface);
 }

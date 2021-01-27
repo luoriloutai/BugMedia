@@ -101,6 +101,7 @@ add_library( # Sets the name of the library.
         core/BugMediaGraphicsGLES.cpp
         core/BugMediaGraphicsEGL.cpp
         core/BugMediaGraphics.cpp
+        core/BugMediaGraphicsBaseRenderer.cpp
         )
 
 
