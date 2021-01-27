@@ -97,12 +97,12 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
 
-        BugMediaBitmapRenderer.cpp
-        core/BugMediaGraphicsGLES.cpp
-        core/BugMediaGraphicsEGL.cpp
-        core/BugMediaGraphics.cpp
-        core/BugMediaGraphicsBaseRenderer.cpp
-        core/BugMediaGraphicsPainter.cpp
+        openGL/core/BugMediaGraphicsGLES.cpp
+        openGL/core/BugMediaGraphicsEGL.cpp
+        openGL/core/BugMediaGraphics.cpp
+        openGL/core/BugMediaGraphicsBaseRenderer.cpp
+        openGL/BugMediaGraphicsPainter.cpp
+        openGL/BugMediaTriangleRenderer.cpp
         )
 
 

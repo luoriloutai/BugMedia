@@ -1,9 +1,10 @@
 //
 // Created by Gshine on 2021/1/27.
 //
-#include "BugMediaGraphicsInterface.h"
+#include "core/BugMediaGraphicsBaseRenderer.h"
 #include <jni.h>
 #include "BugMediaGraphicsPainter.h"
+#include "BugMediaTriangleRenderer.h"
 
 //^^^^^^^^^^^ jni ^^^^^^^^^^^^
 
@@ -17,11 +18,11 @@ enum rendererType {
 };
 
 
-IBugMediaGraphicsRenderer *renderer = NULL;
+BugMediaGraphicsBaseRenderer *renderer = NULL;
 
 void initRenderer(int renderType) {
     if (renderType == TRIANGLE_RENDERER) {
-
+        renderer = new BugMediaTriangleRenderer();
     } else if (renderType == BITMAP_RENDERER) {
 
     } else if (renderType == VIDEO_RENDERER) {
@@ -35,8 +36,8 @@ void initRenderer(int renderType) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jclass clazz, jobject surface) {
-    if (renderer!=NULL){
-        renderer->setWindowSurface(env,surface);
+    if (renderer != NULL) {
+        renderer->setWindowSurface(env, surface);
     }
 }
 

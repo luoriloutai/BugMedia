@@ -5,7 +5,7 @@
 #ifndef SLOWER_BUGMEDIABITMAPRENDERER_H
 #define SLOWER_BUGMEDIABITMAPRENDERER_H
 
-#include "core/BugMediaGraphics.h"
+#include "openGL/core/BugMediaGraphics.h"
 #include "SetShader.h"
 
 
