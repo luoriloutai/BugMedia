@@ -23,6 +23,7 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 
 
 void BugMediaGraphics::draw() {
+    setShader();
     pGLES->activeProgram();
 
     // 线程中不断绘制直至结束
@@ -31,6 +32,7 @@ void BugMediaGraphics::draw() {
     // 匿名函数方式,[]内为捕获列表，参数可以放在这里,在此范围内的函数就可以使用，调用不需加this->...
     std::thread drawBackground([this] {
         makeCurrent();
+        //
         onDraw();
         //
         pEGL->swapBuffers();
@@ -78,9 +80,8 @@ BugMediaGraphics::setShaderSource(const GLchar **const vertexShadersource, const
     pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
 }
 
-void BugMediaGraphics::drawingFunction() {
 
-}
+
 
 
 

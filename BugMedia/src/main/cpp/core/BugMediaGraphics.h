@@ -32,18 +32,9 @@ class BugMediaGraphics {
 public:
     BugMediaGraphics();
 
-    void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
-
     void setWindowSurface(JNIEnv *env, jobject jSurface);
 
     void setPBufferSurface(EGLint width, EGLint height);
-
-    // 绘制之前的配置等不变的东西在这里写
-    virtual void prepare() = 0;
-
-    // 真正绘制的地方调用draw()会调用
-    virtual void onDraw() = 0;
-
 
     void release();
 
@@ -53,10 +44,18 @@ public:
 
     void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
+protected:
+    void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
+
 private:
-    void drawingFunction();
     // 绘制时开启一个线程，然后调用该方法将上下文绑定至线程
     void makeCurrent();
+
+    // 设置Shader等各种需要准备的工作
+    virtual void setShader() = 0;
+
+    // 真正绘制的地方调用draw()会调用
+    virtual void onDraw() = 0;
 
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsGLES *pGLES = NULL;
