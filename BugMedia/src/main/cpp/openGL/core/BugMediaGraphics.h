@@ -42,20 +42,15 @@ public:
 
     void draw();
 
-    void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
+    void viewPort(GLint x, GLint y, GLsizei width, GLsizei height);
+
+    void init();
 
 protected:
-    // 调用该方法后shader和programe就创建好了，
-    // 在setShader重写方法里，要先调用该方法,否则program没有创建完成，后续工作就出错了
-    //void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
-
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsGLES *pGLES = NULL;
 
 private:
-    // 绘制时开启一个线程，然后调用该方法将上下文绑定至线程
-    void makeCurrent();
-
     // 设置Shader等各种需要准备的工作
     virtual void setShader() = 0;
 

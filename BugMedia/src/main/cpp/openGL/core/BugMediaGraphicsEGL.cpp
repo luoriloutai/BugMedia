@@ -28,7 +28,7 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
         return EGL_FALSE;
 
     }
-LOGD("display 获取完成");
+    LOGD("display 获取完成");
     EGLBoolean ok = eglInitialize(display, NULL, NULL);
     if (!ok) {
         LOGE("eglInitialize error:%d\n", eglGetError());
@@ -121,11 +121,16 @@ BugMediaGraphicsEGL::~BugMediaGraphicsEGL() {
 
 }
 
-void BugMediaGraphicsEGL::makeCurrent() {
 
+EGLBoolean BugMediaGraphicsEGL::swapBuffers() {
+    // 只有windowSurface能交换显示缓冲
+    return eglSwapBuffers(display, windowSurface);
+}
+
+void BugMediaGraphicsEGL::init() {
 //问题所在：
 // 所有环境相关的东西都应该在同一个线程创建
-    if (!init(NULL)){
+    if (!init(NULL)) {
         LOGE("初始化环境失败");
     }
 
@@ -155,10 +160,5 @@ void BugMediaGraphicsEGL::makeCurrent() {
         eglMakeCurrent(display, PBufferSurface, PBufferSurface, context);
     }
 
-    LOGD("makeCurrent 结束");
-}
 
-EGLBoolean BugMediaGraphicsEGL::swapBuffers() {
-    // 只有windowSurface能交换显示缓冲
-    return eglSwapBuffers(display, windowSurface);
 }

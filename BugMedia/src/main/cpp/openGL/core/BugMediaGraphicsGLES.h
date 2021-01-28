@@ -33,15 +33,18 @@ public:
 
         GLuint instance();
 
+        void init();
+
     private:
         GLuint handler = 0;
-
+        GLenum type = NULL;
+        const GLchar *const *source = NULL;
         GLboolean isRelease = GL_FALSE;
     };
 
     class Program {
     public:
-        Program(Shader *vertexShader, Shader *fragmentShader);
+        Program();
 
         ~Program();
 
@@ -50,6 +53,9 @@ public:
         GLuint instance();
 
         void release();
+
+        void init(BugMediaGraphicsGLES::Shader *vertexShader,
+                  BugMediaGraphicsGLES::Shader *fragmentShader);
 
     private:
         GLuint handler = 0;
@@ -61,8 +67,6 @@ public:
     BugMediaGraphicsGLES();
 
     void release();
-
-    void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
     void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
 
@@ -78,15 +82,23 @@ public:
     // 第五个参数是步长，或叫跨度，即一个顶点所占用的字节数,即 顶点维度*数组中每个元素的大小
     // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。但这里貌似可以传入我们的数组
     GLuint setVertexAttribArray(const GLchar *name, GLint vertexDim, GLenum eleType, GLboolean normalized,
-                              GLsizei stride, const void *pointer);
+                                GLsizei stride, const void *pointer);
 
     void enable(GLenum cap);
-    void blendFunc (GLenum sfactor, GLenum dfactor);
-    void clearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-    void clear (GLbitfield mask);
-    void drawArrays (GLenum mode, GLint first, GLsizei count);
-    void drawElements (GLenum mode, GLsizei count, GLenum type, const void *indices);
+
+    void blendFunc(GLenum sfactor, GLenum dfactor);
+
+    void clearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+
+    void clear(GLbitfield mask);
+
+    void drawArrays(GLenum mode, GLint first, GLsizei count);
+
+    void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
+
     ~BugMediaGraphicsGLES();
+
+    void init();
 
 
 private:
@@ -97,7 +109,6 @@ private:
     Shader *pVertexShader = NULL;
     Shader *pFragmentShader = NULL;
     Program *pProgram = NULL;
-
 };
 
 

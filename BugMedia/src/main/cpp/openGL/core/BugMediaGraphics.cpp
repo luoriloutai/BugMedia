@@ -10,6 +10,9 @@ using namespace std;
 
 BugMediaGraphics::BugMediaGraphics() {
 
+    // 由于绘图对象都要求在同一线程中，
+    // 所以设计时构造函数里只初始化与绘图对象无关的对象，
+    // 这些对象值可以在最终创建绘图对象时使用
     pEGL = new BugMediaGraphicsEGL();
     pGLES = new BugMediaGraphicsGLES();
 
@@ -34,11 +37,12 @@ void BugMediaGraphics::draw() {
     // 匿名函数方式,[]内为捕获列表，参数可以放在这里,在此范围内的函数就可以使用，调用不需加this->...
     std::thread drawBackground([this] {
 
+        // 虚方法
         setShader();
 
         pGLES->activeProgram();
+        init();
 
-        makeCurrent();
         LOGD("绑定线程完成");
         //
         onDraw();
@@ -68,29 +72,16 @@ BugMediaGraphics::~BugMediaGraphics() {
     }
 }
 
-void BugMediaGraphics::makeCurrent() {
-
-    if (pEGL != NULL) {
-
-        pEGL->makeCurrent();
-    }
-
+void BugMediaGraphics::init() {
+    pEGL->init();
+    pGLES->init();
 }
 
-void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
-    if (pGLES == NULL) {
-        return;
-    }
-    pGLES->viewport(x, y, width, height);
+void BugMediaGraphics::viewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
+    glViewport(x, y, width, height);
 }
 
-//void
-//BugMediaGraphics::setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource) {
-//    if (pGLES == NULL) {
-//        return;
-//    }
-//    pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
-//}
+
 
 
 

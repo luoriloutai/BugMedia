@@ -37,7 +37,7 @@ void BugMediaTriangleRenderer::setShader() {
     pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, vertexCoords);
 
     //glViewport(0,0,500,300);
-    //pGLES->viewport(0, 0, 500, 300);
+    viewPort(0, 0, 500, 300);
 
     // 初始化背景色
     pGLES->enable(GL_BLEND);

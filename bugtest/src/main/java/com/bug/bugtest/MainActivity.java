@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
                 graphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
                 graphicsBridge.setWindowSurface(surfaceHolder.getSurface());
-                graphicsBridge.setViewport(0, 0, 500, 300);
                 graphicsBridge.draw();
             }
 

@@ -33,11 +33,11 @@ public:
 
     EGLBoolean swapBuffers();
 
-    void makeCurrent();
-
     void release();
 
     ~BugMediaGraphicsEGL();
+
+    void init();
 
 private:
     EGLDisplay display = NULL;
@@ -47,9 +47,9 @@ private:
     EGLSurface PBufferSurface = NULL;
     ANativeWindow *window = NULL;
     EGLBoolean isRelease = EGL_FALSE;
-    EGLint width=0;
-    EGLint height=0;
-    EGLint surfaceType=NONE_SURFACE;
+    EGLint width = 0;
+    EGLint height = 0;
+    EGLint surfaceType = NONE_SURFACE;
 
     EGLBoolean init(EGLContext sharedContext);
 };

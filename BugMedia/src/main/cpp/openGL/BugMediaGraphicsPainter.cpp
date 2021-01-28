@@ -42,14 +42,6 @@ Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jobject cla
     }
 }
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jobject clazz, jint x, jint y, jint width,
-                                                   jint height) {
-    if (renderer != NULL) {
-        renderer->setViewPort(x, y, width, height);
-    }
-}
 
 extern "C"
 JNIEXPORT void JNICALL

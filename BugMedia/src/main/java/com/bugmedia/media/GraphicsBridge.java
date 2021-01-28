@@ -20,8 +20,6 @@ public class GraphicsBridge {
 
     public native void setWindowSurface(Surface surface);
 
-    public native void setViewport(int x, int y, int width, int height);
-
     public native void setPBufferSurface(int width,int height);
 
     public native void draw();
