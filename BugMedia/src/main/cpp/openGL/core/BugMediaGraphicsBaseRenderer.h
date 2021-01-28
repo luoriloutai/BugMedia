@@ -10,7 +10,7 @@
 class BugMediaGraphicsBaseRenderer : public BugMediaGraphics {
 public:
 
-    BugMediaGraphicsBaseRenderer();
+
 
     virtual ~BugMediaGraphicsBaseRenderer(){}
 
