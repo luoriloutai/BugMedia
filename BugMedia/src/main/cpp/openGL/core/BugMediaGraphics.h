@@ -51,11 +51,14 @@ protected:
     BugMediaGraphicsGLES *pGLES = NULL;
 
 private:
-    // 设置Shader等各种需要准备的工作
-    virtual void setShader() = 0;
+    // 设置Shader代码
+    virtual void setShaderSource() = 0;
 
-    // 真正绘制的地方调用draw()会调用
-    virtual void onDraw() = 0;
+    // 绘制前准备工作：设置shader里的变量值、配置各种信息
+    virtual void prepareDraw() = 0;
+
+    // 开始绘制
+    virtual void startDraw() = 0;
 
     GLboolean isRelease = GL_FALSE;
 

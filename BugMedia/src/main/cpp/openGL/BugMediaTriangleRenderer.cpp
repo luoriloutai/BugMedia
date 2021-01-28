@@ -5,7 +5,12 @@
 #include "BugMediaTriangleRenderer.h"
 #include "core/BugMediaGraphicsCommon.h"
 
-void BugMediaTriangleRenderer::setShader() {
+void BugMediaTriangleRenderer::setShaderSource() {
+    //
+    // 本方法只实现设置着色器代码，其它操作不应在这里。
+    // 如果要配置着色器数据，请在prepareDraw()中编写代码。
+    //
+
     const char *vertextShaderSource = "attribute vec4 aPosition;"
                                       "void main() {"
                                       "  gl_Position = aPosition;"
@@ -15,9 +20,22 @@ void BugMediaTriangleRenderer::setShader() {
                                    "  gl_FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
                                    "}";
 
-    //setShaderSource(&vertextShaderSource,&fragShaderSource);
     this->pGLES->setShaderSource(&vertextShaderSource, &fragShaderSource);
+}
 
+void BugMediaTriangleRenderer::startDraw() {
+
+    LOGD("startDraw开始");
+    // 下面这句很重要，没有这句屏幕一直闪
+    pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // 模式、在数组中的偏移、顶点数
+    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+}
+
+void BugMediaTriangleRenderer::prepareDraw() {
+    // 在绘制之前的操作在这里编写
+
+    //
     // 顶点(x,y,z,w)，三维空间只有三维，最后一位是齐次坐标，将前面的三个量分别除以最后一个量得出
     // 一个三维向量(x/w,y/w,z/w)，这才是真正的三维坐标。最后一个值w是用来作调整的。
     // 一个顶点有二维的，有三维的，都扁平化地存储在一维数组里，因此我们需要手动指定哪部分表示一个顶点，
@@ -43,15 +61,5 @@ void BugMediaTriangleRenderer::setShader() {
     pGLES->enable(GL_BLEND);
     pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     pGLES->clearColor(0.643f, 0.776f, 0.223f, 1.0f);
-
-
-}
-
-void BugMediaTriangleRenderer::onDraw() {
-    LOGD("onDraw开始");
-    // 下面这句很重要，没有这句屏幕一直闪
-    pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // 模式、在数组中的偏移、顶点数
-    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
 }
 
