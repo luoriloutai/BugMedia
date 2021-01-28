@@ -4,18 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.bugmedia.media.Demo;
-import com.bugmedia.media.GraphicsEngine;
+import com.bugmedia.media.GraphicsBridge;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             AssetFileDescriptor fileDescriptor = assetManager.openFd("testfile.mp4");
             MediaPlayer player = new MediaPlayer();
-            player.setDataSource(fileDescriptor.getFileDescriptor(), fileDescriptor.getStartOffset(),fileDescriptor.getLength());
+            player.setDataSource(fileDescriptor.getFileDescriptor(), fileDescriptor.getStartOffset(),
+                    fileDescriptor.getLength());
             fileDescriptor.close();
 
             SurfaceHolder holder = playView.getHolder();
@@ -56,18 +53,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    mediaPlayer.start();
-                }
-            });
+            player.setOnPreparedListener(MediaPlayer::start);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        GLSurfaceView playView2=findViewById(R.id.playerView2);
+        GLSurfaceView playView2 = findViewById(R.id.playerView2);
 
         String vertextShaderSource = "attribute vec4 aPosition;" +
                 "void main() {" +
@@ -84,14 +76,15 @@ public class MainActivity extends AppCompatActivity {
 
         SurfaceHolder v3Holder = playView3.getHolder();
 
-GraphicsEngine engine=new GraphicsEngine();
+
 
         v3Holder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
-                engine.setWindowSurface(surfaceHolder.getSurface());
-engine.draw();
-
+                GraphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
+                GraphicsBridge.setWindowSurface(surfaceHolder.getSurface());
+                GraphicsBridge.setViewport(0, 0, 500, 300);
+                GraphicsBridge.draw();
             }
 
             @Override
@@ -109,7 +102,6 @@ engine.draw();
 //        //SurfaceTexture texture = new SurfaceTexture();
 //        engine.setWindowSurface(playView2.getHolder().getSurface());
 //
-
 
 
     }

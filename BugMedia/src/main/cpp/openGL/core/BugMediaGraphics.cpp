@@ -69,16 +69,16 @@ void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei heig
     if (pGLES == NULL) {
         return;
     }
-    pGLES->setViewport(x, y, width, height);
+    pGLES->viewport(x, y, width, height);
 }
 
-void
-BugMediaGraphics::setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource) {
-    if (pGLES == NULL) {
-        return;
-    }
-    pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
-}
+//void
+//BugMediaGraphics::setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource) {
+//    if (pGLES == NULL) {
+//        return;
+//    }
+//    pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
+//}
 
 
 
