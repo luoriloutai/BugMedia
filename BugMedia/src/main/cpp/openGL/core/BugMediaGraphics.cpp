@@ -4,12 +4,15 @@
 
 #include "BugMediaGraphics.h"
 #include <thread>
+#include "BugMediaGraphicsCommon.h"
 
 using namespace std;
 
 BugMediaGraphics::BugMediaGraphics() {
+
     pEGL = new BugMediaGraphicsEGL();
     pGLES = new BugMediaGraphicsGLES();
+
 }
 
 
@@ -23,24 +26,31 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 
 
 void BugMediaGraphics::draw() {
-    setShader();
-    pGLES->activeProgram();
+
 
     // 线程中不断绘制直至结束
     //
     //std::thread drawingThread(&BugMediaGraphics::drawingFunction);// 调用类成员函数作为线程函数，要取函数地址
     // 匿名函数方式,[]内为捕获列表，参数可以放在这里,在此范围内的函数就可以使用，调用不需加this->...
     std::thread drawBackground([this] {
+
+        setShader();
+
+        pGLES->activeProgram();
+
         makeCurrent();
+        LOGD("绑定线程完成");
         //
         onDraw();
         //
         pEGL->swapBuffers();
+        LOGD("绘制结束");
     });
 
 }
 
 void BugMediaGraphics::release() {
+    LOGD("开始释放资源");
     if (!isRelease) {
         delete pGLES;
         pGLES = NULL;
@@ -59,7 +69,9 @@ BugMediaGraphics::~BugMediaGraphics() {
 }
 
 void BugMediaGraphics::makeCurrent() {
+
     if (pEGL != NULL) {
+
         pEGL->makeCurrent();
     }
 

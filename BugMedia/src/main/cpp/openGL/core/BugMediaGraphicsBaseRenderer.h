@@ -11,7 +11,6 @@ class BugMediaGraphicsBaseRenderer : public BugMediaGraphics {
 public:
 
 
-
     virtual ~BugMediaGraphicsBaseRenderer(){}
 
 protected:

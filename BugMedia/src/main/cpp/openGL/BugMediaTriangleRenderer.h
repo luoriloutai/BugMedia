@@ -11,6 +11,7 @@ class BugMediaTriangleRenderer: public BugMediaGraphicsBaseRenderer {
     void setShader();
 
     void onDraw();
+
 };
 
 

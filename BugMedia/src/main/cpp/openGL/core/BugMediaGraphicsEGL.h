@@ -20,15 +20,16 @@ extern "C"
 #endif
 
 #include <jni.h>
+#include "BugMediaGraphicsCommon.h"
 
 
 class BugMediaGraphicsEGL {
 public:
     BugMediaGraphicsEGL();
 
-    EGLBoolean setWindowSurface(JNIEnv *env, jobject jSurface);
+    void setWindowSurface(JNIEnv *env, jobject jSurface);
 
-    EGLBoolean setPBufferSurface(EGLint width, EGLint height);
+    void setPBufferSurface(EGLint width, EGLint height);
 
     EGLBoolean swapBuffers();
 
@@ -46,8 +47,11 @@ private:
     EGLSurface PBufferSurface = NULL;
     ANativeWindow *window = NULL;
     EGLBoolean isRelease = EGL_FALSE;
+    EGLint width=0;
+    EGLint height=0;
+    EGLint surfaceType=NONE_SURFACE;
 
-    EGLBoolean init();
+    EGLBoolean init(EGLContext sharedContext);
 };
 
 

@@ -5,6 +5,7 @@
 #include <jni.h>
 #include "BugMediaGraphicsPainter.h"
 #include "BugMediaTriangleRenderer.h"
+#include "core/BugMediaGraphicsCommon.h"
 
 //^^^^^^^^^^^ jni ^^^^^^^^^^^^
 
@@ -43,7 +44,8 @@ Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jobject cla
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jobject clazz, jint x, jint y, jint width, jint height) {
+Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jobject clazz, jint x, jint y, jint width,
+                                                   jint height) {
     if (renderer != NULL) {
         renderer->setViewPort(x, y, width, height);
     }
@@ -71,6 +73,10 @@ JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsBridge_selectRenderer(JNIEnv *env, jobject clazz, jint rendererType) {
 
     initRenderer(rendererType);
+    if (renderer==NULL){
+        LOGE("初始化渲染器失败");
+    }
+    LOGD("渲染器初始化成功");
 }
 
 extern "C"

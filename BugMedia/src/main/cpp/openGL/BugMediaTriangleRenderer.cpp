@@ -3,6 +3,7 @@
 //
 
 #include "BugMediaTriangleRenderer.h"
+#include "core/BugMediaGraphicsCommon.h"
 
 void BugMediaTriangleRenderer::setShader() {
     const char *vertextShaderSource = "attribute vec4 aPosition;"
@@ -43,11 +44,14 @@ void BugMediaTriangleRenderer::setShader() {
     pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     pGLES->clearColor(0.643f, 0.776f, 0.223f, 1.0f);
 
+
 }
 
 void BugMediaTriangleRenderer::onDraw() {
+    LOGD("onDraw开始");
     // 下面这句很重要，没有这句屏幕一直闪
     pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // 模式、在数组中的偏移、顶点数
     pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
 }
+

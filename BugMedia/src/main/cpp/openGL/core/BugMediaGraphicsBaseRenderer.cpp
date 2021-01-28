@@ -10,3 +10,4 @@ void BugMediaGraphicsBaseRenderer::configVertex(GLint dim, GLsizeiptr vertexArra
     GLint vertexArrayLen = vertexArraySize / eleSize;
     vertexCount = vertexArrayLen / vertexDim;
 }
+
