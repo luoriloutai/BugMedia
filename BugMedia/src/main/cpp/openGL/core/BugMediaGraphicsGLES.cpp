@@ -121,6 +121,7 @@ void BugMediaGraphicsGLES::init() {
     pVertexShader->init();
     pFragmentShader->init();
     pProgram->init(pVertexShader, pFragmentShader);
+    pProgram->active();
 }
 
 

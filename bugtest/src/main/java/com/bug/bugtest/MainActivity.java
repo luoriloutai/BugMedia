@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     GraphicsBridge graphicsBridge=new GraphicsBridge();
+    SurfaceHolder holder=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 //        view.getLayoutParams().width = getWindowManager().getDefaultDisplay().getWidth();
 //        view.getLayoutParams().height = getWindowManager().getDefaultDisplay().getWidth();
         SurfaceView view = findViewById(R.id.playerView3);
-        SurfaceHolder holder = view.getHolder();
+        holder = view.getHolder();
         //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
@@ -95,33 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 */
-        //GLSurfaceView playView2 = findViewById(R.id.playerView2);
 
-
-//        SurfaceView playView3 = findViewById(R.id.playerView3);
-//
-//        SurfaceHolder v3Holder = playView3.getHolder();
-//
-//
-//        v3Holder.addCallback(new SurfaceHolder.Callback() {
-//            @Override
-//            public void surfaceCreated(SurfaceHolder surfaceHolder) {
-//                GraphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
-//                GraphicsBridge.setWindowSurface(surfaceHolder.getSurface());
-//                GraphicsBridge.setViewport(0, 0, 500, 300);
-//                GraphicsBridge.draw();
-//            }
-//
-//            @Override
-//            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-//                GraphicsBridge.stop();
-//            }
-//        });
 
 
     }

@@ -40,10 +40,9 @@ void BugMediaGraphics::draw() {
         // 虚方法
         setShader();
 
-        pGLES->activeProgram();
         init();
+        //pGLES->activeProgram();
 
-        LOGD("绑定线程完成");
         //
         onDraw();
         //

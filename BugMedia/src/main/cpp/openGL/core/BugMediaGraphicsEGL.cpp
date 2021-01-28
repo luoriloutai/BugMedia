@@ -56,6 +56,8 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
         return EGL_FALSE;
     }
 
+    LOGD("配置个数：%d",numConfigs);
+
     LOGD("配置选择完成");
 
     if (config == NULL) {
@@ -64,13 +66,12 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
     }
     LOGD("配置获取完成");
     EGLint contextAttribs[] = {
-            EGL_CONTEXT_CLIENT_VERSION, 2,
+            //EGL_CONTEXT_CLIENT_VERSION, 2,
             EGL_NONE};
 
     if (!(context = eglCreateContext(display, config, NULL == sharedContext ? EGL_NO_CONTEXT : sharedContext,
                                      contextAttribs))) {
         LOGE("eglCreateContext() returned error %d", eglGetError());
-        LOGD("context获取失败");
         return EGL_FALSE;
     }
     LOGD("context 创建完成");
@@ -128,7 +129,7 @@ EGLBoolean BugMediaGraphicsEGL::swapBuffers() {
 }
 
 void BugMediaGraphicsEGL::init() {
-//问题所在：
+
 // 所有环境相关的东西都应该在同一个线程创建
     if (!init(NULL)) {
         LOGE("初始化环境失败");
