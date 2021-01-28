@@ -35,7 +35,7 @@ void initRenderer(int renderType) {
 
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jclass clazz, jobject surface) {
+Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jobject clazz, jobject surface) {
     if (renderer != NULL) {
         renderer->setWindowSurface(env, surface);
     }
@@ -43,7 +43,7 @@ Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jclass claz
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jclass clazz, jint x, jint y, jint width, jint height) {
+Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jobject clazz, jint x, jint y, jint width, jint height) {
     if (renderer != NULL) {
         renderer->setViewPort(x, y, width, height);
     }
@@ -51,7 +51,7 @@ Java_com_bugmedia_media_GraphicsBridge_setViewport(JNIEnv *env, jclass clazz, ji
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jclass clazz, jint width, jint height) {
+Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jobject clazz, jint width, jint height) {
     if (renderer != NULL) {
         renderer->setPBufferSurface(width, height);
     }
@@ -59,7 +59,7 @@ Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jclass cla
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jclass clazz) {
+Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jobject clazz) {
 
     if (renderer != NULL) {
         renderer->draw();
@@ -68,14 +68,14 @@ Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jclass clazz) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_selectRenderer(JNIEnv *env, jclass clazz, jint rendererType) {
+Java_com_bugmedia_media_GraphicsBridge_selectRenderer(JNIEnv *env, jobject clazz, jint rendererType) {
 
     initRenderer(rendererType);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_stop(JNIEnv *env, jclass clazz) {
+Java_com_bugmedia_media_GraphicsBridge_destroy(JNIEnv *env, jobject clazz) {
     if (renderer != NULL) {
         delete renderer;
     }
@@ -83,7 +83,7 @@ Java_com_bugmedia_media_GraphicsBridge_stop(JNIEnv *env, jclass clazz) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jclass clazz) {
+Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jobject clazz) {
     // TODO: implement pause()
 }
 

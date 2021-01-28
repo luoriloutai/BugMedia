@@ -16,18 +16,18 @@ public class GraphicsBridge {
     public final static int VIDEO_RENDERER=3;
 
     // 先调用这个方法
-    public static native void selectRenderer(int rendererType);
+    public native void selectRenderer(int rendererType);
 
-    public static native void setWindowSurface(Surface surface);
+    public native void setWindowSurface(Surface surface);
 
-    public static native void setViewport(int x, int y, int width, int height);
+    public native void setViewport(int x, int y, int width, int height);
 
-    public static native void setPBufferSurface(int width,int height);
+    public native void setPBufferSurface(int width,int height);
 
-    public static native void draw();
+    public native void draw();
 
-    public static native void stop();
+    public native void destroy();
 
-    public static native void pause();
+    public native void pause();
 
 }
