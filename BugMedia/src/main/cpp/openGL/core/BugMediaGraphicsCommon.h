@@ -4,6 +4,9 @@
 
 #ifndef SLOWER_BUGMEDIAGRAPHICSCOMMON_H
 #define SLOWER_BUGMEDIAGRAPHICSCOMMON_H
+
+#define DEBUGAPP
+
 #include <android/log.h>
 #define TAG "BugMediaOutput"
 #define  LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)

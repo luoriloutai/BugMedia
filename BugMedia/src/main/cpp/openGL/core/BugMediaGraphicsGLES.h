@@ -57,6 +57,7 @@ public:
         void init(BugMediaGraphicsGLES::Shader *vertexShader,
                   BugMediaGraphicsGLES::Shader *fragmentShader);
 
+
     private:
         GLuint handler = 0;
         GLboolean isRelease = GL_FALSE;
@@ -100,15 +101,26 @@ public:
 
     void init();
 
+    void initShaders() {
+        pVertexShader->init();
+        pFragmentShader->init();
+
+    }
+
+    void initProgram(){
+        pProgram->init(pVertexShader,pFragmentShader);
+    }
 
 private:
+    Shader *pVertexShader = NULL;
+    Shader *pFragmentShader = NULL;
+    Program *pProgram = NULL;
 
     GLboolean checkGLError(const char *op);
 
     GLboolean isRelease = GL_FALSE;
-    Shader *pVertexShader = NULL;
-    Shader *pFragmentShader = NULL;
-    Program *pProgram = NULL;
+
+
 };
 
 

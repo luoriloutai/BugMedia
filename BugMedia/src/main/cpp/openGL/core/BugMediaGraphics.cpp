@@ -3,8 +3,8 @@
 //
 
 #include "BugMediaGraphics.h"
-#include <thread>
 #include "BugMediaGraphicsCommon.h"
+#include <thread>
 
 using namespace std;
 
@@ -29,34 +29,33 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 
 
 void BugMediaGraphics::draw() {
-
-
-    // 线程中不断绘制直至结束
+    // 虚方法
+    setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
     //
-    //std::thread drawingThread(&BugMediaGraphics::drawingFunction);// 调用类成员函数作为线程函数，要取函数地址
-    // 匿名函数方式,[]内为捕获列表，参数可以放在这里,在此范围内的函数就可以使用，调用不需加this->...
-    std::thread drawBackground([this] {
-        // 虚方法
-        setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
-        //
 
-        // 环境初始化
-        init();
+    //C语言的线程
+    pthread_create(&drawThread, NULL, drawBackground, this);
 
-        // 虚方法
-        prepareDraw();
-        //
+    ////
+    //    // C++11的thread，使用外部线程函数，不能在线程内初始化EGL，作废
+    //    thread drawThread(&BugMediaGraphics::drawingThreadFun, this,this);
 
-        //pGLES->activeProgram();
-
-        // 这里可能需要循环不断绘制
-        // 虚方法
-        startDraw();
-        //
-        pEGL->swapBuffers();
-        LOGD("绘制结束");
-        // 循环结束
-    });
+    //    //
+    //    // C++11的thread，使用内部匿名线程（lambda表达式），同样不能在线程内初始化EGL，作废
+    //    thread tDrawThread([this]{
+    //        pEGL->init();
+    //        pEGL->makeCurrent();
+    //
+    //        pGLES->init();
+    //        pGLES->activeProgram();
+    //        // 虚方法
+    //        prepareDraw();
+    //        // 虚方法
+    //        startDraw();
+    //        pEGL->swapBuffers();
+    //
+    //        LOGD("绘制结束");
+    //    });
 
 }
 
@@ -79,13 +78,45 @@ BugMediaGraphics::~BugMediaGraphics() {
     }
 }
 
-void BugMediaGraphics::init() {
-    pEGL->init();
-    pGLES->init();
-}
 
 void BugMediaGraphics::viewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
     glViewport(x, y, width, height);
+}
+
+// C线程执行函数,必须静态
+void *BugMediaGraphics::drawBackground(void *pVoid) {
+
+    BugMediaGraphics *graphics = (BugMediaGraphics *) pVoid;
+
+    graphics->pEGL->init();
+    graphics->pEGL->makeCurrent();
+    graphics->pGLES->init();
+    graphics->pGLES->activeProgram();
+    // 虚方法，不频繁变化的配置
+    graphics->prepareDraw();
+
+    // 虚方法，经常发生变化的配置和绘制过程
+    graphics->startDraw();
+    graphics->pEGL->swapBuffers();
+
+
+    LOGD("绘制结束");
+    return 0;
+}
+
+////
+// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
+void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
+    graphics->pEGL->init();
+    graphics->pEGL->makeCurrent();
+    graphics->pGLES->init();
+    graphics->pGLES->activeProgram();
+    // 虚方法，不频繁变化的配置
+    graphics->prepareDraw();
+
+    // 虚方法，经常发生变化的配置和绘制过程
+    graphics->startDraw();
+    graphics->pEGL->swapBuffers();
 }
 
 

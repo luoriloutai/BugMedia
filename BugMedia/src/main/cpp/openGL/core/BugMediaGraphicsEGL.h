@@ -33,6 +33,8 @@ public:
 
     EGLBoolean swapBuffers();
 
+    EGLBoolean makeCurrent();
+
     void release();
 
     ~BugMediaGraphicsEGL();
@@ -49,7 +51,7 @@ private:
     EGLBoolean isRelease = EGL_FALSE;
     EGLint width = 0;
     EGLint height = 0;
-    EGLint surfaceType = NONE_SURFACE;
+    surfaceTypeEnum surfaceType;
 
     EGLBoolean init(EGLContext sharedContext);
 };

@@ -53,7 +53,12 @@ void BugMediaGraphicsGLES::setShaderSource(const GLchar **const vertexShadersour
 }
 
 void BugMediaGraphicsGLES::activeProgram() {
+
     if (pProgram != NULL) {
+        if (pProgram->instance() == 0) {
+            LOGE("program未成功初始化，不能激活");
+            return;
+        }
         pProgram->active();
     }
 }
@@ -118,10 +123,16 @@ void BugMediaGraphicsGLES::drawElements(GLenum mode, GLsizei count, GLenum type,
 }
 
 void BugMediaGraphicsGLES::init() {
+#ifdef DEBUGAPP
+    LOGD("GLES初始化");
+#endif
     pVertexShader->init();
     pFragmentShader->init();
     pProgram->init(pVertexShader, pFragmentShader);
-    pProgram->active();
+    //pProgram->active();
+#ifdef DEBUGAPP
+    LOGD("GLES初始化结束");
+#endif
 }
 
 
@@ -154,25 +165,46 @@ void BugMediaGraphicsGLES::Shader::release() {
 }
 
 void BugMediaGraphicsGLES::Shader::init() {
+#ifdef DEBUGAPP
+    const char* shaderName=type == GL_VERTEX_SHADER ? "vertex" : "fragment";
+    LOGD("%s Shader创建开始\n", shaderName);
+
+#endif
     handler = glCreateShader(type);
+
     if (handler != 0) {
+#ifdef DEBUGAPP
+        LOGD("%s Shader创建完成 handler： %d\n", shaderName, handler);
+#endif
         glShaderSource(handler, 1, source, NULL);
+#ifdef DEBUGAPP
+        LOGD("%s Shader载入源码完成\n", shaderName);
+#endif
         glCompileShader(handler);
+
         GLint compiled = 0;
         glGetShaderiv(handler, GL_COMPILE_STATUS, &compiled);
         if (compiled == 0) {
-            LOGE("Could not compile shader %s:\n", type);
+#ifdef DEBUGAPP
+            LOGE("不能编译 %s shader:\n", shaderName);
             GLint infoLen = 0;
             glGetShaderiv(handler, GL_INFO_LOG_LENGTH, &infoLen);
             GLchar logInfo[infoLen];
             glGetShaderInfoLog(handler, infoLen, NULL, logInfo);
-            LOGE("%s", logInfo);
+            LOGE("%s Shader 编译错误信息：%s\n", shaderName, logInfo);
+#endif
             glDeleteShader(handler);
             handler = 0;
         }
-        throw "初始化着色器失败，着色器类型：" + type;
     }
+
+#ifdef DEBUGAPP
+LOGD("%s shader 初始化流程完成，具体错误信息参考日志\n",shaderName);
+#endif
+
 }
+
+
 
 
 //
@@ -180,8 +212,6 @@ void BugMediaGraphicsGLES::Shader::init() {
 //
 
 BugMediaGraphicsGLES::Program::Program() {
-
-
 }
 
 GLboolean BugMediaGraphicsGLES::Program::checkGLError(const char *op) {
@@ -210,6 +240,7 @@ BugMediaGraphicsGLES::Program::~Program() {
 }
 
 void BugMediaGraphicsGLES::Program::active() {
+
     glUseProgram(handler);
 }
 
@@ -219,7 +250,12 @@ GLuint BugMediaGraphicsGLES::Program::instance() {
 
 void BugMediaGraphicsGLES::Program::init(BugMediaGraphicsGLES::Shader *vertexShader,
                                          BugMediaGraphicsGLES::Shader *fragmentShader) {
-    handler = glCreateProgram();
+    LOGD("开始初始化program");
+    if ((handler = glCreateProgram()) == 0) {
+        LOGE("初始化program失败:%d", glGetError());
+    }
+
+
     if (handler != 0) {
         glAttachShader(handler, vertexShader->instance());
         if (!checkGLError("glAttachShader")) {
