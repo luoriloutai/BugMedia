@@ -15,6 +15,18 @@ public class GraphicsBridge {
     // 视频渲染器
     public final static int VIDEO_RENDERER=3;
 
+    public void draw(){
+        Thread drawingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+                beginDrawing();
+            }
+        });
+
+        drawingThread.start();
+    }
+
     // 先调用这个方法
     public native void selectRenderer(int rendererType);
 
@@ -22,12 +34,14 @@ public class GraphicsBridge {
 
     public native void setPBufferSurface(int width,int height);
 
-    public native void draw();
+    private native void beginDrawing();
 
     public native void destroy();
 
     public native void pause();
 
     public native void resize(int x,int y,int width,int height);
+
+    private native void init();
 
 }

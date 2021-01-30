@@ -89,7 +89,7 @@ Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jobject cl
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jobject clazz) {
+Java_com_bugmedia_media_GraphicsBridge_beginDrawing(JNIEnv *env, jobject clazz) {
 #ifdef DEBUGIT
 #else
     if (renderer != NULL) {
@@ -142,4 +142,10 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsBridge_resize(JNIEnv *env, jobject thiz, jint x, jint y, jint width, jint height) {
     renderer->resize(x,y,width,height);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_init(JNIEnv *env, jobject thiz) {
+    renderer->init();
 }

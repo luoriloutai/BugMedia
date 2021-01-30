@@ -70,12 +70,11 @@ void BugMediaTriangleRenderer::prepareDraw() {
     // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。由于数据在数组的开头，所以这里是(viod*)0。
     GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE,sizeof(vertexCoords),vertexCoords,(void*)0);
 
-    //setViewPort(50, 50, 800, 800);
 
     // 初始化背景色
     pGLES->enable(GL_BLEND);
     pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     pGLES->clearColor(0.643, 0.776, 0.223, 1.0);
-    //pGLES->activeProgram();
+
 }
 

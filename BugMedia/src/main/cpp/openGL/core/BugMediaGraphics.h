@@ -47,6 +47,8 @@ public:
 
     void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
+    void init();
+
 protected:
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsGLES *pGLES = NULL;
@@ -58,7 +60,7 @@ private:
     // 绘制前准备工作：设置shader里的变量值、配置各种在绘制时不变的信息
     virtual void prepareDraw() = 0;
 
-    // 开始绘制
+    // 开始绘制，此方法不断渲染直至收到结束信号
     virtual void startDraw() = 0;
 
     GLboolean isRelease = GL_FALSE;
@@ -71,6 +73,15 @@ private:
     pthread_t drawThread;
     pthread_mutex_t tMutex;
     pthread_cond_t tCond;
+
+    enum State{
+        STOP,
+        PAUSE,
+        RUNNING
+    };
+
+    State runState=STOP;
+
 
 };
 
