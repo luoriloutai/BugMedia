@@ -9,9 +9,11 @@
 
 
 class BugMediaBitmapRenderer : public BugMediaGraphicsBaseRenderer {
-    void setShader();
+    void setShaderSource();
 
-    void onDraw();
+    void prepareDraw();
+
+    void startDraw();
 
 };
 

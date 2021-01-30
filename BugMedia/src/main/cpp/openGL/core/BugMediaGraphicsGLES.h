@@ -25,7 +25,7 @@ class BugMediaGraphicsGLES {
 public:
     class Shader {
     public:
-        Shader(GLenum type, const GLchar *const *source);
+        Shader(GLenum type, const GLchar *source);
 
         ~Shader();
 
@@ -38,7 +38,7 @@ public:
     private:
         GLuint handler = 0;
         GLenum type = NULL;
-        const GLchar *const *source = NULL;
+        const GLchar *source = NULL;
         GLboolean isRelease = GL_FALSE;
     };
 
@@ -69,7 +69,7 @@ public:
 
     void release();
 
-    void setShaderSource(const GLchar **const vertexShadersource, const GLchar **const fragmentShadersource);
+    void setShaderSource(const GLchar * vertexShadersource, const GLchar * fragmentShadersource);
 
     void activeProgram();
 

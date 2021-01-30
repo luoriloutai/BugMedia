@@ -11,16 +11,16 @@ void BugMediaTriangleRenderer::setShaderSource() {
     // 如果要配置着色器数据，请在prepareDraw()中编写代码。
     //
 
-    const char *vertextShaderSource = "attribute vec4 aPosition;"
-                                      "void main() {"
-                                      "  gl_Position = aPosition;"
-                                      "}";
-    const char *fragShaderSource = "precision mediump float;"
-                                   "void main() {"
-                                   "  gl_FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
-                                   "}";
+    const GLchar *vertextShaderSource = "attribute vec4 aPosition;\n"
+                                        "void main(){\n"
+                                        "  gl_Position = aPosition;\n"
+                                        "}";
+    const GLchar *fragShaderSource = "precision mediump float;\n"
+                                     "void main(){\n"
+                                     " gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
+                                     "}";
 
-    this->pGLES->setShaderSource(&vertextShaderSource, &fragShaderSource);
+    this->pGLES->setShaderSource(vertextShaderSource, fragShaderSource);
 }
 
 void BugMediaTriangleRenderer::startDraw() {

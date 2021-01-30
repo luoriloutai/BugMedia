@@ -44,8 +44,8 @@ GLboolean BugMediaGraphicsGLES::checkGLError(const char *op) {
 }
 
 
-void BugMediaGraphicsGLES::setShaderSource(const GLchar **const vertexShadersource,
-                                           const GLchar **const fragmentShadersource) {
+void BugMediaGraphicsGLES::setShaderSource(const GLchar * vertexShadersource,
+                                           const GLchar * fragmentShadersource) {
 
     pVertexShader = new Shader(GL_VERTEX_SHADER, vertexShadersource);
     pFragmentShader = new Shader(GL_FRAGMENT_SHADER, fragmentShadersource);
@@ -140,7 +140,7 @@ void BugMediaGraphicsGLES::init() {
 // Shader
 //
 
-BugMediaGraphicsGLES::Shader::Shader(GLenum shaderType, const GLchar *const *source) {
+BugMediaGraphicsGLES::Shader::Shader(GLenum shaderType, const GLchar *source) {
     this->type = shaderType;
     this->source = source;
 
@@ -176,9 +176,11 @@ void BugMediaGraphicsGLES::Shader::init() {
 #ifdef DEBUGAPP
         LOGD("%s Shader创建完成 handler： %d\n", shaderName, handler);
 #endif
-        glShaderSource(handler, 1, source, NULL);
+        glShaderSource(handler, 1, &source, NULL);
 #ifdef DEBUGAPP
-        LOGD("%s Shader载入源码完成\n", shaderName);
+        LOGD("%s Shader载入源码完成:\n", shaderName);
+
+        LOGD("%s",source);
 #endif
         glCompileShader(handler);
 
