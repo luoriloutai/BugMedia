@@ -50,18 +50,18 @@ void BugMediaTriangleRenderer::prepareDraw() {
             0, 1.0
     };
 
-//    GLsizeiptr vertexSize = sizeof(vertexCoords);
-//    GLsizeiptr eleSize = sizeof(GLfloat);
-//    // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
-//    configVertex(2, vertexSize, eleSize);
-//    pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, vertexCoords);
-//
-//    //glViewport(0,0,500,300);
-//    viewPort(0, 0, 500, 300);
-//
-//    // 初始化背景色
-//    pGLES->enable(GL_BLEND);
-//    pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    pGLES->clearColor(0.643f, 0.776f, 0.223f, 1.0f);
+    GLsizeiptr vertexSize = sizeof(vertexCoords);
+    GLsizeiptr eleSize = sizeof(GLfloat);
+    // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
+    configVertex(2, vertexSize, eleSize);
+    pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, vertexCoords);
+
+    //glViewport(0,0,500,300);
+    viewPort(0, 0, 500, 300);
+
+    // 初始化背景色
+    pGLES->enable(GL_BLEND);
+    pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    pGLES->clearColor(0.643, 0.776, 0.223, 1.0);
 }
 
