@@ -45,17 +45,18 @@ public:
 
     void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
+    void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
 protected:
-     BugMediaGraphicsEGL *pEGL = NULL;
-     BugMediaGraphicsGLES *pGLES = NULL;
+    BugMediaGraphicsEGL *pEGL = NULL;
+    BugMediaGraphicsGLES *pGLES = NULL;
 
 private:
     // 设置Shader代码
     virtual void setShaderSource() = 0;
 
     // 绘制前准备工作：设置shader里的变量值、配置各种在绘制时不变的信息
-    virtual void prepareDraw()=0 ;
+    virtual void prepareDraw() = 0;
 
     // 开始绘制
     virtual void startDraw() = 0;
@@ -63,8 +64,10 @@ private:
     GLboolean isRelease = GL_FALSE;
 
     // C的线程函数，必须为静态
-    static void* drawBackground(void * pVoid);
-    void drawingThreadFun(BugMediaGraphics * graphics);
+    static void *drawBackground(void *pVoid);
+
+    void drawingThreadFun(BugMediaGraphics *graphics);
+
     pthread_t drawThread;
     pthread_mutex_t tMutex;
     pthread_cond_t tCond;

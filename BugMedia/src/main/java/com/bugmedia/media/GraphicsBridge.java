@@ -28,4 +28,6 @@ public class GraphicsBridge {
 
     public native void pause();
 
+    public native void resize(int x,int y,int width,int height);
+
 }

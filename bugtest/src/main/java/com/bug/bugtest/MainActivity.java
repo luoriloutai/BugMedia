@@ -19,9 +19,8 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
 
-
-    GraphicsBridge graphicsBridge=new GraphicsBridge();
-    SurfaceHolder holder=null;
+    GraphicsBridge graphicsBridge = new GraphicsBridge();
+    SurfaceHolder holder = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
+                graphicsBridge.resize(0, 0, i1, i2);
             }
 
             @Override
@@ -96,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 */
-
 
 
     }

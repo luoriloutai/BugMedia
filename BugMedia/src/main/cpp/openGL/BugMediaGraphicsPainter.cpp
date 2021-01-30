@@ -138,3 +138,8 @@ Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jobject clazz) {
 #endif
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_resize(JNIEnv *env, jobject thiz, jint x, jint y, jint width, jint height) {
+    renderer->resize(x,y,width,height);
+}

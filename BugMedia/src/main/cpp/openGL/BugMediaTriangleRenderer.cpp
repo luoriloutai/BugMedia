@@ -53,16 +53,24 @@ void BugMediaTriangleRenderer::prepareDraw() {
     GLfloat vertexCoords[] = {
             -1.0, -1.0,
             1.0, -1.0,
-            0, 1.0
+            0.0, 1.0
     };
 
     GLsizeiptr vertexSize = sizeof(vertexCoords);
     GLsizeiptr eleSize = sizeof(GLfloat);
     // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
     configVertex(2, vertexSize, eleSize);
-    GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, vertexDim, vertexCoords);
 
-    setViewPort(50, 50, 800, 800);
+
+    // 第一个参数是顶点着色器中的量的名字
+    // 第二个参数表示一个点由几个元素构成
+    // 第三个参数是坐标数组元素的数组类型
+    // 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
+    // 第五个参数数组字节大小
+    // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。由于数据在数组的开头，所以这里是(viod*)0。
+    GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE,sizeof(vertexCoords),vertexCoords,(void*)0);
+
+    //setViewPort(50, 50, 800, 800);
 
     // 初始化背景色
     pGLES->enable(GL_BLEND);
