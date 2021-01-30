@@ -50,8 +50,8 @@ GLboolean BugMediaGraphicsGLES::checkGLError(const char *op) {
 }
 
 
-void BugMediaGraphicsGLES::setShaderSource(const GLchar * vertexShadersource,
-                                           const GLchar * fragmentShadersource) {
+void BugMediaGraphicsGLES::setShaderSource(const GLchar *vertexShadersource,
+                                           const GLchar *fragmentShadersource) {
 
     pVertexShader = new Shader(GL_VERTEX_SHADER, vertexShadersource);
     pFragmentShader = new Shader(GL_FRAGMENT_SHADER, fragmentShadersource);
@@ -87,6 +87,9 @@ BugMediaGraphicsGLES::setVertexAttribArray(const GLchar *name, GLint vertexDim, 
 //    glBufferData(GL_ARRAY_BUFFER, vertexSize, vertexCoords, GL_STATIC_DRAW);
 
     GLuint attribPosition = glGetAttribLocation(pProgram->instance(), name);
+#ifdef DEBUGAPP
+    LOGD("location:%d", attribPosition);
+#endif
 
     // 告诉OpenGL该如何解析顶点数据,为着色器属性变量设置值。
     // 该方法将从顶点缓冲区中获取数据，具体是哪个缓冲区取决于之前绑定的缓冲区
@@ -98,8 +101,15 @@ BugMediaGraphicsGLES::setVertexAttribArray(const GLchar *name, GLint vertexDim, 
     // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。由于位置数据在数组的开头，所以这里是0。
     //glVertexAttribPointer(aPosition, vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, (void *) 0);
     glVertexAttribPointer(attribPosition, vertexDim, eleType, normalized, stride, pointer);
+
+#ifdef DEBUGAPP
+    LOGD("vertexDim:%d,stride:%d", vertexDim, stride);
+#endif
     // 启用顶点属性变量，默认是禁止的
     glEnableVertexAttribArray(attribPosition);
+#ifdef DEBUGAPP
+    LOGD("变量启用完毕");
+#endif
 
     return attribPosition;
 }
@@ -121,10 +131,12 @@ void BugMediaGraphicsGLES::clear(GLbitfield mask) {
 }
 
 void BugMediaGraphicsGLES::drawArrays(GLenum mode, GLint first, GLsizei count) {
+    setViewport(viewport);
     glDrawArrays(mode, first, count);
 }
 
 void BugMediaGraphicsGLES::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices) {
+    setViewport(viewport);
     glDrawElements(mode, count, type, indices);
 }
 
@@ -141,11 +153,32 @@ void BugMediaGraphicsGLES::init() {
 #endif
 }
 
+void BugMediaGraphicsGLES::resize(GLint x, GLint y, GLint width, GLint height) {
+    viewport.x = x;
+    viewport.y = y;
+    viewport.width = width;
+    viewport.height = height;
+
+
+}
+
+void BugMediaGraphicsGLES::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+    viewport.x=x;
+    viewport.y=y;
+    viewport.width=width;
+    viewport.height=height;
+}
+
+void BugMediaGraphicsGLES::setViewport(BugMediaGraphicsGLES::Viewport v) {
+    glViewport(v.x, v.y, v.width, v.height);
+}
+
 
 //
 // Shader
 //
 
+// 这里字符串source要传指针，不能是指针的指针。
 BugMediaGraphicsGLES::Shader::Shader(GLenum shaderType, const GLchar *source) {
     this->type = shaderType;
     this->source = source;
@@ -165,22 +198,22 @@ BugMediaGraphicsGLES::Shader::~Shader() {
 void BugMediaGraphicsGLES::Shader::release() {
     if (!isRelease) {
 #ifdef DEBUGAPP
-        const GLchar * shaderName=type==GL_VERTEX_SHADER?"vertex":"fragment";
-        LOGD("%s shader 开始释放资源",shaderName);
+        const GLchar *shaderName = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
+        LOGD("%s shader 开始释放资源", shaderName);
 #endif
         glDeleteShader(handler);
         isRelease = GL_TRUE;
 
     }
 #ifdef DEBUGAPP
-    const GLchar * shaderName=type==GL_VERTEX_SHADER?"vertex":"fragment";
-    LOGD("%s shader 释放资源完毕",shaderName);
+    const GLchar *shaderName = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
+    LOGD("%s shader 释放资源完毕", shaderName);
 #endif
 }
 
 void BugMediaGraphicsGLES::Shader::init() {
 #ifdef DEBUGAPP
-    const char* shaderName=type == GL_VERTEX_SHADER ? "vertex" : "fragment";
+    const char *shaderName = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
     LOGD("%s Shader创建开始\n", shaderName);
 
 #endif
@@ -192,7 +225,7 @@ void BugMediaGraphicsGLES::Shader::init() {
 #endif
         glShaderSource(handler, 1, &source, NULL);
 #ifdef DEBUGAPP
-        LOGD("%s Shader载入源码完成:\n%s", shaderName,source);
+        LOGD("%s Shader载入源码完成:\n%s", shaderName, source);
 #endif
         glCompileShader(handler);
 
@@ -213,7 +246,7 @@ void BugMediaGraphicsGLES::Shader::init() {
     }
 
 #ifdef DEBUGAPP
-LOGD("%s shader 初始化流程完成，如有错误参考前面信息\n",shaderName);
+    LOGD("%s shader 初始化流程完成，如有错误参考前面信息\n", shaderName);
 #endif
 
 }

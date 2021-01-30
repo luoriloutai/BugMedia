@@ -43,7 +43,7 @@ public:
 
     void draw();
 
-    void viewPort(GLint x, GLint y, GLsizei width, GLsizei height);
+    void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
 
 protected:

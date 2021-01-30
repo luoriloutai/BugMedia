@@ -51,7 +51,7 @@ private:
     EGLBoolean isRelease = EGL_FALSE;
     EGLint width = 0;
     EGLint height = 0;
-    surfaceTypeEnum surfaceType;
+    surfaceTypeEnum surfaceType=NONE_SURFACE;
 
     EGLBoolean init(EGLContext sharedContext);
 };

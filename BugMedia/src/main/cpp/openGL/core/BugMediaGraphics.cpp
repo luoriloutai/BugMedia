@@ -83,8 +83,8 @@ BugMediaGraphics::~BugMediaGraphics() {
 }
 
 
-void BugMediaGraphics::viewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
-    glViewport(x, y, width, height);
+void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
+    pGLES->setViewport(x,y,width,height);
 }
 
 // C线程执行函数,必须静态
@@ -111,16 +111,16 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 ////
 // 使用C++11的thread时，EGL不能在线程函数里初始化，作废
 void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
-    graphics->pEGL->init();
-    graphics->pEGL->makeCurrent();
-    graphics->pGLES->init();
-    graphics->pGLES->activeProgram();
-    // 虚方法，不频繁变化的配置
-    graphics->prepareDraw();
-
-    // 虚方法，经常发生变化的配置和绘制过程
-    graphics->startDraw();
-    graphics->pEGL->swapBuffers();
+//    graphics->pEGL->init();
+//    graphics->pEGL->makeCurrent();
+//    graphics->pGLES->init();
+//    graphics->pGLES->activeProgram();
+//    // 虚方法，不频繁变化的配置
+//    graphics->prepareDraw();
+//
+//    // 虚方法，经常发生变化的配置和绘制过程
+//    graphics->startDraw();
+//    graphics->pEGL->swapBuffers();
 }
 
 

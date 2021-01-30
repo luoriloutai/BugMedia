@@ -213,3 +213,4 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
 #endif
     return EGL_TRUE;
 }
+

@@ -106,9 +106,14 @@ Java_com_bugmedia_media_GraphicsBridge_selectRenderer(JNIEnv *env, jobject clazz
 #else
     initRenderer(rendererType);
     if (renderer==NULL){
-        LOGE("初始化渲染器失败");
+        throw "初始化渲染器失败";
+
+#ifdef DEBUGAPP
+
+#endif
+        LOGD("渲染器初始化成功");
     }
-    LOGD("渲染器初始化成功");
+
 #endif
 }
 

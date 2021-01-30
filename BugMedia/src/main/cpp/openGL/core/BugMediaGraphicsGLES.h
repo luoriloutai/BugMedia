@@ -23,6 +23,7 @@ extern "C"
 class BugMediaGraphicsGLES {
 
 public:
+    // 着色器，供渲染程序使用
     class Shader {
     public:
         Shader(GLenum type, const GLchar *source);
@@ -42,6 +43,7 @@ public:
         GLboolean isRelease = GL_FALSE;
     };
 
+    // 渲染程序
     class Program {
     public:
         Program();
@@ -65,11 +67,23 @@ public:
         GLboolean checkGLError(const char *op);
     };
 
+    // 视野
+    struct Viewport {
+        // x轴方向的偏移量
+        GLint x = 0;
+        // y轴方向的偏移量
+        GLint y = 0;
+        // 宽度。默认300
+        GLsizei width = 300;
+        // 高度。默认300
+        GLsizei height = 300;
+    };
+
     BugMediaGraphicsGLES();
 
     void release();
 
-    void setShaderSource(const GLchar * vertexShadersource, const GLchar * fragmentShadersource);
+    void setShaderSource(const GLchar *vertexShadersource, const GLchar *fragmentShadersource);
 
     void activeProgram();
 
@@ -101,20 +115,17 @@ public:
 
     void init();
 
-    void initShaders() {
-        pVertexShader->init();
-        pFragmentShader->init();
+    void setViewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
-    }
-
-    void initProgram(){
-        pProgram->init(pVertexShader,pFragmentShader);
-    }
+    void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
 private:
     Shader *pVertexShader = NULL;
     Shader *pFragmentShader = NULL;
     Program *pProgram = NULL;
+    Viewport viewport;
+
+    void setViewport(Viewport v);
 
     GLboolean checkGLError(const char *op);
 
