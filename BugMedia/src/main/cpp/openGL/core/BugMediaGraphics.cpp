@@ -40,14 +40,11 @@ void BugMediaGraphics::draw() {
     pEGL->swapBuffers();
 
     ////^^^^
-    //  以下方式作废，原因是多个对象不能使线程互不干扰
+    //  以下方式作废，采用将线程开启在Java端
     //    // 虚方法
     //    setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
     //    //
     //
-    //    //C语言的线程，对线程函数有要求，要求必须是静态的，且返回类型为void*
-    //    // 这在对象里使用多线程会出现错乱, 因此决定将线程启动放在java端，
-    //    // 一个对象一个线程，互不干扰
     //    pthread_create(&drawThread, NULL, drawBackground, this);
 
     ////^^^^
@@ -101,10 +98,7 @@ void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei heig
     pGLES->setViewport(x, y, width, height);
 }
 
-// C线程执行函数,必须静态，且返回类型为void*,
-// 由于方法是静态的，所有对象共享一个，那么
-// 当多个对象都启用线程后调用的都是这一个方法，势必会产生竞态,
-// 这样就不能创建多个对象使用了。决定将线程启动放在Java端。该方法没有继续编写下去的必要。
+// C线程执行函数,必须静态，且返回类型为void*
 void *BugMediaGraphics::drawBackground(void *pVoid) {
 
     BugMediaGraphics *graphics = (BugMediaGraphics *) pVoid;
