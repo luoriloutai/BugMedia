@@ -6,7 +6,6 @@
 #include "BugMediaGraphicsCommon.h"
 
 
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -115,26 +114,30 @@ void BugMediaGraphicsEGL::release() {
 #ifdef DEBUGAPP
     LOGD("EGL开始释放资源");
 #endif
+    if (!isRelease) {
+        if (window != NULL) {
+            ANativeWindow_release(window);
+            window = NULL;
+        }
+        if (windowSurface != EGL_NO_SURFACE) {
+            eglDestroySurface(display, windowSurface);
+            windowSurface = EGL_NO_SURFACE;
+        }
+        if (PBufferSurface != EGL_NO_SURFACE) {
+            eglDestroySurface(display, PBufferSurface);
+            PBufferSurface = EGL_NO_SURFACE;
+        }
 
-    if (window != NULL) {
-        ANativeWindow_release(window);
-        window=NULL;
-    }
-    if (windowSurface != EGL_NO_SURFACE) {
-        eglDestroySurface(display, windowSurface);
-        windowSurface = EGL_NO_SURFACE;
-    }
-    if (PBufferSurface != EGL_NO_SURFACE) {
-        eglDestroySurface(display, PBufferSurface);
-        PBufferSurface = EGL_NO_SURFACE;
-    }
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglDestroyContext(display, context);
 
-    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    eglDestroyContext(display, context);
-
-    display = EGL_NO_DISPLAY;
-    context = EGL_NO_CONTEXT;
-    isRelease = EGL_TRUE;
+        display = EGL_NO_DISPLAY;
+        context = EGL_NO_CONTEXT;
+        isRelease = EGL_TRUE;
+    }
+#ifdef DEBUGAPP
+    LOGD("EGL资源释放完毕");
+#endif
 
 }
 
@@ -172,17 +175,17 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
             return EGL_FALSE;
         }
 #ifdef DEBUGAPP
-LOGD("之前的Surface是否为空 %s",windowSurface==NULL?"是":"否");
+        LOGD("makeCurrent()之前的Surface是否为空: %s", windowSurface == NULL ? "是" : "否");
 #endif
         ANativeWindow_setBuffersGeometry(window, 0, 0, format);
         if (!(windowSurface = eglCreateWindowSurface(display, config, window, 0))) {
             LOGE("eglCreateWindowSurface() returned error %d", eglGetError());
             return EGL_FALSE;
         }
-#ifdef DEBUGAPPAPP
-LOGD("执行Surface创建，是否为空 %s",windowSurface==NULL?"是":"否");
-        LOGD("display是否为空 %s",display==NULL?"是":"否");
-        LOGD("context是否为空 %s",context==NULL?"是":"否");
+#ifdef DEBUGAPP
+        LOGD("执行Surface创建，是否为空:%s", windowSurface == NULL ? "是" : "否");
+        LOGD("display是否为空 %s", display == NULL ? "是" : "否");
+        LOGD("context是否为空 %s", context == NULL ? "是" : "否");
 #endif
         if (!eglMakeCurrent(display, windowSurface, windowSurface, context)) {
             LOGE("eglMakeCurrent() error:%s\n", eglGetError());

@@ -71,7 +71,9 @@ void BugMediaGraphics::release() {
 
         isRelease = GL_TRUE;
     }
-
+#ifdef DEBUGAPP
+    LOGD("Graphics释放资源完毕");
+#endif
 }
 
 BugMediaGraphics::~BugMediaGraphics() {

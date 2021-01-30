@@ -28,7 +28,9 @@ void BugMediaGraphicsGLES::release() {
 
         isRelease = GL_TRUE;
     }
-
+#ifdef DEBUGAPP
+    LOGD("GLES释放资源完毕");
+#endif
 }
 
 BugMediaGraphicsGLES::~BugMediaGraphicsGLES() {
@@ -135,7 +137,7 @@ void BugMediaGraphicsGLES::init() {
     pProgram->init(pVertexShader, pFragmentShader);
     //pProgram->active();
 #ifdef DEBUGAPP
-    LOGD("GLES初始化结束");
+    LOGD("GLES初始化完毕");
 #endif
 }
 
@@ -163,13 +165,17 @@ BugMediaGraphicsGLES::Shader::~Shader() {
 void BugMediaGraphicsGLES::Shader::release() {
     if (!isRelease) {
 #ifdef DEBUGAPP
-        const GLchar * shaderName=type==GL_VERTEX_SHADER?"vertex shader":"fragment shader";
+        const GLchar * shaderName=type==GL_VERTEX_SHADER?"vertex":"fragment";
         LOGD("%s shader 开始释放资源",shaderName);
 #endif
         glDeleteShader(handler);
         isRelease = GL_TRUE;
 
     }
+#ifdef DEBUGAPP
+    const GLchar * shaderName=type==GL_VERTEX_SHADER?"vertex":"fragment";
+    LOGD("%s shader 释放资源完毕",shaderName);
+#endif
 }
 
 void BugMediaGraphicsGLES::Shader::init() {
@@ -186,9 +192,7 @@ void BugMediaGraphicsGLES::Shader::init() {
 #endif
         glShaderSource(handler, 1, &source, NULL);
 #ifdef DEBUGAPP
-        LOGD("%s Shader载入源码完成:\n", shaderName);
-
-        LOGD("%s",source);
+        LOGD("%s Shader载入源码完成:\n%s", shaderName,source);
 #endif
         glCompileShader(handler);
 
@@ -209,7 +213,7 @@ void BugMediaGraphicsGLES::Shader::init() {
     }
 
 #ifdef DEBUGAPP
-LOGD("%s shader 初始化流程完成，具体错误信息参考日志\n",shaderName);
+LOGD("%s shader 初始化流程完成，如有错误参考前面信息\n",shaderName);
 #endif
 
 }
@@ -243,7 +247,9 @@ void BugMediaGraphicsGLES::Program::release() {
         isRelease = GL_TRUE;
     }
 
-
+#ifdef DEBUGAPP
+    LOGD("program 释放资源完毕");
+#endif
 }
 
 BugMediaGraphicsGLES::Program::~Program() {
