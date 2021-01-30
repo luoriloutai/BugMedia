@@ -41,7 +41,7 @@ public:
 
     virtual ~BugMediaGraphics(); // 防止多态性导致的子类析构函数不执行。有虚方法的类的析构函数一般应定义为虚析构函数
 
-    void draw();
+    void draw(GLboolean repeat);
 
     void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
@@ -71,6 +71,15 @@ private:
     pthread_t drawThread;
     pthread_mutex_t tMutex;
     pthread_cond_t tCond;
+
+    enum State{
+        STOP,
+        PAUSE,
+        RUNNING
+    };
+
+    State runState=RUNNING;
+    GLboolean repeat=GL_FALSE;
 
 };
 
