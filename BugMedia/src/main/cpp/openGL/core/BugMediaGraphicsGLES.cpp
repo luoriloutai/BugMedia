@@ -269,9 +269,15 @@ GLuint BugMediaGraphicsGLES::Program::instance() {
 
 void BugMediaGraphicsGLES::Program::init(BugMediaGraphicsGLES::Shader *vertexShader,
                                          BugMediaGraphicsGLES::Shader *fragmentShader) {
+
+#ifdef DEBUGAPP
     LOGD("开始初始化program");
+#endif
     if ((handler = glCreateProgram()) == 0) {
+#ifdef DEBUGAPP
         LOGE("初始化program失败:%d", glGetError());
+#endif
+        return;
     }
 
 
@@ -280,10 +286,16 @@ void BugMediaGraphicsGLES::Program::init(BugMediaGraphicsGLES::Shader *vertexSha
         if (!checkGLError("glAttachShader")) {
             throw "附加顶点着色器失败";
         }
+#ifdef DEBUGAPP
+        LOGD("附加vertex shader成功");
+#endif
         glAttachShader(handler, fragmentShader->instance());
         if (!checkGLError("glAttachShader")) {
             throw "附加片元着色器失败";
         }
+#ifdef DEBUGAPP
+        LOGD("附加fragment shader成功");
+#endif
         glLinkProgram(handler);
         GLint linkStatus = 0;
         glGetProgramiv(handler, GL_LINK_STATUS, &linkStatus);
@@ -298,5 +310,12 @@ void BugMediaGraphicsGLES::Program::init(BugMediaGraphicsGLES::Shader *vertexSha
             handler = 0;
             throw "绘制程序初始化失败";
         }
+#ifdef DEBUGAPP
+        LOGD("链接program成功");
+#endif
     }
+
+#ifdef DEBUGAPP
+    LOGD("program初始化完毕");
+#endif
 }

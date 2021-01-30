@@ -14,7 +14,7 @@
         android:id="@+id/playerView3"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:background="@color/design_default_color_secondary" />
+        />
 
     <!--            <android.opengl.GLSurfaceView-->
     <!--                android:id="@+id/playerView2"-->
