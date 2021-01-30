@@ -22,8 +22,7 @@ public class GraphicsBridge {
 
     public native void setPBufferSurface(int width,int height);
 
-    // repeat:是否重复绘制，用于不间断绘制
-    public native void draw(boolean repeat);
+    public native void draw();
 
     public native void destroy();
 

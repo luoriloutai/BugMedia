@@ -27,21 +27,6 @@ void BugMediaTriangleRenderer::startDraw() {
 #ifdef DEBUGAPP
     LOGD("startDraw开始");
 #endif
-    // 下面这句很重要，没有这句屏幕一直闪
-    pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // 模式、在数组中的偏移、顶点数
-    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
-#ifdef DEBUGAPP
-    LOGD("顶点数:%d",vertexCount);
-#endif
-}
-
-void BugMediaTriangleRenderer::prepareDraw() {
-#ifdef DEBUGAPP
-    LOGD("prepareDraw开始");
-#endif
-
-    // 在绘制之前的操作在这里编写
 
     //
     // 顶点(x,y,z,w)，三维空间只有三维，最后一位是齐次坐标，将前面的三个量分别除以最后一个量得出
@@ -76,6 +61,17 @@ void BugMediaTriangleRenderer::prepareDraw() {
     pGLES->enable(GL_BLEND);
     pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     pGLES->clearColor(0.643, 0.776, 0.223, 1.0);
-    //pGLES->activeProgram();
+
+
+    // 下面这句很重要，没有这句屏幕一直闪
+    pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // 模式、在数组中的偏移、顶点数
+    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+    pEGL->swapBuffers();
+#ifdef DEBUGAPP
+    LOGD("顶点数:%d",vertexCount);
+#endif
 }
+
+
 

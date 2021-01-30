@@ -89,11 +89,11 @@ Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jobject cl
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jobject clazz,jboolean repeat) {
+Java_com_bugmedia_media_GraphicsBridge_draw(JNIEnv *env, jobject clazz) {
 #ifdef DEBUGIT
 #else
     if (renderer != NULL) {
-        renderer->draw(repeat);
+        renderer->draw();
     }
 #endif
 }

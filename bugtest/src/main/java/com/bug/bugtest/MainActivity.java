@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
                 graphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
                 graphicsBridge.setWindowSurface(surfaceHolder.getSurface());
-                graphicsBridge.draw(true);
+                graphicsBridge.draw();
             }
 
             @Override

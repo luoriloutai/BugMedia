@@ -41,7 +41,7 @@ public:
 
     virtual ~BugMediaGraphics(); // 防止多态性导致的子类析构函数不执行。有虚方法的类的析构函数一般应定义为虚析构函数
 
-    void draw(GLboolean repeat);
+    void draw();
 
     void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
@@ -55,9 +55,6 @@ private:
     // 设置Shader代码
     virtual void setShaderSource() = 0;
 
-    // 绘制前准备工作：设置shader里的变量值、配置各种在绘制时不变的信息
-    virtual void prepareDraw() = 0;
-
     // 开始绘制
     virtual void startDraw() = 0;
 
@@ -66,20 +63,10 @@ private:
     // C的线程函数，必须为静态
     static void *drawBackground(void *pVoid);
 
-    void drawingThreadFun(BugMediaGraphics *graphics);
+    //void drawingThreadFun(BugMediaGraphics *graphics);
 
     pthread_t drawThread;
-    pthread_mutex_t tMutex;
-    pthread_cond_t tCond;
 
-    enum State{
-        STOP,
-        PAUSE,
-        RUNNING
-    };
-
-    State runState=RUNNING;
-    GLboolean repeat=GL_FALSE;
 
 };
 

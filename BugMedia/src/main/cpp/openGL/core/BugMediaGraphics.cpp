@@ -29,8 +29,7 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 }
 
 
-void BugMediaGraphics::draw(GLboolean repeat) {
-    this->repeat = repeat;
+void BugMediaGraphics::draw() {
     // 虚方法
     setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
     //
@@ -71,9 +70,6 @@ void BugMediaGraphics::release() {
         delete pEGL;
         pEGL = NULL;
 
-        pthread_mutex_destroy(&tMutex);
-        pthread_cond_destroy(&tCond);
-
         isRelease = GL_TRUE;
     }
 #ifdef DEBUGAPP
@@ -101,51 +97,19 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
     graphics->pEGL->makeCurrent();
     graphics->pGLES->init();
     graphics->pGLES->activeProgram();
-    // 虚方法，不频繁变化的配置
-    graphics->prepareDraw();
 
+    // 虚方法
+    graphics->startDraw();
 
-    GLboolean run = true;
-    while (run) {
-        pthread_mutex_lock(&graphics->tMutex);
-
-        switch (graphics->runState) {
-            case RUNNING:
-                // 虚方法，经常发生变化的配置和绘制过程
-                graphics->startDraw();
-                graphics->pEGL->swapBuffers();
-                usleep(100 * 1000);
-//                if (false) {
-//                    run = GL_FALSE;
-//                }
-                break;
-            case PAUSE:
-                pthread_cond_wait(&graphics->tCond, &graphics->tMutex);
-                break;
-            case STOP:
-                run = GL_FALSE;
-                break;
-            default:
-                run = GL_FALSE;
-                break;
-
-        }
-        pthread_mutex_unlock(&graphics->tMutex);
-
-        if (!graphics->repeat) {
-            break;
-        }
-
-    }
 #ifdef DEBUGAPP
     LOGD("绘制结束");
 #endif
     return 0;
 }
 
-////
-// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
-void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
+//////
+//// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
+//void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
 //    graphics->pEGL->init();
 //    graphics->pEGL->makeCurrent();
 //    graphics->pGLES->init();
@@ -156,7 +120,7 @@ void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
 //    // 虚方法，经常发生变化的配置和绘制过程
 //    graphics->startDraw();
 //    graphics->pEGL->swapBuffers();
-}
+//}
 
 void BugMediaGraphics::resize(GLint x, GLint y, GLsizei width, GLsizei height) {
     pGLES->resize(x, y, width, height);

@@ -10,8 +10,6 @@ class BugMediaTriangleRenderer: public BugMediaGraphicsBaseRenderer {
 
     void setShaderSource();
 
-    void prepareDraw();
-
     void startDraw();
 
 };
