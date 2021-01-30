@@ -60,7 +60,9 @@ void BugMediaGraphics::draw() {
 }
 
 void BugMediaGraphics::release() {
-    LOGD("开始释放资源");
+#ifdef DEBUGAPP
+    LOGD("Graphics开始释放资源");
+#endif
     if (!isRelease) {
         delete pGLES;
         pGLES = NULL;

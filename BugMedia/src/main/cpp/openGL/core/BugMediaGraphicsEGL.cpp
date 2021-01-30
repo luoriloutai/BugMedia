@@ -112,21 +112,28 @@ void BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) {
 }
 
 void BugMediaGraphicsEGL::release() {
+#ifdef DEBUGAPP
+    LOGD("EGL开始释放资源");
+#endif
+
     if (window != NULL) {
         ANativeWindow_release(window);
+        window=NULL;
     }
-    if (windowSurface != NULL) {
+    if (windowSurface != EGL_NO_SURFACE) {
         eglDestroySurface(display, windowSurface);
-        windowSurface = NULL;
+        windowSurface = EGL_NO_SURFACE;
     }
-    if (PBufferSurface != NULL) {
+    if (PBufferSurface != EGL_NO_SURFACE) {
         eglDestroySurface(display, PBufferSurface);
-        PBufferSurface = NULL;
+        PBufferSurface = EGL_NO_SURFACE;
     }
-    if (context != NULL) {
-        eglDestroyContext(display, context);
-        context = NULL;
-    }
+
+    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroyContext(display, context);
+
+    display = EGL_NO_DISPLAY;
+    context = EGL_NO_CONTEXT;
     isRelease = EGL_TRUE;
 
 }

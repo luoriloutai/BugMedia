@@ -42,11 +42,11 @@ public:
     void init();
 
 private:
-    EGLDisplay display = NULL;
+    EGLDisplay display = EGL_NO_DISPLAY;
     EGLConfig config = NULL;
-    EGLContext context = NULL;
-    EGLSurface windowSurface = NULL;
-    EGLSurface PBufferSurface = NULL;
+    EGLContext context = EGL_NO_CONTEXT;
+    EGLSurface windowSurface = EGL_NO_SURFACE;
+    EGLSurface PBufferSurface = EGL_NO_SURFACE;
     ANativeWindow *window = NULL;
     EGLBoolean isRelease = EGL_FALSE;
     EGLint width = 0;

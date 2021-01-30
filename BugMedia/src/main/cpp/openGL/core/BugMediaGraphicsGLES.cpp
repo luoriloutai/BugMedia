@@ -14,7 +14,11 @@ BugMediaGraphicsGLES::BugMediaGraphicsGLES() {
 
 
 void BugMediaGraphicsGLES::release() {
+
     if (!isRelease) {
+#ifdef DEBUGAPP
+        LOGD("GLES开始释放资源");
+#endif
         delete pFragmentShader;
         pFragmentShader = NULL;
         delete pVertexShader;
@@ -158,6 +162,10 @@ BugMediaGraphicsGLES::Shader::~Shader() {
 
 void BugMediaGraphicsGLES::Shader::release() {
     if (!isRelease) {
+#ifdef DEBUGAPP
+        const GLchar * shaderName=type==GL_VERTEX_SHADER?"vertex shader":"fragment shader";
+        LOGD("%s shader 开始释放资源",shaderName);
+#endif
         glDeleteShader(handler);
         isRelease = GL_TRUE;
 
@@ -228,6 +236,9 @@ GLboolean BugMediaGraphicsGLES::Program::checkGLError(const char *op) {
 
 void BugMediaGraphicsGLES::Program::release() {
     if (!isRelease) {
+#ifdef DEBUGAPP
+        LOGD("program 开始释放资源");
+#endif
         glDeleteProgram(handler);
         isRelease = GL_TRUE;
     }

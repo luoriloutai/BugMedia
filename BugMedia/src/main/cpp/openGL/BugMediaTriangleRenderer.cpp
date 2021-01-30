@@ -24,16 +24,19 @@ void BugMediaTriangleRenderer::setShaderSource() {
 }
 
 void BugMediaTriangleRenderer::startDraw() {
-
+#ifdef DEBUGAPP
     LOGD("startDraw开始");
+#endif
     // 下面这句很重要，没有这句屏幕一直闪
     pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // 模式、在数组中的偏移、顶点数
-//    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
 }
 
 void BugMediaTriangleRenderer::prepareDraw() {
+#ifdef DEBUGAPP
     LOGD("prepareDraw开始");
+#endif
 
     // 在绘制之前的操作在这里编写
 
@@ -54,9 +57,8 @@ void BugMediaTriangleRenderer::prepareDraw() {
     GLsizeiptr eleSize = sizeof(GLfloat);
     // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
     configVertex(2, vertexSize, eleSize);
-    pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, vertexCoords);
+    GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, vertexDim * eleSize, vertexCoords);
 
-    //glViewport(0,0,500,300);
     viewPort(0, 0, 500, 300);
 
     // 初始化背景色
