@@ -1,0 +1,18 @@
+
+坑：
+
+
+# EGL和OpenGLES需要开启一个线程运行，并且要在这个开启的线程里初始化各种需要的对象，
+  但是ANativeWindow并不需要在这个线程创建。
+
+  遇到shader不能创建的问题困扰好久，原因就在于EGLSurface在线程外面创建了。OpenGL的东西都要
+  在EGL绑定了线程后，即调用了eglMakeCurrent()之后才能创建，这时OpenGL就能找到上下文数据了。
+
+  所以流程应该是：开启线程-->在线程中初始化EGL-->调用eglMakeCurrent()绑定上下文到线程-->创建shader-->创建program
+
+
+
+
+
+
+
