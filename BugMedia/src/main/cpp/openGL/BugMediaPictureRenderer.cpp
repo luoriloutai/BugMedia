@@ -2,16 +2,16 @@
 // Created by Gshine on 2021/1/25.
 //
 
-#include "BugMediaBitmapRenderer.h"
+#include "BugMediaPictureRenderer.h"
 
 
-//void BugMediaBitmapRenderer::onDraw() {
+//void BugMediaPictureRenderer::onDraw() {
 //    // 绘制过程设置,转换、拉伸等，会发生改变的东西放在这里。
 //
 //    glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
 //}
 //
-//void BugMediaBitmapRenderer::setShader() {
+//void BugMediaPictureRenderer::setShader() {
 //    const char *vertextShaderSource = "attribute vec4 position; \n"
 //                                      "attribute vec2 texcoord; \n"
 //                                      "varying vec2 v_texcoord; \n"
@@ -129,14 +129,14 @@
 
 
 
-void BugMediaBitmapRenderer::setShaderSource() {
+void BugMediaPictureRenderer::setShaderSource() {
 
 }
 
-void BugMediaBitmapRenderer::prepareDraw() {
+void BugMediaPictureRenderer::prepareDraw() {
 
 }
 
-void BugMediaBitmapRenderer::startDraw() {
+void BugMediaPictureRenderer::startDraw() {
 
 }

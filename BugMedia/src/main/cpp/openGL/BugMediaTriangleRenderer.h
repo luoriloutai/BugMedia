@@ -4,9 +4,9 @@
 
 #ifndef SLOWER_BUGMEDIATRIANGLERENDERER_H
 #define SLOWER_BUGMEDIATRIANGLERENDERER_H
-#include "core/BugMediaGraphicsBaseRenderer.h"
+#include "core/BugMediaBaseRenderer.h"
 
-class BugMediaTriangleRenderer: public BugMediaGraphicsBaseRenderer {
+class BugMediaTriangleRenderer: public BugMediaBaseRenderer {
 
     void setShaderSource();
 

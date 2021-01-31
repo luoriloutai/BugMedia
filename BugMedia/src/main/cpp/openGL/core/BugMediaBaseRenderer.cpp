@@ -2,10 +2,10 @@
 // Created by Gshine on 2021/1/27.
 //
 
-#include "BugMediaGraphicsBaseRenderer.h"
+#include "BugMediaBaseRenderer.h"
 
 
-void BugMediaGraphicsBaseRenderer::configVertex(GLint dim, GLsizeiptr vertexArraySize, GLsizeiptr eleSize) {
+void BugMediaBaseRenderer::configVertex(GLint dim, GLsizeiptr vertexArraySize, GLsizeiptr eleSize) {
     vertexDim = dim;
     GLint vertexArrayLen = vertexArraySize / eleSize;
     vertexCount = vertexArrayLen / vertexDim;
