@@ -19,6 +19,8 @@
 #include "BugMediaGraphicsPainter.h"
 #include "BugMediaTriangleRenderer.h"
 #include "core/BugMediaGraphicsCommon.h"
+#include "BugMediaPictureRenderer.h"
+#include "BugMediaVideoRenderer.h"
 #include <vector>
 #include <mutex>
 #include <map>
@@ -70,45 +72,54 @@ static int rendererIndex = -1;
 mutex lockObj;
 map<int, BugMediaBaseRenderer &> renderers;
 
-//void addRenderer(BugMediaGraphicsBaseRenderer &renderer) {
-//    rendererIndex++;
-//    renderer.id = rendererIndex;
-//    pair<int, BugMediaGraphicsBaseRenderer &> pair(rendererIndex, renderer);
-//    renderers.insert(pair);
-//
-//}
-//
-//void removeRenderer(int idx) {
-//    lock_guard<mutex> lockGuard(lockObj);
-//    if (idx < 0) {
-//        return;
-//    }
-//    renderers[idx].release();
-//    renderers.erase(idx);
-//}
-//
-//// 创建三角形渲染器
-//int createTriangleRenderer() {
-//    lock_guard<mutex> lockGuard(lockObj);
-//
-//    // tmd C++无参构造函数这样调用，不需要加个括号
-//    BugMediaTriangleRenderer newRenderer;
-//    addRenderer(newRenderer);
-//    return newRenderer.id;
-//}
-//
-//// 创建图像渲染器
-//int createPictureRenderer() {
-////    lock_guard<mutex> lockGuard(lockObj);
-////
-////    // tmd C++无参构造函数这样调用，不需要加个括号
-////    //bugmediabit newRenderer;
-////    addRenderer(newRenderer);
-////    return newRenderer.id;
-//    return -1;
-//}
+void addRenderer(BugMediaBaseRenderer &renderer) {
+    rendererIndex++;
+    renderer.id = rendererIndex;
+    pair<int, BugMediaBaseRenderer &> pair(rendererIndex, renderer);
+    renderers.insert(pair);
+
+}
+
+void removeRenderer(int idx) {
+    lock_guard<mutex> lockGuard(lockObj);
+    if (idx < 0) {
+        return;
+    }
+    //renderers[idx].release(); // 这个不行，报错说引用的那个类型需要一个初始化器，有空研究吧
+    renderers.at(idx).release();
+    renderers.erase(idx);
+}
+
+// 创建三角形渲染器
+int createTriangleRenderer() {
+    lock_guard<mutex> lockGuard(lockObj);
+
+    // tmd C++无参构造函数这样调用，不需要加个括号
+    BugMediaTriangleRenderer newRenderer;
+    addRenderer(newRenderer);
+    return newRenderer.id;
+}
+
+// 创建图像渲染器
+int createPictureRenderer() {
+    lock_guard<mutex> lockGuard(lockObj);
+
+    BugMediaPictureRenderer newRenderer;
+    addRenderer(newRenderer);
+    return newRenderer.id;
+}
+
+// 创建视频渲染器
+int createVideoRenderer() {
+    lock_guard<mutex> lockGuard(lockObj);
+
+    BugMediaVideoRenderer newRenderer;
+    addRenderer(newRenderer);
+    return newRenderer.id;
+}
 
 
+//// extern C
 } // extern C
 
 

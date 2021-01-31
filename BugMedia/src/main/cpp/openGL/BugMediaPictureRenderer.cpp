@@ -133,10 +133,6 @@ void BugMediaPictureRenderer::setShaderSource() {
 
 }
 
-void BugMediaPictureRenderer::prepareDraw() {
-
-}
-
 void BugMediaPictureRenderer::startDraw() {
 
 }

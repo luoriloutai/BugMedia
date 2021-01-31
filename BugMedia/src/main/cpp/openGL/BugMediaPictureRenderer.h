@@ -11,8 +11,6 @@
 class BugMediaPictureRenderer : public BugMediaBaseRenderer {
     void setShaderSource();
 
-    void prepareDraw();
-
     void startDraw();
 
 };

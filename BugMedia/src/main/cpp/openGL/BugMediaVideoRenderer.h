@@ -6,8 +6,12 @@
 #define SLOWER_BUGMEDIAVIDEORENDERER_H
 
 
-class BugMediaVideoRenderer {
+#include "core/BugMediaBaseRenderer.h"
 
+class BugMediaVideoRenderer: public BugMediaBaseRenderer {
+    void setShaderSource();
+
+    void startDraw();
 };
 
 

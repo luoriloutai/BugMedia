@@ -13,6 +13,8 @@ public:
 
     int id;
 
+    BugMediaBaseRenderer() {}
+
     virtual ~BugMediaBaseRenderer() {}
 
 protected:

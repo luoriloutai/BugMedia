@@ -3,3 +3,11 @@
 //
 
 #include "BugMediaVideoRenderer.h"
+
+void BugMediaVideoRenderer::setShaderSource() {
+
+}
+
+void BugMediaVideoRenderer::startDraw() {
+
+}
