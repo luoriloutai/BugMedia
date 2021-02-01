@@ -95,17 +95,16 @@ public:
     // normalized:是否标准化坐标，即把坐标映射到0到1之间。
     // arraySize:数组的字节长度（sizeof）
     // array:顶点数组
-    // offset:顶点数据在缓冲中起始位置的偏移量(Offset)。
-    GLuint setVertexAttribArray(const GLchar *name, GLint vertexDim, GLenum eleType, GLboolean normalized,
-                                GLsizeiptr arraySize, const void* array, const void *offset);
+    GLuint setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
+                                GLsizei stride,const void *array);
 
-    void enable(GLenum cap);
+    GLuint getAttribLocation(const GLchar* name);
 
-    void blendFunc(GLenum sfactor, GLenum dfactor);
+    // 使用texture0创建纹理对象并设置数据
+    GLuint set2DTexture0(const GLchar *uniformTexSamplerName,uint8_t * data,GLint width,GLint height);
 
-    void clearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+    void unbind2DTexture0(GLuint *texLocation);
 
-    void clear(GLbitfield mask);
 
     void drawArrays(GLenum mode, GLint first, GLsizei count);
 

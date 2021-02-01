@@ -101,10 +101,10 @@ int createTriangleRenderer() {
 }
 
 // 创建图像渲染器
-int createPictureRenderer() {
+int createPictureRenderer(uint8_t * data,GLint width,GLint height) {
     lock_guard<mutex> lockGuard(lockObj);
 
-    BugMediaPictureRenderer newRenderer;
+    BugMediaPictureRenderer newRenderer(data,width,height);
     addRenderer(newRenderer);
     return newRenderer.id;
 }

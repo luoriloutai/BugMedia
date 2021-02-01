@@ -69,73 +69,25 @@ void BugMediaGraphicsGLES::activeProgram() {
     }
 }
 
-// 第一个参数是顶点着色器中的量的名字
-// 第二个参数表示一个点由几个元素构成
-// 第三个参数是坐标数组元素的数组类型
-// 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
-// 第五个参数是数组的字节长度（sizeof）
-// 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。如果在数组的开头，值为0，但需要强转成void*指针。
+//
+// 不使用缓冲区为顶点属性赋值
+//
+// name：顶点着色器中属性的名字
+// attribDim:属性维度
+// eleType:数组元素类型
+// normalized：是否标准化将坐标映射到0到1
+// stride：步长，跨度，即一个数据占多大，当多种数据都放在一个数组中时用来跳过一组数据
+// array：数组对象
 GLuint
-BugMediaGraphicsGLES::setVertexAttribArray(const GLchar *name, GLint vertexDim, GLenum eleType, GLboolean normalized,
-                                           GLsizeiptr arraySize, const void* array,const void *offset) {
-    // 分配顶点缓冲区
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
+BugMediaGraphicsGLES::setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
+                                           GLsizei stride,const void *array) {
 
-    // 可绑不同类型的多个Buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    //  将顶点数据放入Buffer,之后的操作都从这里取数据
-    // * GL_STATIC_DRAW ：数据不会或几乎不会改变。
-    // * GL_DYNAMIC_DRAW：数据会被改变很多。
-    // * GL_STREAM_DRAW ：数据每次绘制时都会改变。
-    glBufferData(GL_ARRAY_BUFFER, arraySize, array, GL_STATIC_DRAW);
-#ifdef DEBUGAPP
-
-    LOGD("array size:%d",arraySize);
-#endif
     GLuint attribPosition = glGetAttribLocation(pProgram->instance(), name);
-#ifdef DEBUGAPP
-    LOGD("location:%d", attribPosition);
-#endif
+    glVertexAttribPointer(attribPosition, attribDim, eleType, normalized, stride, array);
 
-    // 告诉OpenGL该如何解析顶点数据,为着色器属性变量设置值。
-    // 该方法将从顶点缓冲区中获取数据，具体是哪个缓冲区取决于之前绑定的缓冲区
-    // 第一个参数是顶点着色器中的量的名字
-    // 第二个参数表示一个点由几个元素构成
-    // 第三个参数是坐标数组元素的数据类型
-    // 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
-    // 第五个参数是步长，或叫跨度，即一个顶点所占用的字节数,即 顶点维度*数组中每个元素的大小
-    // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)
-    glVertexAttribPointer(attribPosition, vertexDim, eleType, normalized, vertexDim*sizeof(eleType), offset);
-
-
-#ifdef DEBUGAPP
-    LOGD("vertexDim:%d,stride:%d",vertexDim*sizeof(eleType));
-#endif
     // 启用顶点属性变量，默认是禁止的
     glEnableVertexAttribArray(attribPosition);
-#ifdef DEBUGAPP
-    LOGD("变量启用完毕");
-#endif
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     return attribPosition;
-}
-
-void BugMediaGraphicsGLES::enable(GLenum cap) {
-    glEnable(cap);
-}
-
-void BugMediaGraphicsGLES::blendFunc(GLenum sfactor, GLenum dfactor) {
-    glBlendFunc(sfactor, dfactor);
-}
-
-void BugMediaGraphicsGLES::clearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) {
-    glClearColor(red, green, blue, alpha);
-}
-
-void BugMediaGraphicsGLES::clear(GLbitfield mask) {
-    glClear(mask);
 }
 
 void BugMediaGraphicsGLES::drawArrays(GLenum mode, GLint first, GLsizei count) {
@@ -179,6 +131,35 @@ void BugMediaGraphicsGLES::setViewport(GLint x, GLint y, GLsizei width, GLsizei 
 
 void BugMediaGraphicsGLES::setViewport(BugMediaGraphicsGLES::Viewport v) {
     glViewport(v.x, v.y, v.width, v.height);
+}
+
+GLuint
+BugMediaGraphicsGLES::set2DTexture0(const GLchar *uniformTexSamplerName, uint8_t *data, GLint width, GLint height) {
+    GLuint textureId = -1;
+    glGenTextures(1, &textureId);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    // 给纹理对象设置数据
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    GLuint samplerId = glGetUniformLocation(pProgram->instance(), uniformTexSamplerName);
+    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
+    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
+    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
+    glUniform1i(samplerId, 0);
+
+
+    return textureId;
+}
+
+// 解绑纹理单元并删除纹理
+void BugMediaGraphicsGLES::unbind2DTexture0(GLuint *texLocation) {
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, texLocation);
+}
+
+GLuint BugMediaGraphicsGLES::getAttribLocation(const GLchar *name) {
+    GLuint location = glGetAttribLocation(pProgram->instance(),name);
+    return location;
 }
 
 

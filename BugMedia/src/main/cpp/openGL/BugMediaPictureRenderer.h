@@ -13,6 +13,13 @@ class BugMediaPictureRenderer : public BugMediaBaseRenderer {
 
     void startDraw();
 
+    uint8_t *pixelData;
+    GLint width;
+    GLint height;
+
+public:
+    BugMediaPictureRenderer(uint8_t* data,GLint width,GLint height);
+
 };
 
 

@@ -196,6 +196,7 @@ public class TestBitmapRenderer implements GLSurfaceView.Renderer {
         if (!mBitmap.isRecycled()) {
             //绑定图片到被激活的纹理单元
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, mBitmap, 0);
+
         }
 
         Matrix.setLookAtM(mLookAtMatrix, 0, 0, 0, 4f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);

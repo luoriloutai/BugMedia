@@ -36,9 +36,9 @@ void BugMediaTriangleRenderer::startDraw() {
     // [(x,y),(x,y),(x,y)]相当于[vertex1,vertex2,vertex3],vertex=(x,y)。
     // 我把一个顶点由几个元素表示的数称为维度（vertex dim），二维坐标是2，三维坐标是3
     GLfloat vertexCoords[] = {
-            -1.0, -1.0,
-            1.0, -1.0,
-            0.0, 1.0
+            -1.0f, -1.0f,
+            1.0f, -1.0f,
+            0.0f, 1.0f
     };
 
     GLsizeiptr vertexSize = sizeof(vertexCoords);
@@ -47,29 +47,55 @@ void BugMediaTriangleRenderer::startDraw() {
     configVertex(2, vertexSize, eleSize);
 
 
+
     // 第一个参数是顶点着色器中的量的名字
     // 第二个参数表示一个点由几个元素构成
     // 第三个参数是坐标数组元素的数组类型
     // 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
-    // 第五个参数数组字节大小
-    // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。由于数据在数组的开头，所以这里是(viod*)0。
-    GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE,sizeof(vertexCoords),vertexCoords,(void*)0);
+    // 第五个参数为数组
+    GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, 0,vertexCoords);
 
-    //setViewPort(50, 50, 800, 800);
+//    //
+//    /// 使用缓冲区设置顶点属性演示
+//    //
+//    GLuint VBO;
+//    glGenBuffers(1, &VBO);
+//
+//    // 可绑不同类型的多个Buffer
+//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//
+//    //  将顶点数据放入Buffer,之后的操作都从这里取数据
+//    // * GL_STATIC_DRAW ：数据不会或几乎不会改变。
+//    // * GL_DYNAMIC_DRAW：数据会被改变很多。
+//    // * GL_STREAM_DRAW ：数据每次绘制时都会改变。
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoords), vertexCoords, GL_STATIC_DRAW);
+//
+//    GLuint attribPosition = pGLES->getAttribLocation("aPosition");
+//    // 该方法有两种用法：
+//    // 1.使用缓冲区，上面代码保持不动，用法如下
+//    // 最后一个参数表示所取数据在缓冲中起始位置的偏移量(Offset)。由于数据在数组的开头，所以这里是(viod*)0。
+//    // 如果数据有偏移，则需要计算出偏移。该偏移是在一个跨度内的偏移，并不是在整个缓冲区的偏移
+//    glVertexAttribPointer(attribPosition, vertexDim, GL_FLOAT, GL_FALSE, vertexDim * sizeof(GLfloat), (void *) 0);
+//    // 2.不使用缓冲区，直接如下调用
+//    glVertexAttribPointer(attribPosition, vertexDim, GL_FLOAT, GL_FALSE, 0, array);
+//
+//    // 这两句放在代码最后，当使用了缓冲时释放缓冲
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//    glDeleteBuffers(1, &VBO);
 
     // 初始化背景色
-    pGLES->enable(GL_BLEND);
-    pGLES->blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    pGLES->clearColor(0.643, 0.776, 0.223, 1.0);
-
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(0.643, 0.776, 0.223, 1.0);
 
     // 下面这句很重要，没有这句屏幕一直闪
-    pGLES->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // 模式、在数组中的偏移、顶点数
     pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     pEGL->swapBuffers();
 #ifdef DEBUGAPP
-    LOGD("顶点数:%d",vertexCount);
+    LOGD("顶点数:%d", vertexCount);
 #endif
 }
 
