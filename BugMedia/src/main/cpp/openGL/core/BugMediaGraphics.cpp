@@ -126,6 +126,55 @@ void BugMediaGraphics::resize(GLint x, GLint y, GLsizei width, GLsizei height) {
     pGLES->resize(x, y, width, height);
 }
 
+void BugMediaGraphics::swapBuffers() {
+    pEGL->swapBuffers();
+}
+
+void BugMediaGraphics::setShaderSources(const GLchar *vertexShadersource, const GLchar *fragmentShadersource) {
+    pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
+}
+
+GLuint BugMediaGraphics::setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
+                                              GLsizei stride, const void *array) {
+    GLuint attribPosition = glGetAttribLocation(pGLES->getProgram(), name);
+    glVertexAttribPointer(attribPosition, attribDim, eleType, normalized, stride, array);
+
+    // 启用顶点属性变量，默认是禁止的
+    glEnableVertexAttribArray(attribPosition);
+    return attribPosition;
+
+}
+
+GLuint BugMediaGraphics::getProgram() {
+    return pGLES->getProgram();
+}
+
+GLuint BugMediaGraphics::set2DTexture0(const GLchar *uniformTexSamplerName, uint8_t *data, GLint width, GLint height) {
+    GLuint textureId = -1;
+    glGenTextures(1, &textureId);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    // 给纹理对象设置数据
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    GLuint samplerId = glGetUniformLocation(pGLES->getProgram(), uniformTexSamplerName);
+    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
+    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
+    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
+    glUniform1i(samplerId, 0);
+
+
+    return textureId;
+}
+
+void BugMediaGraphics::unbind2DTexture0(GLuint *texLocation) {
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, texLocation);
+}
+
+void BugMediaGraphics::useProgram() {
+    pGLES->activeProgram();
+}
+
 
 
 

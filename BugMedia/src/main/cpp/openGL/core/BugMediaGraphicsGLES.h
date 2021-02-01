@@ -87,28 +87,8 @@ public:
 
     void activeProgram();
 
+    GLuint getProgram();
 
-    // 设置顶点属性
-    // name:顶点着色器中的量的名字
-    // vertexDim:表示一个点由几个元素构成
-    // eleType:坐标数组元素的数据类型
-    // normalized:是否标准化坐标，即把坐标映射到0到1之间。
-    // arraySize:数组的字节长度（sizeof）
-    // array:顶点数组
-    GLuint setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
-                                GLsizei stride,const void *array);
-
-    GLuint getAttribLocation(const GLchar* name);
-
-    // 使用texture0创建纹理对象并设置数据
-    GLuint set2DTexture0(const GLchar *uniformTexSamplerName,uint8_t * data,GLint width,GLint height);
-
-    void unbind2DTexture0(GLuint *texLocation);
-
-
-    void drawArrays(GLenum mode, GLint first, GLsizei count);
-
-    void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
 
     ~BugMediaGraphicsGLES();
 

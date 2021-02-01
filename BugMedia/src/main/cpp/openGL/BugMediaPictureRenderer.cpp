@@ -5,93 +5,7 @@
 #include "BugMediaPictureRenderer.h"
 
 
-//void BugMediaPictureRenderer::onDraw() {
-//    // 绘制过程设置,转换、拉伸等，会发生改变的东西放在这里。
-//
-//    glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
-//}
-//
-//void BugMediaPictureRenderer::setShader() {
-//    const char *vertextShaderSource = "attribute vec4 position; \n"
-//                                      "attribute vec2 texcoord; \n"
-//                                      "varying vec2 v_texcoord; \n"
-//                                      "void main(void) \n"
-//                                      "{ \n"
-//                                      " gl_Position = position; \n"
-//                                      " v_texcoord = texcoord; \n"
-//                                      "} \n";
-//
-//    const char *fragShaderSource = "precision highp float; \n"
-//                                   "varying highp vec2 v_texcoord; \n"
-//                                   "uniform sampler2D texSampler; \n"
-//                                   "void main() { \n"
-//                                   " gl_FragColor = texture2D(texSampler, v_texcoord); \n"
-//                                   "} \n";
-//
-//    pGLES->setShaderSource(vertextShaderSource, fragShaderSource);
-//
-//    // 绘制前的准备。顶点坐标、缓冲等，能确定不改变的东西放在这里。
-//
-//    // 顶点(x,y,z,w)，三维空间只有三维，最后一位是齐次坐标，将前面的三个量分别除以最后一个量得出
-//    // 一个三维向量(x/w,y/w,z/w)，这才是真正的三维坐标。最后一个值w是用来作调整的。
-//    // 一个顶点有二维的，有三维的，都扁平化地存储在一维数组里，因此我们需要手动指定哪部分表示一个顶点，
-//    // 即几个元素是一组，表示一个顶点。下面的坐标数组是以两个为一组表示一个顶点的，即一个二维坐标。
-//    // [(x,y),(x,y),(x,y)]相当于[vertex1,vertex2,vertex3],vertex=(x,y)。
-//    // 我把一个顶点由几个元素表示的数称为维度（vertex dim），二维坐标是2，三维坐标是3
-//    GLfloat vertexCoords[] = {
-//            -1.0, -1.0,
-//            1.0, -1.0,
-//            0, 1.0
-//    };
-//
-//    GLsizeiptr vertexSize = sizeof(vertexCoords);
-//    GLsizeiptr eleSize = sizeof(GLfloat);
-//    // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
-//    configVertex(2, vertexSize, eleSize);
-//
-//
-//    //pGLES->setVertexAttribArray()
-//
-//    glViewport(0, 0, 500, 300);
-//
-//    // 纹理操作
-//    // glGenTextures(1, &texId);
-//    // glBindTexture(GL_TEXTURE_2D, texId);
-//    // 在最后释放纹理glBindTexture(GL_TEXTURE_2D, 0);这里不释放只作说明
-//    //
-//    // 设置纹理缩放效果
-//    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    //
-//    // 设置纹理在S和T方向上的排列效果,这是设置OpenGL纹理，左下角为原点，屏幕是左上角为原点
-//    // GL_CLAMP_TO_EDGE表示坐标夹在边界内，换句话说超过了边界1就设为1，小于0就设为0，总之就是不能超出去
-//    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//    //
-//    //解码图片得到pixels数组
-//    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-//
-//    // 纹理绘制到屏幕
-//    // *设置着色器
-//    // 规定窗口的大小： glViewport(0, 0, screenWidth, screenHeight)
-//    // *创建着色程序，使用它glUseProgram(mGLProgId);
-//    // *设置物体坐标
-//    // GLfloat vertices[] = { -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f };
-//    // glVertexAttribPointer(mGLVertexCoords, 2, GL_FLOAT, 0, 0, vertices);
-//    // glEnableVertexAttribArray(mGLVertexCoords);
-//    // *设置纹理坐标，textCoods1是opengl纹理坐标，textCoods2是屏幕纹理坐标，要判断纹理来自于哪里选择正确的纹理坐标，
-//    //  如果是把磁盘上的图片显示到屏幕就用第二个，否则第一个
-//    // GLfloat texCoords1[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-//    // GLfloat texCoords2[] = { 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f };
-//    // glVertexAttribPointer(mGLTextureCoords, 2, GL_FLOAT, 0, 0, texCoords2);
-//    // glEnableVertexAttribArray(mGLTextureCoords);
-//    // *指定将要绘制的纹理对象并且传递给对应的FragmentShader
-//    // glActiveTexture(GL_TEXTURE0);
-//    // glBindTexture(GL_TEXTURE_2D, texId);
-//    // glUniform1i(mGLUniformTexture, 0);
-//    // 执行绘制操作：
-//    // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-//    // 不需要纹理时删除
-//    // glDeleteTextures(1, &texId);
+
 //
 //    /*
 //     * 演示使用glDrawElements
@@ -113,7 +27,6 @@
 //    // 缓冲类型为GL_ELEMENT_ARRAY_BUFFER
 //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 //    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 //    // ...
 //    // 这里绘制时使用glDrawElements();
 //    // 参数一：绘制模式
@@ -145,13 +58,14 @@ void BugMediaPictureRenderer::setShaderSource() {
                                    "void main() { \n"
                                    " gl_FragColor = texture2D(texSampler, v_texcoord); \n"
                                    "} \n";
-    pGLES->setShaderSource(vertextShaderSource, fragShaderSource);
+    setShaderSources(vertextShaderSource, fragShaderSource);
 }
 
 void BugMediaPictureRenderer::startDraw() {
 
 
     // 顶点坐标，以物体中心为原点
+    // position属性是4维的，这里的坐标是2维的，应该会自动转换
     GLfloat vertices[] = {-1.0f, -1.0f,
                           1.0f, -1.0f,
                           -1.0f, 1.0f,
@@ -159,7 +73,7 @@ void BugMediaPictureRenderer::startDraw() {
 
     // 顶点是以物体中心为原点的，这里取屏幕中心作为原点，
     // 取了四个角的点坐标放在数组中。顶点是用来绘图形的，
-    // 单的图形直接绘制，但复杂的效果不好直接绘制，比如
+    // 简单的图形直接绘制，但复杂的效果不好直接绘制，比如
     // 绘制一张图片，做起来就相当费劲了。
     //
     // 如果把一张图片直接贴在图形上，不就大大简化了绘制的
@@ -178,29 +92,39 @@ void BugMediaPictureRenderer::startDraw() {
 
     // 纹理坐标，以物体左下角为原点，将顶点转成如下坐标
     GLfloat texCoords[] = {0.0f, 0.0f,
-                            1.0f, 0.0f,
-                            0.0f, 1.0f,
-                            1.0f, 1.0f};
+                           1.0f, 0.0f,
+                           0.0f, 1.0f,
+                           1.0f, 1.0f};
 
     // 屏幕坐标，以屏幕或物体左上角为原点，将顶点转为如下坐标
     GLfloat screenCoords[] = {0.0f, 1.0f,
-                            1.0f, 1.0f,
-                            0.0f, 0.0f,
-                            1.0f, 0.0f};
+                              1.0f, 1.0f,
+                              0.0f, 0.0f,
+                              1.0f, 0.0f};
 
     GLsizeiptr vertexSize = sizeof(vertices);
     GLsizeiptr eleSize = sizeof(GLfloat);
     // 顶点维度、顶点坐标数组大小（字节）、坐标数组每个元素的大小（字节）
     configVertex(2, vertexSize, eleSize);
 
+    // 属性在着色器中是4维的，但是这里用数组并指定成二维也可以转成着色器需要的数据,
+    // 猜测会根据给定的维度大小去取数据，这里只有二维，后二维估计使用默认值
+    setVertexAttribArray("position", 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    // 要显示在屏幕上，所以用屏幕坐标
+    setVertexAttribArray("texcoord", 2, GL_FLOAT, GL_FALSE, 0, screenCoords);
 
-//更新一个unform之前你必须先使用程序（调用glUseProgram)
+
+
+    //更新一个unform之前你必须先使用程序（调用glUseProgram)
+    // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
+    useProgram();
 
     //
     // 纹理操作
     //
 
-    GLuint texId = pGLES->set2DTexture0("texSampler", pixelData, width, height);
+    // 用图像数据创建2D纹理
+    GLuint texId = set2DTexture0("texSampler", pixelData, width, height);
 
     //
     //设置纹理参数
@@ -216,11 +140,12 @@ void BugMediaPictureRenderer::startDraw() {
 
     //
     // 绘制
-
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+    swapBuffers();
 
     //
     // 释放资源
-    pGLES->unbind2DTexture0(&texId);
+    unbind2DTexture0(&texId);
 
 }
 

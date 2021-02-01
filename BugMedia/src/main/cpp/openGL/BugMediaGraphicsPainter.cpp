@@ -43,7 +43,7 @@ enum rendererType {
 //
 //// 稍后移除
 //
-BugMediaBaseRenderer *renderer = NULL;
+BugMediaBaseRenderer *renderer = nullptr;
 
 //
 //// 稍后移除
@@ -56,6 +56,7 @@ void initRenderer(int renderType) {
     if (renderType == TRIANGLE_RENDERER) {
         renderer = new BugMediaTriangleRenderer();
     } else if (renderType == BITMAP_RENDERER) {
+        //renderer = new BugMediaPictureRenderer();
 
     } else if (renderType == VIDEO_RENDERER) {
 
@@ -101,10 +102,10 @@ int createTriangleRenderer() {
 }
 
 // 创建图像渲染器
-int createPictureRenderer(uint8_t * data,GLint width,GLint height) {
+int createPictureRenderer(uint8_t *data, GLint width, GLint height) {
     lock_guard<mutex> lockGuard(lockObj);
 
-    BugMediaPictureRenderer newRenderer(data,width,height);
+    BugMediaPictureRenderer newRenderer(data, width, height);
     addRenderer(newRenderer);
     return newRenderer.id;
 }

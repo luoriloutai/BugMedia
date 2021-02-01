@@ -48,10 +48,35 @@ public:
     void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
 protected:
+    void swapBuffers();
+
+    void setShaderSources(const GLchar *vertexShadersource, const GLchar *fragmentShadersource);
+
+    //
+    // 不使用缓冲区为顶点属性赋值
+    //
+    // name：顶点着色器中属性的名字
+    // attribDim:属性维度
+    // eleType:数组元素类型
+    // normalized：是否标准化将坐标映射到0到1
+    // stride：步长，跨度，即一个数据占多大，当多种数据都放在一个数组中时用来跳过一组数据
+    // array：数组对象
+    GLuint setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
+                                GLsizei stride, const void *array);
+
+    GLuint getProgram();
+
+    void useProgram();
+
+    // 使用2D texture0创建纹理对象并设置数据
+    GLuint set2DTexture0(const GLchar *uniformTexSamplerName,uint8_t * data,GLint width,GLint height);
+    // 解绑 2D Texture0纹理单元，并删除纹理
+    void unbind2DTexture0(GLuint *texLocation);
+
+private:
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsGLES *pGLES = NULL;
 
-private:
     // 设置Shader代码
     virtual void setShaderSource() = 0;
 

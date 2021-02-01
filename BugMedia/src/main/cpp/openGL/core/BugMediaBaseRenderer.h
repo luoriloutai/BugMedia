@@ -26,7 +26,7 @@ protected:
 
     // 顶点个数
     GLint vertexCount = 0;
-    // 顶点维度，调用config之后该值发生改变
+    // 顶点维度，调用configVertex之后该值发生改变
     GLint vertexDim = 2;
 
 };

@@ -69,37 +69,6 @@ void BugMediaGraphicsGLES::activeProgram() {
     }
 }
 
-//
-// 不使用缓冲区为顶点属性赋值
-//
-// name：顶点着色器中属性的名字
-// attribDim:属性维度
-// eleType:数组元素类型
-// normalized：是否标准化将坐标映射到0到1
-// stride：步长，跨度，即一个数据占多大，当多种数据都放在一个数组中时用来跳过一组数据
-// array：数组对象
-GLuint
-BugMediaGraphicsGLES::setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
-                                           GLsizei stride,const void *array) {
-
-    GLuint attribPosition = glGetAttribLocation(pProgram->instance(), name);
-    glVertexAttribPointer(attribPosition, attribDim, eleType, normalized, stride, array);
-
-    // 启用顶点属性变量，默认是禁止的
-    glEnableVertexAttribArray(attribPosition);
-    return attribPosition;
-}
-
-void BugMediaGraphicsGLES::drawArrays(GLenum mode, GLint first, GLsizei count) {
-    setViewport(viewport);
-    glDrawArrays(mode, first, count);
-}
-
-void BugMediaGraphicsGLES::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices) {
-    setViewport(viewport);
-    glDrawElements(mode, count, type, indices);
-}
-
 void BugMediaGraphicsGLES::init() {
 #ifdef DEBUGAPP
     LOGD("GLES初始化");
@@ -133,33 +102,8 @@ void BugMediaGraphicsGLES::setViewport(BugMediaGraphicsGLES::Viewport v) {
     glViewport(v.x, v.y, v.width, v.height);
 }
 
-GLuint
-BugMediaGraphicsGLES::set2DTexture0(const GLchar *uniformTexSamplerName, uint8_t *data, GLint width, GLint height) {
-    GLuint textureId = -1;
-    glGenTextures(1, &textureId);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    // 给纹理对象设置数据
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    GLuint samplerId = glGetUniformLocation(pProgram->instance(), uniformTexSamplerName);
-    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
-    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
-    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
-    glUniform1i(samplerId, 0);
-
-
-    return textureId;
-}
-
-// 解绑纹理单元并删除纹理
-void BugMediaGraphicsGLES::unbind2DTexture0(GLuint *texLocation) {
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDeleteTextures(1, texLocation);
-}
-
-GLuint BugMediaGraphicsGLES::getAttribLocation(const GLchar *name) {
-    GLuint location = glGetAttribLocation(pProgram->instance(),name);
-    return location;
+GLuint BugMediaGraphicsGLES::getProgram() {
+    return pProgram->instance();
 }
 
 

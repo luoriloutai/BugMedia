@@ -8,7 +8,7 @@
 void BugMediaTriangleRenderer::setShaderSource() {
     //
     // 本方法只实现设置着色器代码，其它操作不应在这里。
-    // 如果要配置着色器数据，请在prepareDraw()中编写代码。
+    //
     //
 
     const GLchar *vertextShaderSource = "attribute vec4 aPosition;\n"
@@ -20,7 +20,7 @@ void BugMediaTriangleRenderer::setShaderSource() {
                                      " gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
                                      "}";
 
-    this->pGLES->setShaderSource(vertextShaderSource, fragShaderSource);
+    setShaderSources(vertextShaderSource, fragShaderSource);
 }
 
 void BugMediaTriangleRenderer::startDraw() {
@@ -53,7 +53,7 @@ void BugMediaTriangleRenderer::startDraw() {
     // 第三个参数是坐标数组元素的数组类型
     // 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
     // 第五个参数为数组
-    GLuint aPosition = pGLES->setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, 0,vertexCoords);
+    GLuint aPosition = setVertexAttribArray("aPosition", vertexDim, GL_FLOAT, GL_FALSE, 0,vertexCoords);
 
 //    //
 //    /// 使用缓冲区设置顶点属性演示
@@ -70,7 +70,7 @@ void BugMediaTriangleRenderer::startDraw() {
 //    // * GL_STREAM_DRAW ：数据每次绘制时都会改变。
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoords), vertexCoords, GL_STATIC_DRAW);
 //
-//    GLuint attribPosition = pGLES->getAttribLocation("aPosition");
+//    GLuint attribPosition = glGetAttribLocation(getProgram(),"aPosition");
 //    // 该方法有两种用法：
 //    // 1.使用缓冲区，上面代码保持不动，用法如下
 //    // 最后一个参数表示所取数据在缓冲中起始位置的偏移量(Offset)。由于数据在数组的开头，所以这里是(viod*)0。
@@ -92,8 +92,8 @@ void BugMediaTriangleRenderer::startDraw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 模式、在数组中的偏移、顶点数
-    pGLES->drawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
-    pEGL->swapBuffers();
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+    swapBuffers();
 #ifdef DEBUGAPP
     LOGD("顶点数:%d", vertexCount);
 #endif
