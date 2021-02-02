@@ -58,7 +58,7 @@ protected:
     // name：顶点着色器中属性的名字
     // attribDim:属性维度
     // eleType:数组元素类型
-    // normalized：是否标准化将坐标映射到0到1
+    // normalized：是否标准化，对于无符号数映射到0到1，有符号数映射到-1到1
     // stride：步长，跨度，即一个数据占多大，当多种数据都放在一个数组中时用来跳过一组数据
     // array：数组对象
     GLuint setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
