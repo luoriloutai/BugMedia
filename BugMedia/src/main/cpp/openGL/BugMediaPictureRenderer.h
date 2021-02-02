@@ -19,6 +19,8 @@ class BugMediaPictureRenderer : public BugMediaBaseRenderer {
 
 public:
     BugMediaPictureRenderer(uint8_t* data,GLint width,GLint height);
+    ~BugMediaPictureRenderer();
+
 
 };
 

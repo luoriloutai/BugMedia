@@ -205,3 +205,32 @@ JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsBridge_resize(JNIEnv *env, jobject thiz, jint x, jint y, jint width, jint height) {
     renderer->resize(x, y, width, height);
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_bugmedia_media_GraphicsBridge_createPictureRenderer(JNIEnv *env, jobject thiz, jbyteArray data, jint width,
+                                                             jint height) {
+    jbyte* bytes = env->GetByteArrayElements(data,nullptr);
+    if(bytes == nullptr) {
+        return -1;
+    }
+    int len=env->GetArrayLength(data);
+    auto *buf =(uint8_t *)calloc(len,sizeof(uint8_t));
+    if(buf == nullptr)
+    {
+        return -1;
+    }
+    for(int i=0;i<len;i++)
+    {
+        *(buf+i)=(uint8_t)(*(bytes+i));
+
+    }
+    //释放资源
+    env->ReleaseByteArrayElements(data,bytes,0);
+    //free(buf);
+    renderer = new BugMediaPictureRenderer(buf, width, height);
+#ifdef DEBUGAPP
+    LOGD("创建渲染器完成,数据长度为：%d",len);
+#endif
+    return -1;
+}

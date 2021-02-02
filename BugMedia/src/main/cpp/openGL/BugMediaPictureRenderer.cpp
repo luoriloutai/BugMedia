@@ -43,6 +43,8 @@
 
 
 void BugMediaPictureRenderer::setShaderSource() {
+
+
     const char *vertextShaderSource = "attribute vec4 position; \n"
                                       "attribute vec2 texcoord; \n"
                                       "varying vec2 v_texcoord; \n"
@@ -62,7 +64,9 @@ void BugMediaPictureRenderer::setShaderSource() {
 }
 
 void BugMediaPictureRenderer::startDraw() {
-
+#ifdef DEBUGAPP
+    LOGD("图像绘制开始");
+#endif
 
     // 顶点坐标，以物体中心为原点
     // position属性是4维的，这里的坐标是2维的，应该会自动转换
@@ -113,7 +117,9 @@ void BugMediaPictureRenderer::startDraw() {
     // 要显示在屏幕上，所以用屏幕坐标
     setVertexAttribArray("texcoord", 2, GL_FLOAT, GL_FALSE, 0, screenCoords);
 
-
+#ifdef DEBUGAPP
+    LOGD("顶点属性设置完毕");
+#endif
 
     //更新一个unform之前你必须先使用程序（调用glUseProgram)
     // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
@@ -125,6 +131,10 @@ void BugMediaPictureRenderer::startDraw() {
 
     // 用图像数据创建2D纹理
     GLuint texId = set2DTexture0("texSampler", pixelData, width, height);
+
+#ifdef DEBUGAPP
+    LOGD("纹理创建完毕");
+#endif
 
     //
     //设置纹理参数
@@ -143,6 +153,10 @@ void BugMediaPictureRenderer::startDraw() {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
 
+#ifdef DEBUGAPP
+    LOGD("绘制完毕");
+#endif
+
     //
     // 释放资源
     unbind2DTexture0(&texId);
@@ -153,4 +167,9 @@ BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLi
     pixelData = data;
     this->width = width;
     this->height = height;
+}
+
+BugMediaPictureRenderer::~BugMediaPictureRenderer() {
+    delete[] pixelData;
+
 }
