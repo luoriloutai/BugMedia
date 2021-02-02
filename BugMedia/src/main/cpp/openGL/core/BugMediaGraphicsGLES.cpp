@@ -69,85 +69,6 @@ void BugMediaGraphicsGLES::activeProgram() {
     }
 }
 
-// 第一个参数是顶点着色器中的量的名字
-// 第二个参数表示一个点由几个元素构成
-// 第三个参数是坐标数组元素的数组类型
-// 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
-// 第五个参数是数组的字节长度（sizeof）
-// 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)。如果在数组的开头，值为0，但需要强转成void*指针。
-GLuint
-BugMediaGraphicsGLES::setVertexAttribArray(const GLchar *name, GLint vertexDim, GLenum eleType, GLboolean normalized,
-                                           GLsizeiptr arraySize, const void* array,const void *offset) {
-    // 分配顶点缓冲区
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-
-    // 可绑不同类型的多个Buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    //  将顶点数据放入Buffer,之后的操作都从这里取数据
-    // * GL_STATIC_DRAW ：数据不会或几乎不会改变。
-    // * GL_DYNAMIC_DRAW：数据会被改变很多。
-    // * GL_STREAM_DRAW ：数据每次绘制时都会改变。
-    glBufferData(GL_ARRAY_BUFFER, arraySize, array, GL_STATIC_DRAW);
-#ifdef DEBUGAPP
-
-    LOGD("array size:%d",arraySize);
-#endif
-    GLuint attribPosition = glGetAttribLocation(pProgram->instance(), name);
-#ifdef DEBUGAPP
-    LOGD("location:%d", attribPosition);
-#endif
-
-    // 告诉OpenGL该如何解析顶点数据,为着色器属性变量设置值。
-    // 该方法将从顶点缓冲区中获取数据，具体是哪个缓冲区取决于之前绑定的缓冲区
-    // 第一个参数是顶点着色器中的量的名字
-    // 第二个参数表示一个点由几个元素构成
-    // 第三个参数是坐标数组元素的数据类型
-    // 第四个参数表示是否标准化坐标，即把坐标映射到0到1之间。
-    // 第五个参数是步长，或叫跨度，即一个顶点所占用的字节数,即 顶点维度*数组中每个元素的大小
-    // 第六个参数表示位置数据在缓冲中起始位置的偏移量(Offset)
-    glVertexAttribPointer(attribPosition, vertexDim, eleType, normalized, vertexDim*sizeof(eleType), offset);
-
-
-#ifdef DEBUGAPP
-    LOGD("vertexDim:%d,stride:%d",vertexDim*sizeof(eleType));
-#endif
-    // 启用顶点属性变量，默认是禁止的
-    glEnableVertexAttribArray(attribPosition);
-#ifdef DEBUGAPP
-    LOGD("变量启用完毕");
-#endif
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    return attribPosition;
-}
-
-void BugMediaGraphicsGLES::enable(GLenum cap) {
-    glEnable(cap);
-}
-
-void BugMediaGraphicsGLES::blendFunc(GLenum sfactor, GLenum dfactor) {
-    glBlendFunc(sfactor, dfactor);
-}
-
-void BugMediaGraphicsGLES::clearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) {
-    glClearColor(red, green, blue, alpha);
-}
-
-void BugMediaGraphicsGLES::clear(GLbitfield mask) {
-    glClear(mask);
-}
-
-void BugMediaGraphicsGLES::drawArrays(GLenum mode, GLint first, GLsizei count) {
-    setViewport(viewport);
-    glDrawArrays(mode, first, count);
-}
-
-void BugMediaGraphicsGLES::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices) {
-    setViewport(viewport);
-    glDrawElements(mode, count, type, indices);
-}
-
 void BugMediaGraphicsGLES::init() {
 #ifdef DEBUGAPP
     LOGD("GLES初始化");
@@ -167,18 +88,10 @@ void BugMediaGraphicsGLES::resize(GLint x, GLint y, GLint width, GLint height) {
     viewport.width = width;
     viewport.height = height;
 
-
 }
 
-void BugMediaGraphicsGLES::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
-    viewport.x = x;
-    viewport.y = y;
-    viewport.width = width;
-    viewport.height = height;
-}
-
-void BugMediaGraphicsGLES::setViewport(BugMediaGraphicsGLES::Viewport v) {
-    glViewport(v.x, v.y, v.width, v.height);
+GLuint BugMediaGraphicsGLES::getProgram() {
+    return pProgram->instance();
 }
 
 

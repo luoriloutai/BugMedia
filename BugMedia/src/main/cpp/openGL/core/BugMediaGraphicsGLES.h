@@ -73,10 +73,10 @@ public:
         GLint x = 0;
         // y轴方向的偏移量
         GLint y = 0;
-        // 宽度。默认300
-        GLsizei width = 300;
-        // 高度。默认300
-        GLsizei height = 300;
+        // 宽度。
+        GLsizei width = 0;
+        // 高度。
+        GLsizei height = 0;
     };
 
     BugMediaGraphicsGLES();
@@ -87,35 +87,12 @@ public:
 
     void activeProgram();
 
+    GLuint getProgram();
 
-    // 设置顶点属性
-    // name:顶点着色器中的量的名字
-    // vertexDim:表示一个点由几个元素构成
-    // eleType:坐标数组元素的数据类型
-    // normalized:是否标准化坐标，即把坐标映射到0到1之间。
-    // arraySize:数组的字节长度（sizeof）
-    // array:顶点数组
-    // offset:顶点数据在缓冲中起始位置的偏移量(Offset)。
-    GLuint setVertexAttribArray(const GLchar *name, GLint vertexDim, GLenum eleType, GLboolean normalized,
-                                GLsizeiptr arraySize, const void* array, const void *offset);
-
-    void enable(GLenum cap);
-
-    void blendFunc(GLenum sfactor, GLenum dfactor);
-
-    void clearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-
-    void clear(GLbitfield mask);
-
-    void drawArrays(GLenum mode, GLint first, GLsizei count);
-
-    void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
 
     ~BugMediaGraphicsGLES();
 
     void init();
-
-    void setViewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
     void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
@@ -124,8 +101,6 @@ private:
     Shader *pFragmentShader = NULL;
     Program *pProgram = NULL;
     Viewport viewport;
-
-    void setViewport(Viewport v);
 
     GLboolean checkGLError(const char *op);
 

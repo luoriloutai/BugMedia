@@ -94,8 +94,8 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
 }
 
 void BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
-    this->width = width;
-    this->height = height;
+    this->viewWidth = width;
+    this->viewHeight = height;
     surfaceType = PBUFFER_SURFACE;
 }
 
@@ -115,10 +115,7 @@ void BugMediaGraphicsEGL::release() {
     LOGD("EGL开始释放资源");
 #endif
     if (!isRelease) {
-        if (window != NULL) {
-            ANativeWindow_release(window);
-            window = NULL;
-        }
+
         if (windowSurface != EGL_NO_SURFACE) {
             eglDestroySurface(display, windowSurface);
             windowSurface = EGL_NO_SURFACE;
@@ -127,9 +124,12 @@ void BugMediaGraphicsEGL::release() {
             eglDestroySurface(display, PBufferSurface);
             PBufferSurface = EGL_NO_SURFACE;
         }
-
-        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroyContext(display, context);
+        if (window != NULL) {
+            ANativeWindow_release(window);
+            window = NULL;
+        }
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
         display = EGL_NO_DISPLAY;
         context = EGL_NO_CONTEXT;
@@ -196,8 +196,8 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
         //PBufferSurface
 
         EGLint PbufferAttributes[] = {
-                EGL_WIDTH, width,
-                EGL_HEIGHT, height,
+                EGL_WIDTH, viewWidth,
+                EGL_HEIGHT, viewHeight,
                 EGL_NONE};
         if (!(PBufferSurface = eglCreatePbufferSurface(display, config, PbufferAttributes))) {
             LOGE("eglCreatePbufferSurface() returned error %d", eglGetError());

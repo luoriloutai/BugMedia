@@ -43,24 +43,42 @@ public:
 
     void draw();
 
-    void setViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
-
     void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
-    void init();
-
 protected:
+    void swapBuffers();
+
+    void setShaderSources(const GLchar *vertexShadersource, const GLchar *fragmentShadersource);
+
+    //
+    // 不使用缓冲区为顶点属性赋值
+    //
+    // name：顶点着色器中属性的名字
+    // attribDim:属性维度
+    // eleType:数组元素类型
+    // normalized：是否标准化，对于无符号数映射到0到1，有符号数映射到-1到1
+    // stride：步长，跨度，即一个数据占多大，当多种数据都放在一个数组中时用来跳过一组数据
+    // array：数组对象
+    GLuint setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
+                                GLsizei stride, const void *array);
+
+    GLuint getProgram();
+
+    void useProgram();
+
+    // 使用2D texture0创建纹理对象并设置数据
+    GLuint set2DTexture0(const GLchar *uniformTexSamplerName,uint8_t * data,GLint width,GLint height);
+    // 解绑 2D Texture0纹理单元，并删除纹理
+    void unbind2DTexture0(GLuint *texLocation);
+
+private:
     BugMediaGraphicsEGL *pEGL = NULL;
     BugMediaGraphicsGLES *pGLES = NULL;
 
-private:
     // 设置Shader代码
     virtual void setShaderSource() = 0;
 
-    // 绘制前准备工作：设置shader里的变量值、配置各种在绘制时不变的信息
-    virtual void prepareDraw() = 0;
-
-    // 开始绘制，此方法不断渲染直至收到结束信号
+    // 开始绘制
     virtual void startDraw() = 0;
 
     GLboolean isRelease = GL_FALSE;
@@ -68,19 +86,9 @@ private:
     // C的线程函数，必须为静态
     static void *drawBackground(void *pVoid);
 
-    void drawingThreadFun(BugMediaGraphics *graphics);
+    //void drawingThreadFun(BugMediaGraphics *graphics);
 
     pthread_t drawThread;
-    pthread_mutex_t tMutex;
-    pthread_cond_t tCond;
-
-    enum State{
-        STOP,
-        PAUSE,
-        RUNNING
-    };
-
-    State runState=STOP;
 
 
 };

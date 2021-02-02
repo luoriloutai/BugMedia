@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import android.widget.LinearLayout;
 import com.bugmedia.media.GraphicsBridge;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,7 +41,17 @@ public class MainActivity extends AppCompatActivity {
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
-                graphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
+                Bitmap pic = BitmapFactory.decodeResource(getResources(),R.drawable.icequeen);
+                int byteLen= pic.getByteCount();
+                ByteBuffer buffer = ByteBuffer.allocateDirect(byteLen);
+                pic.copyPixelsToBuffer(buffer);
+                byte[] picBytes=buffer.array();
+                int width=pic.getWidth();
+                int height = pic.getHeight();
+                int len = picBytes.length;
+
+                //graphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
+                graphicsBridge.createPictureRenderer(picBytes,width,height);
                 graphicsBridge.setWindowSurface(surfaceHolder.getSurface());
                 graphicsBridge.draw();
             }

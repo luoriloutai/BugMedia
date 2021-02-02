@@ -28,12 +28,12 @@ public class MainActivity extends AppCompatActivity {
 //renderer = new TestTriangleRenderer();
 
 //        // 测试图像
-//        renderer = new TestBitmapRenderer(BitmapFactory.decodeResource(getResources(), R.drawable.b1));
+        renderer = new TestBitmapRenderer(BitmapFactory.decodeResource(getResources(), R.drawable.b1));
 
 //        // 测试视频
 //        renderer = new TestVideoRenderer("testfile.mp4");
 
-        //mSurfaceView.setRenderer(renderer);
+        mSurfaceView.setRenderer(renderer);
 
 
     }

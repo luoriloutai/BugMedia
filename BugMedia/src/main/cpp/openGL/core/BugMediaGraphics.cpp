@@ -5,6 +5,7 @@
 #include "BugMediaGraphics.h"
 #include "BugMediaGraphicsCommon.h"
 #include <thread>
+#include <unistd.h>
 
 using namespace std;
 
@@ -29,25 +30,14 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 
 
 void BugMediaGraphics::draw() {
-    ////
-    //  该方法用于绘制，有可能在循环中不断调用，把它和init()分开就是为了这个目的
-    ////
-
-    // 虚方法，经常发生变化的配置和绘制过程
-    startDraw();
-
-    // 绘制好后要交换前台与后台缓冲，以使图像显示。（双缓冲机制）
-    pEGL->swapBuffers();
-
-    ////^^^^
-    //  以下方式作废，采用将线程开启在Java端
-    //    // 虚方法
-    //    setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
-    //    //
+    // 虚方法
+    setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
     //
-    //    pthread_create(&drawThread, NULL, drawBackground, this);
 
-    ////^^^^
+    //C语言的线程
+    pthread_create(&drawThread, NULL, drawBackground, this);
+
+    ////
     //    // C++11的thread，使用外部线程函数，不能在线程内初始化EGL，作废
     //    thread drawThread(&BugMediaGraphics::drawingThreadFun, this,this);
 
@@ -94,11 +84,7 @@ BugMediaGraphics::~BugMediaGraphics() {
 }
 
 
-void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
-    pGLES->setViewport(x, y, width, height);
-}
-
-// C线程执行函数,必须静态，且返回类型为void*
+// C线程执行函数,必须静态
 void *BugMediaGraphics::drawBackground(void *pVoid) {
 
     BugMediaGraphics *graphics = (BugMediaGraphics *) pVoid;
@@ -107,35 +93,9 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
     graphics->pEGL->makeCurrent();
     graphics->pGLES->init();
     graphics->pGLES->activeProgram();
-    // 虚方法，不频繁变化的配置
-    graphics->prepareDraw();
 
-    // 虚方法，经常发生变化的配置和绘制过程
+    // 虚方法
     graphics->startDraw();
-
-    // 绘制好后要交换前台与后台缓冲，以使图像显示。（双缓冲机制）
-    graphics->pEGL->swapBuffers();
-
-//    bool running = true;
-//    while (running) {
-//
-//        switch (graphics->runState) {
-//            case RUNNING:
-//
-//                break;
-//            case PAUSE:
-//
-//                break;
-//            case STOP:
-//
-//                break;
-//            default:
-//                running= false;
-//                break;
-//
-//        }
-//
-//    }
 
 #ifdef DEBUGAPP
     LOGD("绘制结束");
@@ -143,9 +103,9 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
     return 0;
 }
 
-////
-// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
-void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
+//////
+//// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
+//void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
 //    graphics->pEGL->init();
 //    graphics->pEGL->makeCurrent();
 //    graphics->pGLES->init();
@@ -156,21 +116,59 @@ void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
 //    // 虚方法，经常发生变化的配置和绘制过程
 //    graphics->startDraw();
 //    graphics->pEGL->swapBuffers();
-}
+//}
 
 void BugMediaGraphics::resize(GLint x, GLint y, GLsizei width, GLsizei height) {
     pGLES->resize(x, y, width, height);
 }
 
-// 拆出来这部分为了在java端控制流程，因为线程的问题，这些东西都要在启动的新线程中初始化
-void BugMediaGraphics::init() {
-    setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
-    pEGL->init();
-    pEGL->makeCurrent();
-    pGLES->init();
+void BugMediaGraphics::swapBuffers() {
+    pEGL->swapBuffers();
+}
+
+void BugMediaGraphics::setShaderSources(const GLchar *vertexShadersource, const GLchar *fragmentShadersource) {
+    pGLES->setShaderSource(vertexShadersource, fragmentShadersource);
+}
+
+GLuint BugMediaGraphics::setVertexAttribArray(const GLchar *name, GLint attribDim, GLenum eleType, GLboolean normalized,
+                                              GLsizei stride, const void *array) {
+    GLuint attribPosition = glGetAttribLocation(pGLES->getProgram(), name);
+    glVertexAttribPointer(attribPosition, attribDim, eleType, normalized, stride, array);
+
+    // 启用顶点属性变量，默认是禁止的
+    glEnableVertexAttribArray(attribPosition);
+    return attribPosition;
+
+}
+
+GLuint BugMediaGraphics::getProgram() {
+    return pGLES->getProgram();
+}
+
+GLuint BugMediaGraphics::set2DTexture0(const GLchar *uniformTexSamplerName, uint8_t *data, GLint width, GLint height) {
+    GLuint textureId = -1;
+    glGenTextures(1, &textureId);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    // 给纹理对象设置数据
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    GLuint samplerId = glGetUniformLocation(pGLES->getProgram(), uniformTexSamplerName);
+    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
+    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
+    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
+    glUniform1i(samplerId, 0);
+
+
+    return textureId;
+}
+
+void BugMediaGraphics::unbind2DTexture0(GLuint *texLocation) {
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, texLocation);
+}
+
+void BugMediaGraphics::useProgram() {
     pGLES->activeProgram();
-    // 虚方法，不频繁变化的配置
-    prepareDraw();
 }
 
 
