@@ -84,10 +84,6 @@ BugMediaGraphics::~BugMediaGraphics() {
 }
 
 
-void BugMediaGraphics::setViewPort(GLint x, GLint y, GLsizei width, GLsizei height) {
-    pGLES->setViewport(x, y, width, height);
-}
-
 // C线程执行函数,必须静态
 void *BugMediaGraphics::drawBackground(void *pVoid) {
 

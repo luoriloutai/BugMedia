@@ -73,10 +73,10 @@ public:
         GLint x = 0;
         // y轴方向的偏移量
         GLint y = 0;
-        // 宽度。默认300
-        GLsizei width = 300;
-        // 高度。默认300
-        GLsizei height = 300;
+        // 宽度。
+        GLsizei width = 0;
+        // 高度。
+        GLsizei height = 0;
     };
 
     BugMediaGraphicsGLES();
@@ -94,8 +94,6 @@ public:
 
     void init();
 
-    void setViewport(GLint x, GLint y, GLsizei width, GLsizei height);
-
     void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
 private:
@@ -103,8 +101,6 @@ private:
     Shader *pFragmentShader = NULL;
     Program *pProgram = NULL;
     Viewport viewport;
-
-    void setViewport(Viewport v);
 
     GLboolean checkGLError(const char *op);
 

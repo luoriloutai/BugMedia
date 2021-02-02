@@ -94,6 +94,8 @@ void BugMediaTriangleRenderer::startDraw() {
     // 模式、在数组中的偏移、顶点数
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
+
+    release();
 #ifdef DEBUGAPP
     LOGD("顶点数:%d", vertexCount);
 #endif

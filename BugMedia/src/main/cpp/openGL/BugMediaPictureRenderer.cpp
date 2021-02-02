@@ -3,7 +3,9 @@
 //
 
 #include "BugMediaPictureRenderer.h"
-
+#include "../glm/glm.hpp"
+#include "../glm/gtc/matrix_transform.hpp"
+#include "../glm/gtc/type_ptr.hpp"
 
 
 //
@@ -47,10 +49,11 @@ void BugMediaPictureRenderer::setShaderSource() {
 
     const char *vertextShaderSource = "attribute vec4 position; \n"
                                       "attribute vec2 texcoord; \n"
+                                      "uniform mat4 lookat;\n"
                                       "varying vec2 v_texcoord; \n"
                                       "void main(void) \n"
                                       "{ \n"
-                                      " gl_Position = position; \n"
+                                      " gl_Position = lookat * position; \n"
                                       " v_texcoord = texcoord; \n"
                                       "} \n";
 
@@ -149,6 +152,17 @@ void BugMediaPictureRenderer::startDraw() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     //
+//    GLfloat radius = 10.0f;
+//    GLfloat camX = sin(glfwGetTime()) * radius;
+//    GLfloat camZ = cos(glfwGetTime()) * radius;
+    glm::mat4 view;
+    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+                       glm::vec3(0.0f, 0.0f, 0.0f),
+                       glm::vec3(0.0f, 1.0f, 0.0f));
+    GLuint lookAtloc = glGetUniformLocation(getProgram(), "lookat");
+    glUniformMatrix4fv(lookAtloc, 1, GL_FALSE, glm::value_ptr(view));
+
+    //
     // 绘制
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
@@ -160,7 +174,7 @@ void BugMediaPictureRenderer::startDraw() {
     //
     // 释放资源
     unbind2DTexture0(&texId);
-
+    release();
 }
 
 BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLint height) {

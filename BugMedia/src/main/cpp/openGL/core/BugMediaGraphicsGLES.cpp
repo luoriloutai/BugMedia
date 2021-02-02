@@ -88,18 +88,6 @@ void BugMediaGraphicsGLES::resize(GLint x, GLint y, GLint width, GLint height) {
     viewport.width = width;
     viewport.height = height;
 
-
-}
-
-void BugMediaGraphicsGLES::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
-    viewport.x = x;
-    viewport.y = y;
-    viewport.width = width;
-    viewport.height = height;
-}
-
-void BugMediaGraphicsGLES::setViewport(BugMediaGraphicsGLES::Viewport v) {
-    glViewport(v.x, v.y, v.width, v.height);
 }
 
 GLuint BugMediaGraphicsGLES::getProgram() {
