@@ -40,6 +40,7 @@ public:
     ~BugMediaGraphicsEGL();
 
     void init();
+    EGLBoolean init(EGLContext sharedContext);
 
 private:
     EGLDisplay display = EGL_NO_DISPLAY;
@@ -49,11 +50,12 @@ private:
     EGLSurface PBufferSurface = EGL_NO_SURFACE;
     ANativeWindow *window = NULL;
     EGLBoolean isRelease = EGL_FALSE;
-    EGLint width = 0;
-    EGLint height = 0;
+
     surfaceTypeEnum surfaceType=NONE_SURFACE;
 
-    EGLBoolean init(EGLContext sharedContext);
+protected:
+    EGLint viewWidth = 0;
+    EGLint viewHeight = 0;
 };
 
 

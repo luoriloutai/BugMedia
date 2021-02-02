@@ -100,11 +100,8 @@ public class TestBitmapRenderer implements GLSurfaceView.Renderer {
         textureFloatBuffer.put(textureCoords);
         textureFloatBuffer.position(0);
 
-        // 当正交投影，且不设置LookAt时，即直接把投影算出来的矩阵赋给uMatrix时，必须是aPosition*uMatrix才能正常执行。
-        // 但当投影为透视投影时，如果不设置LookAt，并且不执行矩阵相乘操作计算最终变换矩阵时，无论aPosition是否在前都
-        // 不会渲染（黑屏）
-        // 当设置了LookAt，且与投影矩阵相乘得出最终变换矩阵后，变换矩阵赋给uMatrix，此时不论aPosition在前在后
-        // 都能正常执行
+
+        // 变换未完善
         String vertextShaderCode = "attribute vec4 aPosition;" +
                 "attribute vec2 aCoordinate;" +
                 "uniform mat4 uMatrix;" +

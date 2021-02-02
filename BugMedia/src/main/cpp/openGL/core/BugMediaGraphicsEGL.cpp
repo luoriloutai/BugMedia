@@ -94,8 +94,8 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
 }
 
 void BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
-    this->width = width;
-    this->height = height;
+    this->viewWidth = width;
+    this->viewHeight = height;
     surfaceType = PBUFFER_SURFACE;
 }
 
@@ -196,8 +196,8 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
         //PBufferSurface
 
         EGLint PbufferAttributes[] = {
-                EGL_WIDTH, width,
-                EGL_HEIGHT, height,
+                EGL_WIDTH, viewWidth,
+                EGL_HEIGHT, viewHeight,
                 EGL_NONE};
         if (!(PBufferSurface = eglCreatePbufferSurface(display, config, PbufferAttributes))) {
             LOGE("eglCreatePbufferSurface() returned error %d", eglGetError());

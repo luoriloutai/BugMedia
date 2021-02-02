@@ -184,9 +184,9 @@ JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsBridge_destroy(JNIEnv *env, jobject clazz) {
 #ifdef DEBUGIT
 #else
-    if (renderer != NULL) {
+    
         delete renderer;
-    }
+
 #endif
 }
 

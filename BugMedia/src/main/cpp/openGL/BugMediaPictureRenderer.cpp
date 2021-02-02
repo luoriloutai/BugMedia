@@ -47,13 +47,13 @@
 void BugMediaPictureRenderer::setShaderSource() {
 
 
-    const char *vertextShaderSource = "attribute vec4 position; \n"
+    const char *vertextShaderSource = "attribute vec2 position; \n"
                                       "attribute vec2 texcoord; \n"
-                                      "uniform mat4 lookat;\n"
+                                      "uniform mat4 view;\n"
                                       "varying vec2 v_texcoord; \n"
                                       "void main(void) \n"
                                       "{ \n"
-                                      " gl_Position = lookat * position; \n"
+                                      " gl_Position = view * vec4(position,0,1); \n"
                                       " v_texcoord = texcoord; \n"
                                       "} \n";
 
@@ -124,9 +124,6 @@ void BugMediaPictureRenderer::startDraw() {
     LOGD("顶点属性设置完毕");
 #endif
 
-    //更新一个unform之前你必须先使用程序（调用glUseProgram)
-    // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
-    useProgram();
 
     //
     // 纹理操作
@@ -151,16 +148,42 @@ void BugMediaPictureRenderer::startDraw() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    //
-//    GLfloat radius = 10.0f;
-//    GLfloat camX = sin(glfwGetTime()) * radius;
-//    GLfloat camZ = cos(glfwGetTime()) * radius;
-    glm::mat4 view;
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
-                       glm::vec3(0.0f, 0.0f, 0.0f),
-                       glm::vec3(0.0f, 1.0f, 0.0f));
-    GLuint lookAtloc = glGetUniformLocation(getProgram(), "lookat");
-    glUniformMatrix4fv(lookAtloc, 1, GL_FALSE, glm::value_ptr(view));
+    //更新一个unform之前你必须先使用程序（调用glUseProgram)
+    // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
+    useProgram();
+
+    // 屏幕旋转后进行缩放
+    // 待完成
+
+
+//    // Projection matrix
+//    glm::mat4 Projection = glm::ortho(-(float_t) width / height, (float_t) width / height, -1.0f, 1.0f, 0.1f, 100.0f);
+//    //glm::mat4 Projection = glm::frustum(-ratio, ratio, -1.0f, 1.0f, 4.0f, 100.0f);
+//    //glm::mat4 Projection = glm::perspective(45.0f,(float_t)width/height, 0.1f,100.f);
+//
+//    // View matrix
+//    glm::mat4 View = glm::lookAt(
+//            glm::vec3(0, 0, 4), // Camera is at (0,0,1), in World Space
+//            glm::vec3(0, 0, 0), // and looks at the origin
+//            glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+//    );
+//
+//    // Model matrix
+//    glm::mat4 Model = glm::mat4(1.0f);
+//    Model = glm::scale(Model, glm::vec3(1.0f, 1.0f, 1.0f));
+//    Model = glm::rotate(Model, 20.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+//    Model = glm::rotate(Model, 15.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+//    Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, 0.0f));
+//
+//    glm::mat4 viewMat = Projection * View * Model;
+//    GLuint viewLoc = glGetUniformLocation(getProgram(), "view");
+//    glUniformMatrix4fv(viewLoc,1,GL_FALSE,glm::value_ptr(viewMat));
+
+
+
+    glm::mat4 viewMat(1.0f);
+    GLuint viewLoc = glGetUniformLocation(getProgram(), "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMat));
 
     //
     // 绘制
