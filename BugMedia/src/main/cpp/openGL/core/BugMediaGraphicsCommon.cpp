@@ -37,10 +37,6 @@ void getShowPictureSize(GLint &newWidth, GLint &newHeight, EGLint &viewWidth, EG
         }
 
 
-#ifdef DEBUGAPP
-        LOGD("横屏");
-#endif
-
     } else { // 竖屏
 
         // 图像小就拉伸，大收缩
@@ -62,8 +58,24 @@ void getShowPictureSize(GLint &newWidth, GLint &newHeight, EGLint &viewWidth, EG
         }
 
 
-#ifdef DEBUGAPP
-        LOGD("竖屏");
-#endif
     }
+}
+
+// 将图形进行缩放并移到视图的中间
+void scaleCenter(EGLint &viewWidth, EGLint &viewHeight, EGLint &width, EGLint &height) {
+    GLint newWidth;
+    GLint newHeight;
+    getShowPictureSize(newWidth, newHeight, viewWidth, viewHeight, width, height);
+    moveToCenter(viewWidth, viewHeight, newWidth, newHeight);
+
+}
+
+// 将指定宽高的图形移到视图中间
+void moveToCenter(EGLint &viewWidth, EGLint &viewHeight, GLint &width, GLint &height) {
+    //
+    // 设置视角，让图像居中且不变形。以左下角为原点，让图像偏移，注意centerX和centerY并非
+    // 图像中心点，只是个相对于左下角的偏移。
+    GLint centerX = (viewWidth - width) / 2;
+    GLint centerY = (viewHeight - height) / 2;
+    glViewport(centerX, centerY, width, height);
 }
