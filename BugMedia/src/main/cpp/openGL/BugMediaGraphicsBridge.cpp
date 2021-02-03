@@ -16,12 +16,11 @@
 
 #include "core/BugMediaBaseRenderer.h"
 #include <jni.h>
-#include "BugMediaGraphicsPainter.h"
+#include "BugMediaGraphicsBridge.h"
 #include "BugMediaTriangleRenderer.h"
 #include "core/BugMediaGraphicsCommon.h"
 #include "BugMediaPictureRenderer.h"
 #include "BugMediaVideoRenderer.h"
-#include <vector>
 #include <mutex>
 #include <map>
 

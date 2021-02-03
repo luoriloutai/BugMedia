@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.bugmedia.media.BaseRenderer;
 import com.bugmedia.media.GraphicsBridge;
+import com.bugmedia.media.PictureRenderer;
 
 import java.nio.ByteBuffer;
 
@@ -18,8 +20,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     SurfaceHolder holder = null;
-    int picRendererId;
 
+    PictureRenderer pictureRenderer1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,22 +48,23 @@ public class MainActivity extends AppCompatActivity {
                 int len = picBytes.length;
 
 
-                picRendererId = GraphicsBridge.createPictureRenderer(picBytes, width, height);
-                Log.d("bugmedia", "图像渲染器id："+picRendererId);
-                GraphicsBridge.setWindowSurface(surfaceHolder.getSurface(),picRendererId);
 
-                GraphicsBridge.startRenderer(picRendererId);;
+                pictureRenderer1 = new PictureRenderer(picBytes,width,height);
+
+                pictureRenderer1.setWindowSurface(surfaceHolder.getSurface());
+
+                pictureRenderer1.startRenderer();;
                 Log.d("bugmedia","绘图器创建完成");
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-                GraphicsBridge.resizeView(0, 0, i1, i2,picRendererId);
+                pictureRenderer1.resizeView(0, 0, i1, i2);
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-                GraphicsBridge.destroy(picRendererId);
+                pictureRenderer1.destroy();
             }
         });
 

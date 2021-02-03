@@ -102,7 +102,7 @@ add_library( # Sets the name of the library.
         openGL/core/BugMediaGraphics.cpp
         openGL/core/BugMediaBaseRenderer.cpp
         openGL/core/BugMediaGraphicsCommon.cpp
-        openGL/BugMediaGraphicsPainter.cpp
+        openGL/BugMediaGraphicsBridge.cpp
         openGL/BugMediaTriangleRenderer.cpp
         openGL/BugMediaPictureRenderer.cpp
         openGL/BugMediaVideoRenderer.cpp
