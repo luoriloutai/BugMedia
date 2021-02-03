@@ -66,9 +66,9 @@ void BugMediaGraphics::release() {
 #endif
     if (!isRelease) {
         delete pGLES;
-        pGLES = NULL;
+        pGLES = nullptr;
         delete pEGL;
-        pEGL = NULL;
+        pEGL = nullptr;
 
         isRelease = GL_TRUE;
     }
@@ -87,7 +87,7 @@ BugMediaGraphics::~BugMediaGraphics() {
 // C线程执行函数,必须静态
 void *BugMediaGraphics::drawBackground(void *pVoid) {
 
-    BugMediaGraphics *graphics = (BugMediaGraphics *) pVoid;
+    auto *graphics = (BugMediaGraphics *) pVoid;
 
     graphics->pEGL->init();
     graphics->pEGL->makeCurrent();
@@ -100,7 +100,7 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 #ifdef DEBUGAPP
     LOGD("绘制结束");
 #endif
-    return 0;
+    return nullptr;
 }
 
 //////

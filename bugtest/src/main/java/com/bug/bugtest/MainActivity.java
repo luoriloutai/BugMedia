@@ -2,21 +2,15 @@ package com.bug.bugtest;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.text.Layout;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.LinearLayout;
 
 import com.bugmedia.media.GraphicsBridge;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
     GraphicsBridge graphicsBridge = new GraphicsBridge();
     SurfaceHolder holder = null;
+    int picRendererId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,20 +45,23 @@ public class MainActivity extends AppCompatActivity {
                 int height = pic.getHeight();
                 int len = picBytes.length;
 
-                //graphicsBridge.selectRenderer(GraphicsBridge.TRIANGLE_RENDERER);
-                graphicsBridge.createPictureRenderer(picBytes,width,height);
-                graphicsBridge.setWindowSurface(surfaceHolder.getSurface());
-                graphicsBridge.draw();
+
+                picRendererId = graphicsBridge.createPictureRenderer(picBytes, width, height);
+                Log.d("bugmedia", "图像渲染器id："+picRendererId);
+                graphicsBridge.setWindowSurface(surfaceHolder.getSurface(),picRendererId);
+
+                graphicsBridge.startRenderer(picRendererId);;
+                Log.d("bugmedia","绘图器创建完成");
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-                graphicsBridge.resizeView(0, 0, i1, i2);
+                graphicsBridge.resizeView(0, 0, i1, i2,picRendererId);
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-                graphicsBridge.destroy();
+                graphicsBridge.destroy(picRendererId);
             }
         });
 

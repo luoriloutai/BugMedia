@@ -18,18 +18,20 @@ public class GraphicsBridge {
     // 先调用这个方法
     public native void selectRenderer(int rendererType);
 
-    public native void setWindowSurface(Surface surface);
+    public native void setWindowSurface(Surface surface,int rendererId);
 
-    public native void setPBufferSurface(int width,int height);
+    public native void setPBufferSurface(int width,int height,int rendererId);
 
     public native void draw();
 
-    public native void destroy();
+    public native void destroy(int rendererId);
 
     public native void pause();
 
-    public native void resizeView(int x,int y,int width,int height);
+    public native void resizeView(int x,int y,int width,int height,int rendererId);
 
     public native int createPictureRenderer(byte[] data,int width,int height);
+
+    public native void startRenderer(int rendererId);
 
 }
