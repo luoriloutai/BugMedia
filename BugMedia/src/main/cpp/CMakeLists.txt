@@ -101,6 +101,7 @@ add_library( # Sets the name of the library.
         openGL/core/BugMediaGraphicsEGL.cpp
         openGL/core/BugMediaGraphics.cpp
         openGL/core/BugMediaBaseRenderer.cpp
+        openGL/core/BugMediaGraphicsCommon.cpp
         openGL/BugMediaGraphicsPainter.cpp
         openGL/BugMediaTriangleRenderer.cpp
         openGL/BugMediaPictureRenderer.cpp

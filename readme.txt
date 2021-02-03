@@ -1,1 +1,1 @@
-使用EGL、OpenGL ES渲染视频。
+使用EGL、OpenGL ES渲染图片和视频。

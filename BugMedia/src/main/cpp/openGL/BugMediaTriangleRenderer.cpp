@@ -1,6 +1,8 @@
 //
 // Created by Gshine on 2021/1/27.
 //
+// 这个类实际上没什么作用，用作示例演示
+//
 
 #include "BugMediaTriangleRenderer.h"
 #include "core/BugMediaGraphicsCommon.h"
