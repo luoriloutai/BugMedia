@@ -72,7 +72,6 @@ void BugMediaPictureRenderer::startDraw() {
 #endif
 
     // 顶点坐标，以物体中心为原点
-    // position属性是4维的，这里的坐标是2维的，应该会自动转换
     GLfloat vertices[] = {-1.0f, -1.0f,
                           1.0f, -1.0f,
                           -1.0f, 1.0f,
@@ -156,67 +155,21 @@ void BugMediaPictureRenderer::startDraw() {
     // 缩放尺寸使图像不变形
     //
 
-    // 预留一个单位矩阵，作为着色器中量的初始化，待添加对图像的空间变换等操作
-    glm::mat4 viewMat(1.0f); // 注：初始化一个单位矩阵,需要传一个参数
-
-    // 2D图像，创建正交投影即可
-    //glm::mat4 projection;
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
     GLint newWidth = viewWidth;
     GLint newHeight = viewWidth * height / width;
+    getShowPictureSize(newWidth,newHeight,viewWidth,viewHeight,width,height);
 
-    if (viewWidth > viewHeight) { // 横屏
-        if (width > height) { // 横屏横图
-            // 让图像宽度匹配(等于)视图宽度后,高度一定小于等于视图高度
-            // 计算收缩后的高度:
-            // width/height=viewWidth/x
-            // x=viewWidth*height/width
-            newWidth = viewWidth; // 图像宽度现在变成了视图宽度
-            newHeight = viewWidth * height / width;
-        } else { // 横屏竖图
+    //
+    // 变换，未实现
+    //
 
-            // 图像[新高度]匹配视图高度，宽度一定小于等于视图宽度
-            // width/height=x/viewHeight
-            // x = viewHeight*width/height
-            newHeight = viewHeight;
-            newWidth = viewHeight * width / height;
-        }
+    // 预留一个单位矩阵，作为着色器中量的初始化，待添加对图像的空间变换等操作
+    glm::mat4 viewMat(1.0f); // 注：初始化一个单位矩阵,需要传一个参数
 
-        //projection = glm::ortho(-1.0f, (GLfloat) viewWidth / (GLfloat) viewHeight, -1.0f, 1.0f);
-
-
-#ifdef DEBUGAPP
-        LOGD("横屏");
-#endif
-    } else { // 竖屏
-
-        // 图像小就拉伸，大收缩
-        // 竖屏竖图与横图操作相同
-        //
-        // 先让图像宽度匹配(等于)视图,计算收缩后的高度:
-        // width/height=viewWidth/x
-        // x=viewWidth*height/width
-        newWidth = viewWidth; // 图像宽度现在变成了视图宽度
-        newHeight = viewWidth * height / width;
-
-        //收缩后如果图像高度还是比视图高度大，则使图像[新高度]匹配视图高度，再收缩宽度
-        if (newHeight > viewHeight) {
-
-            // 再次收缩后的图像宽度:
-            // newWidth/ newHeight = x/ viewHeight
-            // x = viewHeight*newWidth/newHeight
-            newWidth = viewHeight * newWidth / newHeight;
-        }
-
-
-        //projection = glm::ortho(-1.0f, (GLfloat) viewHeight / (GLfloat) viewWidth, -1.0f, 1.0f);
-
-#ifdef DEBUGAPP
-        LOGD("竖屏");
-#endif
-    }
-
+    // 2D图像，创建正交投影即可。目前没用，先预留
+    //glm::mat4 projection;
     GLuint viewLoc = glGetUniformLocation(getProgram(), "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMat));
 
@@ -227,8 +180,8 @@ void BugMediaPictureRenderer::startDraw() {
     //
     // 设置视角，让图像居中且不变形。以左下角为原点，让图像偏移，注意centerX和centerY并非
     // 图像中心点，只是个相对于左下角的偏移。
-    GLint centerX = (viewWidth-newWidth)/2;
-    GLint centerY=(viewHeight-newHeight)/2;
+    GLint centerX = (viewWidth - newWidth) / 2;
+    GLint centerY = (viewHeight - newHeight) / 2;
     glViewport(centerX, centerY, newWidth, newHeight);
 
     //

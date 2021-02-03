@@ -54,7 +54,7 @@ private:
     ANativeWindow *window = NULL;
     EGLBoolean isRelease = EGL_FALSE;
 
-    surfaceTypeEnum surfaceType=NONE_SURFACE;
+    surfaceTypeEnum surfaceType=NO_SURFACE;
     EGLint viewWidth = 0;
     EGLint viewHeight = 0;
 
