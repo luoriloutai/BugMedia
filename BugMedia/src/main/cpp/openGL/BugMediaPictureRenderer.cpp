@@ -220,7 +220,11 @@ void BugMediaPictureRenderer::startDraw() {
     LOGD("视图宽度:%d,视图高度:%d\n图像宽度：%d，图像高度：%d", viewWidth, viewHeight, width, height);
 #endif
 
-    glViewport(0, 0, newWidth, newHeight);
+    GLint centerX = (viewWidth-newWidth)/2;
+    GLint centerY=(viewHeight-newHeight)/2;
+    // 设置视角，让图像居中。以左下角为原点，让图像偏移，注意centerX和centerY并非
+    // 图像中心点，只是个相对于左下角的偏移。
+    glViewport(centerX, centerY, newWidth, newHeight);
 
     //
     // 绘制
