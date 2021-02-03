@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-                graphicsBridge.resize(0, 0, i1, i2);
+                graphicsBridge.resizeView(0, 0, i1, i2);
             }
 
             @Override

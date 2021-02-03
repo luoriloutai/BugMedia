@@ -118,8 +118,8 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 //    graphics->pEGL->swapBuffers();
 //}
 
-void BugMediaGraphics::resize(GLint x, GLint y, GLsizei width, GLsizei height) {
-    pGLES->resize(x, y, width, height);
+void BugMediaGraphics::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
+    pEGL->resizeView(x,y,width,height);
 }
 
 void BugMediaGraphics::swapBuffers() {
@@ -169,6 +169,14 @@ void BugMediaGraphics::unbind2DTexture0(GLuint *texLocation) {
 
 void BugMediaGraphics::useProgram() {
     pGLES->activeProgram();
+}
+
+EGLint BugMediaGraphics::getViewWidth() {
+    return pEGL->getViewWidth();
+}
+
+EGLint BugMediaGraphics::getViewHeight() {
+    return pEGL->getViewHeight();
 }
 
 

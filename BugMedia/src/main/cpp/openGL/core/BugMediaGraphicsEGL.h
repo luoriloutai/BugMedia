@@ -41,6 +41,9 @@ public:
 
     void init();
     EGLBoolean init(EGLContext sharedContext);
+    EGLint getViewWidth();
+    EGLint getViewHeight();
+    void resizeView(EGLint x, EGLint y, EGLint width, EGLint height);
 
 private:
     EGLDisplay display = EGL_NO_DISPLAY;
@@ -52,10 +55,9 @@ private:
     EGLBoolean isRelease = EGL_FALSE;
 
     surfaceTypeEnum surfaceType=NONE_SURFACE;
-
-protected:
     EGLint viewWidth = 0;
     EGLint viewHeight = 0;
+
 };
 
 
