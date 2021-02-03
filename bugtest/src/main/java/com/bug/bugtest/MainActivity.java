@@ -49,9 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                pictureRenderer1 = new PictureRenderer(picBytes,width,height);
-
-                pictureRenderer1.setWindowSurface(surfaceHolder.getSurface());
+                pictureRenderer1 = new PictureRenderer(picBytes,width,height,surfaceHolder.getSurface());
 
                 pictureRenderer1.startRenderer();;
                 Log.d("bugmedia","绘图器创建完成");

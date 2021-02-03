@@ -7,10 +7,6 @@ public abstract class BaseRenderer {
     protected int id = -1;
 
 
-    public void setWindowSurface(Surface surface) {
-        GraphicsBridge.setWindowSurface(surface, id);
-    }
-
     public void setPBufferSurface(int width, int height) {
         GraphicsBridge.setPBufferSurface(width, height, id);
     }
