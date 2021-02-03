@@ -152,11 +152,15 @@ void BugMediaPictureRenderer::startDraw() {
     // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
     useProgram();
 
+    //
     // 缩放尺寸使图像不变形
+    //
+
+    // 预留一个单位矩阵，作为着色器中量的初始化，待添加对图像的空间变换等操作
     glm::mat4 viewMat(1.0f); // 注：初始化一个单位矩阵,需要传一个参数
 
     // 2D图像，创建正交投影即可
-    glm::mat4 projection;
+    //glm::mat4 projection;
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
     GLint newWidth = viewWidth;
@@ -179,7 +183,7 @@ void BugMediaPictureRenderer::startDraw() {
             newWidth = viewHeight * width / height;
         }
 
-        projection = glm::ortho(-1.0f, (GLfloat) viewWidth / (GLfloat) viewHeight, -1.0f, 1.0f);
+        //projection = glm::ortho(-1.0f, (GLfloat) viewWidth / (GLfloat) viewHeight, -1.0f, 1.0f);
 
 
 #ifdef DEBUGAPP
@@ -206,7 +210,7 @@ void BugMediaPictureRenderer::startDraw() {
         }
 
 
-        projection = glm::ortho(-1.0f, (GLfloat) viewHeight / (GLfloat) viewWidth, -1.0f, 1.0f);
+        //projection = glm::ortho(-1.0f, (GLfloat) viewHeight / (GLfloat) viewWidth, -1.0f, 1.0f);
 
 #ifdef DEBUGAPP
         LOGD("竖屏");
@@ -220,10 +224,11 @@ void BugMediaPictureRenderer::startDraw() {
     LOGD("视图宽度:%d,视图高度:%d\n图像宽度：%d，图像高度：%d", viewWidth, viewHeight, width, height);
 #endif
 
+    //
+    // 设置视角，让图像居中且不变形。以左下角为原点，让图像偏移，注意centerX和centerY并非
+    // 图像中心点，只是个相对于左下角的偏移。
     GLint centerX = (viewWidth-newWidth)/2;
     GLint centerY=(viewHeight-newHeight)/2;
-    // 设置视角，让图像居中。以左下角为原点，让图像偏移，注意centerX和centerY并非
-    // 图像中心点，只是个相对于左下角的偏移。
     glViewport(centerX, centerY, newWidth, newHeight);
 
     //
