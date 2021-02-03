@@ -82,13 +82,6 @@ void BugMediaGraphicsGLES::init() {
 #endif
 }
 
-void BugMediaGraphicsGLES::resize(GLint x, GLint y, GLint width, GLint height) {
-    viewport.x = x;
-    viewport.y = y;
-    viewport.width = width;
-    viewport.height = height;
-
-}
 
 GLuint BugMediaGraphicsGLES::getProgram() {
     return pProgram->instance();

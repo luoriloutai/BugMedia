@@ -115,7 +115,7 @@ void BugMediaPictureRenderer::startDraw() {
     configVertex(2, vertexSize, eleSize);
 
     // 属性在着色器中是4维的，但是这里用数组并指定成二维也可以转成着色器需要的数据,
-    // 猜测会根据给定的维度大小去取数据，这里只有二维，后二维估计使用默认值
+    // 猜测会根据给定的维度大小去取数据，这里只有二维，后二维估计使用默认值，与现在着色器效果一样
     setVertexAttribArray("position", 2, GL_FLOAT, GL_FALSE, 0, vertices);
     // 要显示在屏幕上，所以用屏幕坐标
     setVertexAttribArray("texcoord", 2, GL_FLOAT, GL_FALSE, 0, screenCoords);
@@ -152,38 +152,84 @@ void BugMediaPictureRenderer::startDraw() {
     // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
     useProgram();
 
-    // 屏幕旋转后进行缩放
-    // 待完成
+    //
+    // 缩放尺寸使图像不变形
+    //
+
+    // 预留一个单位矩阵，作为着色器中量的初始化，待添加对图像的空间变换等操作
+    glm::mat4 viewMat(1.0f); // 注：初始化一个单位矩阵,需要传一个参数
+
+    // 2D图像，创建正交投影即可
+    //glm::mat4 projection;
+    EGLint viewWidth = getViewWidth();
+    EGLint viewHeight = getViewHeight();
+    GLint newWidth = viewWidth;
+    GLint newHeight = viewWidth * height / width;
+
+    if (viewWidth > viewHeight) { // 横屏
+        if (width > height) { // 横屏横图
+            // 让图像宽度匹配(等于)视图宽度后,高度一定小于等于视图高度
+            // 计算收缩后的高度:
+            // width/height=viewWidth/x
+            // x=viewWidth*height/width
+            newWidth = viewWidth; // 图像宽度现在变成了视图宽度
+            newHeight = viewWidth * height / width;
+        } else { // 横屏竖图
+
+            // 图像[新高度]匹配视图高度，宽度一定小于等于视图宽度
+            // width/height=x/viewHeight
+            // x = viewHeight*width/height
+            newHeight = viewHeight;
+            newWidth = viewHeight * width / height;
+        }
+
+        //projection = glm::ortho(-1.0f, (GLfloat) viewWidth / (GLfloat) viewHeight, -1.0f, 1.0f);
 
 
-//    // Projection matrix
-//    glm::mat4 Projection = glm::ortho(-(float_t) width / height, (float_t) width / height, -1.0f, 1.0f, 0.1f, 100.0f);
-//    //glm::mat4 Projection = glm::frustum(-ratio, ratio, -1.0f, 1.0f, 4.0f, 100.0f);
-//    //glm::mat4 Projection = glm::perspective(45.0f,(float_t)width/height, 0.1f,100.f);
-//
-//    // View matrix
-//    glm::mat4 View = glm::lookAt(
-//            glm::vec3(0, 0, 4), // Camera is at (0,0,1), in World Space
-//            glm::vec3(0, 0, 0), // and looks at the origin
-//            glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
-//    );
-//
-//    // Model matrix
-//    glm::mat4 Model = glm::mat4(1.0f);
-//    Model = glm::scale(Model, glm::vec3(1.0f, 1.0f, 1.0f));
-//    Model = glm::rotate(Model, 20.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-//    Model = glm::rotate(Model, 15.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-//    Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, 0.0f));
-//
-//    glm::mat4 viewMat = Projection * View * Model;
-//    GLuint viewLoc = glGetUniformLocation(getProgram(), "view");
-//    glUniformMatrix4fv(viewLoc,1,GL_FALSE,glm::value_ptr(viewMat));
+#ifdef DEBUGAPP
+        LOGD("横屏");
+#endif
+    } else { // 竖屏
+
+        // 图像小就拉伸，大收缩
+        // 竖屏竖图与横图操作相同
+        //
+        // 先让图像宽度匹配(等于)视图,计算收缩后的高度:
+        // width/height=viewWidth/x
+        // x=viewWidth*height/width
+        newWidth = viewWidth; // 图像宽度现在变成了视图宽度
+        newHeight = viewWidth * height / width;
+
+        //收缩后如果图像高度还是比视图高度大，则使图像[新高度]匹配视图高度，再收缩宽度
+        if (newHeight > viewHeight) {
+
+            // 再次收缩后的图像宽度:
+            // newWidth/ newHeight = x/ viewHeight
+            // x = viewHeight*newWidth/newHeight
+            newWidth = viewHeight * newWidth / newHeight;
+        }
 
 
+        //projection = glm::ortho(-1.0f, (GLfloat) viewHeight / (GLfloat) viewWidth, -1.0f, 1.0f);
 
-    glm::mat4 viewMat(1.0f);
+#ifdef DEBUGAPP
+        LOGD("竖屏");
+#endif
+    }
+
     GLuint viewLoc = glGetUniformLocation(getProgram(), "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMat));
+
+#ifdef DEBUGAPP
+    LOGD("视图宽度:%d,视图高度:%d\n图像宽度：%d，图像高度：%d", viewWidth, viewHeight, width, height);
+#endif
+
+    //
+    // 设置视角，让图像居中且不变形。以左下角为原点，让图像偏移，注意centerX和centerY并非
+    // 图像中心点，只是个相对于左下角的偏移。
+    GLint centerX = (viewWidth-newWidth)/2;
+    GLint centerY=(viewHeight-newHeight)/2;
+    glViewport(centerX, centerY, newWidth, newHeight);
 
     //
     // 绘制

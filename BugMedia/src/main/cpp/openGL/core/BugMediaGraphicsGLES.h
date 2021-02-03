@@ -67,18 +67,6 @@ public:
         GLboolean checkGLError(const char *op);
     };
 
-    // 视野
-    struct Viewport {
-        // x轴方向的偏移量
-        GLint x = 0;
-        // y轴方向的偏移量
-        GLint y = 0;
-        // 宽度。
-        GLsizei width = 0;
-        // 高度。
-        GLsizei height = 0;
-    };
-
     BugMediaGraphicsGLES();
 
     void release();
@@ -94,13 +82,11 @@ public:
 
     void init();
 
-    void resize(GLint x, GLint y, GLsizei width, GLsizei height);
 
 private:
     Shader *pVertexShader = NULL;
     Shader *pFragmentShader = NULL;
     Program *pProgram = NULL;
-    Viewport viewport;
 
     GLboolean checkGLError(const char *op);
 

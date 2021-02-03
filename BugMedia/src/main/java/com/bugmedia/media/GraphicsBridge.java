@@ -28,7 +28,7 @@ public class GraphicsBridge {
 
     public native void pause();
 
-    public native void resize(int x,int y,int width,int height);
+    public native void resizeView(int x,int y,int width,int height);
 
     public native int createPictureRenderer(byte[] data,int width,int height);
 

@@ -43,7 +43,7 @@ public:
 
     void draw();
 
-    void resize(GLint x, GLint y, GLsizei width, GLsizei height);
+    void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 
 protected:
     void swapBuffers();
@@ -70,6 +70,9 @@ protected:
     GLuint set2DTexture0(const GLchar *uniformTexSamplerName,uint8_t * data,GLint width,GLint height);
     // 解绑 2D Texture0纹理单元，并删除纹理
     void unbind2DTexture0(GLuint *texLocation);
+
+    EGLint getViewWidth();
+    EGLint getViewHeight();
 
 private:
     BugMediaGraphicsEGL *pEGL = NULL;
