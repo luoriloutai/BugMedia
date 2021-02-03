@@ -108,7 +108,7 @@ void resizeView(int32_t x, int32_t y, int32_t width, int32_t height, int32_t ren
 //^^^^^^^^^^^ jni ^^^^^^^^^^^^
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jobject clazz, jobject surface, jint rendererId) {
+Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jclass clazz, jobject surface, jint rendererId) {
 #ifdef DEBUGIT
     testCreate(getWindow(env, surface));
 #else
@@ -120,26 +120,26 @@ Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jobject cla
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jobject clazz, jint width, jint height,
+Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jclass clazz, jint width, jint height,
                                                          jint renderer_id) {
     setPBufferSurface(width, height, renderer_id);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_destroy(JNIEnv *env, jobject clazz, jint renderer_id) {
+Java_com_bugmedia_media_GraphicsBridge_destroy(JNIEnv *env, jclass clazz, jint renderer_id) {
     removeRenderer(renderer_id);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jobject clazz, jint renderer_id) {
+Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jclass clazz, jint renderer_id) {
 
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_resizeView(JNIEnv *env, jobject thiz, jint x, jint y, jint width, jint height,
+Java_com_bugmedia_media_GraphicsBridge_resizeView(JNIEnv *env, jclass thiz, jint x, jint y, jint width, jint height,
                                                   jint renderer_id) {
     resizeView(x, y, width, height, renderer_id);
 
@@ -147,7 +147,7 @@ Java_com_bugmedia_media_GraphicsBridge_resizeView(JNIEnv *env, jobject thiz, jin
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_bugmedia_media_GraphicsBridge_createPictureRenderer(JNIEnv *env, jobject thiz, jbyteArray data, jint width,
+Java_com_bugmedia_media_GraphicsBridge_createPictureRenderer(JNIEnv *env, jclass thiz, jbyteArray data, jint width,
                                                              jint height) {
     jbyte *bytes = env->GetByteArrayElements(data, nullptr);
     if (bytes == nullptr) {
@@ -174,7 +174,7 @@ Java_com_bugmedia_media_GraphicsBridge_createPictureRenderer(JNIEnv *env, jobjec
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_startRenderer(JNIEnv *env, jobject thiz, jint renderer_id) {
+Java_com_bugmedia_media_GraphicsBridge_startRenderer(JNIEnv *env, jclass thiz, jint renderer_id) {
 
     startRenderer(renderer_id);
 }

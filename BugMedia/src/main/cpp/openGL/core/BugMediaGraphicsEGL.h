@@ -41,8 +41,8 @@ public:
 
     void init();
     EGLBoolean init(EGLContext sharedContext);
-    EGLint getViewWidth();
-    EGLint getViewHeight();
+    EGLint getViewWidth() const;
+    EGLint getViewHeight() const;
     void resizeView(EGLint x, EGLint y, EGLint width, EGLint height);
 
 private:

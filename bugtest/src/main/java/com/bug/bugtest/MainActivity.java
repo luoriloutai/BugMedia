@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 public class MainActivity extends AppCompatActivity {
 
 
-    GraphicsBridge graphicsBridge = new GraphicsBridge();
+
     SurfaceHolder holder = null;
     int picRendererId;
 
@@ -46,22 +46,22 @@ public class MainActivity extends AppCompatActivity {
                 int len = picBytes.length;
 
 
-                picRendererId = graphicsBridge.createPictureRenderer(picBytes, width, height);
+                picRendererId = GraphicsBridge.createPictureRenderer(picBytes, width, height);
                 Log.d("bugmedia", "图像渲染器id："+picRendererId);
-                graphicsBridge.setWindowSurface(surfaceHolder.getSurface(),picRendererId);
+                GraphicsBridge.setWindowSurface(surfaceHolder.getSurface(),picRendererId);
 
-                graphicsBridge.startRenderer(picRendererId);;
+                GraphicsBridge.startRenderer(picRendererId);;
                 Log.d("bugmedia","绘图器创建完成");
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-                graphicsBridge.resizeView(0, 0, i1, i2,picRendererId);
+                GraphicsBridge.resizeView(0, 0, i1, i2,picRendererId);
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-                graphicsBridge.destroy(picRendererId);
+                GraphicsBridge.destroy(picRendererId);
             }
         });
 

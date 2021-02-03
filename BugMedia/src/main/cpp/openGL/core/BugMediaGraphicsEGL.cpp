@@ -214,11 +214,11 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
     return EGL_TRUE;
 }
 
-EGLint BugMediaGraphicsEGL::getViewWidth() {
+EGLint BugMediaGraphicsEGL::getViewWidth() const {
     return viewWidth;
 }
 
-EGLint BugMediaGraphicsEGL::getViewHeight() {
+EGLint BugMediaGraphicsEGL::getViewHeight() const {
     return viewHeight;
 }
 
