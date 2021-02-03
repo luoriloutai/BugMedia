@@ -1,7 +1,5 @@
 package com.bugmedia.media;
 
-import android.view.Surface;
-
 public abstract class BaseRenderer {
 
     protected int id = -1;
