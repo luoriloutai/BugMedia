@@ -6,8 +6,16 @@
 
 void BugMediaVideoRenderer::setShaderSource() {
 
+
 }
 
 void BugMediaVideoRenderer::startDraw() {
+    //
+    // 不断读取数据进行渲染
+    while (true) {
 
+    }
+
+    //
+    // 释放资源
 }

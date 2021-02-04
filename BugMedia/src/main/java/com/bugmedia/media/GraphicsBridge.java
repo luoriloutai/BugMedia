@@ -16,7 +16,7 @@ public class GraphicsBridge {
 
     protected static native void pause(int rendererId);
 
-    //public static native void resume(int rendererId);
+    public static native void play(int rendererId);
 
     public static native void resizeView(int x,int y,int width,int height,int rendererId);
 

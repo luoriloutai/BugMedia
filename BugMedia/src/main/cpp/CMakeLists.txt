@@ -106,6 +106,13 @@ add_library( # Sets the name of the library.
         openGL/BugMediaTriangleRenderer.cpp
         openGL/BugMediaPictureRenderer.cpp
         openGL/BugMediaVideoRenderer.cpp
+        BugMediaVideoDecoder.cpp
+        BugMediaBaseVideoDecoder.cpp
+        BugMediaAudio.cpp
+        BugMediaAudioFrame.cpp
+        BugMediaVideo.cpp
+        BugMediaVideoFrame.h
+
         )
 
 

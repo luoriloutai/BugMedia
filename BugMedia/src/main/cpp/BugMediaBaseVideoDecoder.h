@@ -1,0 +1,14 @@
+//
+// Created by Gshine on 2021/2/4.
+//
+
+#ifndef SLOWER_BUGMEDIABASEVIDEODECODER_H
+#define SLOWER_BUGMEDIABASEVIDEODECODER_H
+
+
+class BugMediaBaseVideoDecoder {
+
+};
+
+
+#endif //SLOWER_BUGMEDIABASEVIDEODECODER_H

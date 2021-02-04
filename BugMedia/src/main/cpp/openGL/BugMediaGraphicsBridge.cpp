@@ -177,3 +177,9 @@ Java_com_bugmedia_media_GraphicsBridge_startRenderer(JNIEnv *env, jclass thiz, j
 
     startRenderer(renderer_id);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_play(JNIEnv *env, jclass clazz, jint renderer_id) {
+    // TODO: implement play()
+}
