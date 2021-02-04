@@ -23,54 +23,54 @@ include_directories(${base_include_dir}/ffmpeg)
 set(ffmpeg_lib_dir ${libs_dir}/ffmpeg)
 
 
-add_library( avutil
-        SHARED
-        IMPORTED )
-set_target_properties( avutil
-        PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libavutil.so )
-
-add_library( swresample
-        SHARED
-        IMPORTED )
-set_target_properties( swresample
-        PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libswresample.so )
-
-add_library( avcodec
-        SHARED
-        IMPORTED )
-set_target_properties( avcodec
-        PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libavcodec.so )
-
-add_library( avfilter
+add_library(avutil
         SHARED
         IMPORTED)
-set_target_properties( avfilter
+set_target_properties(avutil
         PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libavfilter.so )
+        ${ffmpeg_lib_dir}/libavutil.so)
 
-add_library( swscale
+add_library(swresample
         SHARED
         IMPORTED)
-set_target_properties( swscale
+set_target_properties(swresample
         PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libswscale.so )
+        ${ffmpeg_lib_dir}/libswresample.so)
 
-add_library( avformat
+add_library(avcodec
         SHARED
         IMPORTED)
-set_target_properties( avformat
+set_target_properties(avcodec
         PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libavformat.so )
+        ${ffmpeg_lib_dir}/libavcodec.so)
 
-add_library( avdevice
+add_library(avfilter
         SHARED
         IMPORTED)
-set_target_properties( avdevice
+set_target_properties(avfilter
         PROPERTIES IMPORTED_LOCATION
-        ${ffmpeg_lib_dir}/libavdevice.so )
+        ${ffmpeg_lib_dir}/libavfilter.so)
+
+add_library(swscale
+        SHARED
+        IMPORTED)
+set_target_properties(swscale
+        PROPERTIES IMPORTED_LOCATION
+        ${ffmpeg_lib_dir}/libswscale.so)
+
+add_library(avformat
+        SHARED
+        IMPORTED)
+set_target_properties(avformat
+        PROPERTIES IMPORTED_LOCATION
+        ${ffmpeg_lib_dir}/libavformat.so)
+
+add_library(avdevice
+        SHARED
+        IMPORTED)
+set_target_properties(avdevice
+        PROPERTIES IMPORTED_LOCATION
+        ${ffmpeg_lib_dir}/libavdevice.so)
 
 add_library(
         postproc
@@ -90,12 +90,12 @@ SET_TARGET_PROPERTIES(
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-             bugmedia
+        bugmedia
 
-             # Sets the library as a shared library.
-             SHARED
+        # Sets the library as a shared library.
+        SHARED
 
-             # Provides a relative path to your source file(s).
+        # Provides a relative path to your source file(s).
 
         openGL/core/BugMediaGraphicsGLES.cpp
         openGL/core/BugMediaGraphicsEGL.cpp
@@ -107,17 +107,16 @@ add_library( # Sets the name of the library.
         openGL/BugMediaPictureRenderer.cpp
         openGL/BugMediaVideoRenderer.cpp
         BugMediaVideoDecoder.cpp
-        BugMediaBaseVideoDecoder.cpp
-        BugMediaAudio.cpp
+        BugMediaVideoLoader.cpp
+        BugMediaAudioInfo.cpp
         BugMediaAudioFrame.cpp
-        BugMediaVideo.cpp
+        BugMediaVideoInfo.cpp
         BugMediaVideoFrame.h
         BugMediaAudioFrameQueue.cpp
         BugMediaVideoFrameQueue.cpp
-
+        BugMediaCommon.cpp
+        BugMediaBaseMediaInfo.cpp
         )
-
-
 
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -127,11 +126,11 @@ add_library( # Sets the name of the library.
 # completing its build.
 
 find_library( # Sets the name of the path variable.
-              log-lib
+        log-lib
 
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+        # Specifies the name of the NDK library that
+        # you want CMake to locate.
+        log)
 
 find_library(
         android-lib

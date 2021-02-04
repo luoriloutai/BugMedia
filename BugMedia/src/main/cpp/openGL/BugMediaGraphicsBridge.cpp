@@ -23,7 +23,7 @@
 #include "BugMediaVideoRenderer.h"
 #include <mutex>
 #include <map>
-#include "../BugMediaBaseVideoDecoder.h"
+#include "../BugMediaVideoLoader.h"
 
 using namespace std;
 

@@ -7,14 +7,14 @@
 
 
 #include "core/BugMediaBaseRenderer.h"
-#include "../BugMediaBaseVideoDecoder.h"
+#include "../BugMediaVideoLoader.h"
 
 class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     void setShaderSource();
 
     void startDraw();
 
-    BugMediaBaseVideoDecoder *videoDecoder;
+    BugMediaVideoLoader *videoDecoder;
 
     void prepare();
 
@@ -27,7 +27,7 @@ class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     State currentState;
 
 public:
-    BugMediaVideoRenderer(BugMediaBaseVideoDecoder *decoder);
+    BugMediaVideoRenderer(BugMediaVideoLoader *decoder);
 
     ~BugMediaVideoRenderer();
 

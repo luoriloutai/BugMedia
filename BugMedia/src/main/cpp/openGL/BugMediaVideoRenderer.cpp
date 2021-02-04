@@ -29,7 +29,7 @@ void BugMediaVideoRenderer::startDraw() {
     //
 }
 
-BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaBaseVideoDecoder *decoder) {
+BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaVideoLoader *decoder) {
     videoDecoder = decoder;
     currentState = STOP;
 }
