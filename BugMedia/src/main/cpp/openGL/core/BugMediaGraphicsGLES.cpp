@@ -10,6 +10,9 @@
 //
 BugMediaGraphicsGLES::BugMediaGraphicsGLES() {
     pProgram = new Program();
+    pVertexShader = nullptr;
+    pFragmentShader = nullptr;
+    isRelease = GL_FALSE;
 }
 
 
@@ -20,11 +23,11 @@ void BugMediaGraphicsGLES::release() {
         LOGD("GLES开始释放资源");
 #endif
         delete pFragmentShader;
-        pFragmentShader = NULL;
+        pFragmentShader = nullptr;
         delete pVertexShader;
-        pVertexShader = NULL;
+        pVertexShader = nullptr;
         delete pProgram;
-        pProgram = NULL;
+        pProgram = nullptr;
 
         isRelease = GL_TRUE;
     }
@@ -60,7 +63,7 @@ void BugMediaGraphicsGLES::setShaderSource(const GLchar *vertexShadersource,
 
 void BugMediaGraphicsGLES::activeProgram() {
 
-    if (pProgram != NULL) {
+    if (pProgram != nullptr) {
         if (pProgram->instance() == 0) {
             LOGE("program未成功初始化，不能激活");
             return;
@@ -96,6 +99,8 @@ GLuint BugMediaGraphicsGLES::getProgram() {
 BugMediaGraphicsGLES::Shader::Shader(GLenum shaderType, const GLchar *source) {
     this->type = shaderType;
     this->source = source;
+    handler = 0;
+    isRelease = GL_FALSE;
 
 }
 
@@ -137,7 +142,7 @@ void BugMediaGraphicsGLES::Shader::init() {
 #ifdef DEBUGAPP
         LOGD("%s Shader创建完成 handler： %d\n", shaderName, handler);
 #endif
-        glShaderSource(handler, 1, &source, NULL);
+        glShaderSource(handler, 1, &source, nullptr);
 #ifdef DEBUGAPP
         LOGD("%s Shader载入源码完成:\n%s", shaderName, source);
 #endif
@@ -151,7 +156,7 @@ void BugMediaGraphicsGLES::Shader::init() {
             GLint infoLen = 0;
             glGetShaderiv(handler, GL_INFO_LOG_LENGTH, &infoLen);
             GLchar logInfo[infoLen];
-            glGetShaderInfoLog(handler, infoLen, NULL, logInfo);
+            glGetShaderInfoLog(handler, infoLen, nullptr, logInfo);
             LOGE("%s Shader 编译错误信息：%s\n", shaderName, logInfo);
 #endif
             glDeleteShader(handler);
@@ -173,6 +178,8 @@ void BugMediaGraphicsGLES::Shader::init() {
 //
 
 BugMediaGraphicsGLES::Program::Program() {
+    handler = 0;
+    isRelease = GL_FALSE;
 }
 
 GLboolean BugMediaGraphicsGLES::Program::checkGLError(const char *op) {
@@ -250,7 +257,7 @@ void BugMediaGraphicsGLES::Program::init(BugMediaGraphicsGLES::Shader *vertexSha
             GLint len = 0;
             glGetProgramiv(handler, GL_INFO_LOG_LENGTH, &len);
             GLchar logInfo[len];
-            glGetProgramInfoLog(handler, len, NULL, logInfo);
+            glGetProgramInfoLog(handler, len, nullptr, logInfo);
             LOGE("Could not link program: %s", logInfo);
 
             glDeleteProgram(handler);

@@ -75,8 +75,8 @@ protected:
     EGLint getViewHeight();
 
 private:
-    BugMediaGraphicsEGL *pEGL = NULL;
-    BugMediaGraphicsGLES *pGLES = NULL;
+    BugMediaGraphicsEGL *pEGL;
+    BugMediaGraphicsGLES *pGLES;
 
     // 设置Shader代码
     virtual void setShaderSource() = 0;
@@ -84,7 +84,7 @@ private:
     // 开始绘制
     virtual void startDraw() = 0;
 
-    GLboolean isRelease = GL_FALSE;
+    GLboolean isRelease;
 
     // C的线程函数，必须为静态
     static void *drawBackground(void *pVoid);

@@ -6,8 +6,8 @@
 #define SLOWER_BUGMEDIAVIDEOFRAME_H
 
 
-class BugMediaVideoFrame {
-
+struct BugMediaVideoFrame {
+    BugMediaVideoFrame *next;
 };
 
 

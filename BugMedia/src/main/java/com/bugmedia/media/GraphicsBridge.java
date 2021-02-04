@@ -18,6 +18,8 @@ public class GraphicsBridge {
 
     public static native void play(int rendererId);
 
+    public static native void stop(int rendererId);
+
     public static native void resizeView(int x,int y,int width,int height,int rendererId);
 
     public static native int createPictureRenderer(byte[] data,int width,int height);

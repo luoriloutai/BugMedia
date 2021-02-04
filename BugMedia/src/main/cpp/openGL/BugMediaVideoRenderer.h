@@ -7,11 +7,35 @@
 
 
 #include "core/BugMediaBaseRenderer.h"
+#include "../BugMediaBaseVideoDecoder.h"
 
-class BugMediaVideoRenderer: public BugMediaBaseRenderer {
+class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     void setShaderSource();
 
     void startDraw();
+
+    BugMediaBaseVideoDecoder *videoDecoder;
+
+    void prepare();
+
+    void render();
+
+    enum State {
+        STOP, PLAYING, PAUSE
+    };
+
+    State currentState;
+
+public:
+    BugMediaVideoRenderer(BugMediaBaseVideoDecoder *decoder);
+
+    ~BugMediaVideoRenderer();
+
+    void play();
+
+    void pause();
+
+    void stop();
 };
 
 

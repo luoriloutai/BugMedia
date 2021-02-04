@@ -37,10 +37,10 @@ public:
         void init();
 
     private:
-        GLuint handler = 0;
-        GLenum type = NULL;
-        const GLchar *source = NULL;
-        GLboolean isRelease = GL_FALSE;
+        GLuint handler;
+        GLenum type;
+        const GLchar *source;
+        GLboolean isRelease;
     };
 
     // 渲染程序
@@ -61,8 +61,8 @@ public:
 
 
     private:
-        GLuint handler = 0;
-        GLboolean isRelease = GL_FALSE;
+        GLuint handler;
+        GLboolean isRelease;
 
         GLboolean checkGLError(const char *op);
     };
@@ -84,13 +84,13 @@ public:
 
 
 private:
-    Shader *pVertexShader = NULL;
-    Shader *pFragmentShader = NULL;
-    Program *pProgram = NULL;
+    Shader *pVertexShader;
+    Shader *pFragmentShader;
+    Program *pProgram;
 
     GLboolean checkGLError(const char *op);
 
-    GLboolean isRelease = GL_FALSE;
+    GLboolean isRelease;
 
 
 };

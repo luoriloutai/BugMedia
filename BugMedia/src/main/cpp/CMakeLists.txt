@@ -112,6 +112,8 @@ add_library( # Sets the name of the library.
         BugMediaAudioFrame.cpp
         BugMediaVideo.cpp
         BugMediaVideoFrame.h
+        BugMediaAudioFrameQueue.cpp
+        BugMediaVideoFrameQueue.cpp
 
         )
 

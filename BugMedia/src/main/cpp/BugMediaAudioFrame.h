@@ -6,8 +6,9 @@
 #define SLOWER_BUGMEDIAAUDIOFRAME_H
 
 
-class BugMediaAudioFrame {
+struct BugMediaAudioFrame {
 
+    BugMediaAudioFrame *next;
 };
 
 

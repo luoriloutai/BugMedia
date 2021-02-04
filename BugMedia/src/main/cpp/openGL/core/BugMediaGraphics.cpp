@@ -10,6 +10,8 @@
 using namespace std;
 
 BugMediaGraphics::BugMediaGraphics() {
+    isRelease = false;
+    drawThread = 0;
 
     // 由于绘图对象都要求在同一线程中，
     // 所以设计时构造函数里只初始化与绘图对象无关的对象，
@@ -119,7 +121,7 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 //}
 
 void BugMediaGraphics::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
-    pEGL->resizeView(x,y,width,height);
+    pEGL->resizeView(x, y, width, height);
 }
 
 void BugMediaGraphics::swapBuffers() {

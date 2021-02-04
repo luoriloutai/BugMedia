@@ -23,6 +23,7 @@
 #include "BugMediaVideoRenderer.h"
 #include <mutex>
 #include <map>
+#include "../BugMediaBaseVideoDecoder.h"
 
 using namespace std;
 
@@ -80,9 +81,11 @@ int createPictureRenderer(uint8_t *data, GLint width, GLint height) {
 int createVideoRenderer() {
     lock_guard<mutex> lockGuard(lockObj);
 
-    auto *newRenderer= new BugMediaVideoRenderer();
-    addRenderer(newRenderer);
-    return newRenderer->id;
+    //auto *newRenderer= new BugMediaVideoRenderer();
+    //addRenderer(newRenderer);
+    //return newRenderer->id;
+
+    return -1;
 }
 
 
@@ -182,4 +185,10 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bugmedia_media_GraphicsBridge_play(JNIEnv *env, jclass clazz, jint renderer_id) {
     // TODO: implement play()
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_GraphicsBridge_stop(JNIEnv *env, jclass clazz, jint renderer_id) {
+    // TODO: implement stop()
 }
