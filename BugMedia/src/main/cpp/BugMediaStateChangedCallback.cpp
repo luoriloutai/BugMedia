@@ -3,7 +3,7 @@
 //
 
 #include "BugMediaStateChangedCallback.h"
-#include "openGL/BugMediaVideoRenderer.h"
+#include "BugMediaVideoRenderer.h"
 
 void BugMediaStateChangedCallback::stateChanged(void *obj) {
     ((BugMediaVideoRenderer *) context)->stop();

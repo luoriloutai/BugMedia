@@ -69,7 +69,7 @@ public:
 
     void release();
 
-    BugMediaVideoLoader(const char *url, int bufferSize);
+    BugMediaVideoLoader(const char *url);
 
     ~BugMediaVideoLoader();
 
@@ -85,6 +85,9 @@ public:
         currentVideoDecoder = videoDecoders[ch];
     }
 
+    void setBufferSize(int size);
+
+    void load();
 
 };
 

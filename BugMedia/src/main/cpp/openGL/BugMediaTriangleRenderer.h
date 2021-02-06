@@ -4,7 +4,7 @@
 
 #ifndef SLOWER_BUGMEDIATRIANGLERENDERER_H
 #define SLOWER_BUGMEDIATRIANGLERENDERER_H
-#include "core/BugMediaBaseRenderer.h"
+#include "BugMediaBaseRenderer.h"
 
 class BugMediaTriangleRenderer: public BugMediaBaseRenderer {
 

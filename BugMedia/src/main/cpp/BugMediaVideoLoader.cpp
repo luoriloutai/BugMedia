@@ -6,8 +6,8 @@
 #include "BugMediaVideoLoader.h"
 #include "BugMediaCommon.h"
 
-BugMediaVideoLoader::BugMediaVideoLoader(const char *url, int bufferSize = 100) {
-    maxBufferSize = bufferSize;
+BugMediaVideoLoader::BugMediaVideoLoader(const char *url) {
+    maxBufferSize = 100;
 //    videoFrameQueue = new BugMediaVideoFrameQueue();
 //    audioFrameQueue = new BugMediaAudioFrameQueue();
     this->url = url;
@@ -16,20 +16,13 @@ BugMediaVideoLoader::BugMediaVideoLoader(const char *url, int bufferSize = 100) 
     audioFrameQueue = new BugMediaFrameQueue<BugMediaAudioFrame>();
     videoFrameQueue = new BugMediaFrameQueue<BugMediaVideoFrame>();
 
-    sem_init(&canTakeVideoFrame, 0, 0);
-    sem_init(&canTakeAudioFrame, 0, 0);
-    sem_init(&canFillVideoFrame, 0, maxBufferSize);
-    sem_init(&canFillAudioFrame, 0, maxBufferSize);
 
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_create(&initThread, &attr, initThreadFunc, this);
 }
 
 BugMediaAudioFrame *BugMediaVideoLoader::getAudioFrame() {
     sem_wait(&canTakeAudioFrame);
     auto frame = audioFrameQueue->dequeue();
-    if(!frame->isEnd){
+    if (!frame->isEnd) {
         sem_post(&canFillAudioFrame);
     }
 
@@ -158,8 +151,8 @@ void BugMediaVideoLoader::doAudioDecode() {
 
         BugMediaAudioFrame *aFrame = currentAudioDecoder->getFrame();
         audioFrameQueue->enqueue(aFrame);
-        if (aFrame->isEnd){
-            isAudioEnd= true;
+        if (aFrame->isEnd) {
+            isAudioEnd = true;
             break;
         }
 
@@ -175,8 +168,8 @@ void BugMediaVideoLoader::doVideoDecode() {
 
         BugMediaVideoFrame *vFrame = currentVideoDecoder->getFrame();
         videoFrameQueue->enqueue(vFrame);
-        if(vFrame->isEnd){
-            isVideoEnd= true;
+        if (vFrame->isEnd) {
+            isVideoEnd = true;
             break;
         }
 
@@ -189,11 +182,26 @@ void BugMediaVideoLoader::doVideoDecode() {
 
 BugMediaVideoFrame *BugMediaVideoLoader::getVideoFrame() {
     sem_wait(&canTakeVideoFrame);
-    BugMediaVideoFrame * frame = videoFrameQueue->dequeue();
-    if (!frame->isEnd){
+    BugMediaVideoFrame *frame = videoFrameQueue->dequeue();
+    if (!frame->isEnd) {
         sem_post(&canFillVideoFrame);
     }
     return frame;
+}
+
+void BugMediaVideoLoader::setBufferSize(int size) {
+    maxBufferSize = size;
+}
+
+void BugMediaVideoLoader::load() {
+    sem_init(&canTakeVideoFrame, 0, 0);
+    sem_init(&canTakeAudioFrame, 0, 0);
+    sem_init(&canFillVideoFrame, 0, maxBufferSize);
+    sem_init(&canFillAudioFrame, 0, maxBufferSize);
+
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_create(&initThread, &attr, initThreadFunc, this);
 }
 
 

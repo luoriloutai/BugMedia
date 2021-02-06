@@ -5,7 +5,8 @@
 #ifndef SLOWER_BUGMEDIAPICTURERENDERER_H
 #define SLOWER_BUGMEDIAPICTURERENDERER_H
 
-#include "core/BugMediaBaseRenderer.h"
+#include "BugMediaBaseRenderer.h"
+#include "BugMediaRendererCommon.h"
 
 
 class BugMediaPictureRenderer : public BugMediaBaseRenderer {

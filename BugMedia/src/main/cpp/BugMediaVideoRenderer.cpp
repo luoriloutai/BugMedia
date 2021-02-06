@@ -11,6 +11,7 @@ void BugMediaVideoRenderer::setShaderSource() {
 
 void BugMediaVideoRenderer::startDraw() {
     prepare();
+    //videoLoader->getVideoFrame();
 
     //
     // 不断读取数据进行渲染
@@ -25,19 +26,20 @@ void BugMediaVideoRenderer::startDraw() {
     }
 
     //
-    // 释放资源，EGL资源不能跨线程释放所在在这里释放
+    // 释放资源，EGL资源不能跨线程释放，所以在这里释放
     //
     release();
 }
 
-BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaVideoLoader *loader) {
-    videoLoader = loader;
+BugMediaVideoRenderer::BugMediaVideoRenderer(const char * url) {
     currentState = STOP;
+    videoLoader = new BugMediaVideoLoader(url);
+    //videoLoader->setBufferSize(500);
+    videoLoader->load();
+
     callback = new BugMediaStateChangedCallback(this);
-    loader->stateChangedCallback = callback;
-    //
-    // 这里用了另外一个类为回调函数赋值，因为这里涉及到循环引用，所以
-    // 引入了第三个类
+    //loader->stateChangedCallback = callback;
+
 
 }
 

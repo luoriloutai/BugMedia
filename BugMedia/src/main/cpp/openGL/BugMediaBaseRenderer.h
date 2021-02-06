@@ -5,13 +5,13 @@
 #ifndef SLOWER_BUGMEDIABASERENDERER_H
 #define SLOWER_BUGMEDIABASERENDERER_H
 
-#include "BugMediaGraphics.h"
+#include "core/BugMediaGraphics.h"
 
 
 class BugMediaBaseRenderer : public BugMediaGraphics {
 public:
 
-    int id;
+    int id{};
 
     BugMediaBaseRenderer();
 

@@ -8,8 +8,8 @@
 
 
 
-#include "core/BugMediaBaseRenderer.h"
-#include "../BugMediaVideoLoader.h"
+#include "openGL/BugMediaBaseRenderer.h"
+#include "BugMediaVideoLoader.h"
 
 class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     void setShaderSource();
@@ -30,7 +30,7 @@ class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     State currentState;
 
 public:
-    BugMediaVideoRenderer(BugMediaVideoLoader *loader);
+    BugMediaVideoRenderer(const char *url);
 
     ~BugMediaVideoRenderer();
 

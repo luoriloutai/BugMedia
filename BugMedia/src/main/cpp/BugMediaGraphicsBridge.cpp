@@ -14,16 +14,16 @@
 
 #else
 
-#include "core/BugMediaBaseRenderer.h"
+#include "openGL/BugMediaBaseRenderer.h"
 #include <jni.h>
 #include "BugMediaGraphicsBridge.h"
-#include "BugMediaTriangleRenderer.h"
-#include "core/BugMediaGraphicsCommon.h"
-#include "BugMediaPictureRenderer.h"
+#include "openGL/BugMediaTriangleRenderer.h"
+#include "openGL/core/BugMediaGraphicsCommon.h"
+#include "openGL/BugMediaPictureRenderer.h"
 #include "BugMediaVideoRenderer.h"
 #include <mutex>
 #include <map>
-#include "../BugMediaVideoLoader.h"
+#include "BugMediaVideoLoader.h"
 
 using namespace std;
 

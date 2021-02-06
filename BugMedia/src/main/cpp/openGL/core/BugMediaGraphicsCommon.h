@@ -5,7 +5,7 @@
 #ifndef SLOWER_BUGMEDIAGRAPHICSCOMMON_H
 #define SLOWER_BUGMEDIAGRAPHICSCOMMON_H
 
-#define DEBUGAPP
+//  #define DEBUGAPP
 
 
 #include <android/log.h>
@@ -25,14 +25,6 @@
 enum surfaceTypeEnum {
     NO_SURFACE, WINDOW_SURFACE, PBUFFER_SURFACE
 };
-
-void getShowPictureSize(GLint &newWidth, GLint &newHeight, EGLint &viewWidth, EGLint &viewHeight, GLint &picWidth,
-                        GLint &picHeight);
-
-void scaleCenter(EGLint &viewWidth, EGLint &viewHeight, EGLint &width,
-                EGLint &height);
-
-void moveToCenter(EGLint &viewWidth,EGLint &viewHeight,GLint &width,GLint &height);
 
 
 #endif //SLOWER_BUGMEDIAGRAPHICSCOMMON_H

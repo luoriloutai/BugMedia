@@ -100,12 +100,13 @@ add_library( # Sets the name of the library.
         openGL/core/BugMediaGraphicsGLES.cpp
         openGL/core/BugMediaGraphicsEGL.cpp
         openGL/core/BugMediaGraphics.cpp
-        openGL/core/BugMediaBaseRenderer.cpp
+        openGL/BugMediaBaseRenderer.cpp
         openGL/core/BugMediaGraphicsCommon.cpp
-        openGL/BugMediaGraphicsBridge.cpp
+        BugMediaGraphicsBridge.cpp
         openGL/BugMediaTriangleRenderer.cpp
         openGL/BugMediaPictureRenderer.cpp
-        openGL/BugMediaVideoRenderer.cpp
+        openGL/BugMediaRendererCommon.cpp
+        BugMediaVideoRenderer.cpp
         BugMediaVideoLoader.cpp
         BugMediaAudioDecoder.cpp
         BugMediaAudioFrame.cpp
@@ -116,6 +117,7 @@ add_library( # Sets the name of the library.
         BugMediaCommon.cpp
         BugMediaBaseDecoder.cpp
         BugMediaStateChangedCallback.cpp
+
         )
 
 
