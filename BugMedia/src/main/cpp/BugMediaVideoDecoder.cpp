@@ -31,6 +31,10 @@ BugMediaVideoFrame *BugMediaVideoDecoder::getFrame() {
             frame->pts = avFrame->pts;
             frame->data = avFrame->data;
             frame->isInterlaced = avFrame->interlaced_frame == 1;
+            frame->position=avFrame->pkt_pos;
+            frame->format=avFrame->format;
+            frame->width=avFrame->width;
+            frame->height=avFrame->height;
 
             av_packet_unref(avPacket);
             av_frame_unref(avFrame);
