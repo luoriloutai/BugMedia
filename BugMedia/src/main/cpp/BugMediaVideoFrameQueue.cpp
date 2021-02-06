@@ -5,6 +5,9 @@
 #include "BugMediaVideoFrameQueue.h"
 
 void BugMediaVideoFrameQueue::enqueueFrame(BugMediaVideoFrame *frame) {
+    if (frame== nullptr){
+        return;
+    }
     if (head == nullptr) {
         head = frame;
         tail = frame;
@@ -12,6 +15,7 @@ void BugMediaVideoFrameQueue::enqueueFrame(BugMediaVideoFrame *frame) {
         tail->next = frame;
         tail = frame;
     }
+
 }
 
 BugMediaVideoFrame *BugMediaVideoFrameQueue::dequeueFrame() {
@@ -37,6 +41,3 @@ BugMediaVideoFrameQueue::~BugMediaVideoFrameQueue() {
     }
 }
 
-int BugMediaVideoFrameQueue::size() {
-    return count;
-}

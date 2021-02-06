@@ -10,9 +10,8 @@
 class BugMediaVideoFrameQueue {
     BugMediaVideoFrame *head;
     BugMediaVideoFrame *tail;
-    int count;
+
 public:
-    int size();
 
     void enqueueFrame(BugMediaVideoFrame *frame);
 

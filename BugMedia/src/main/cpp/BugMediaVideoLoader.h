@@ -15,47 +15,52 @@ extern "C" {
 #include "include/ffmpeg/libavutil/time.h"
 }
 
+
 #include "BugMediaAudioFrameQueue.h"
 #include "BugMediaVideoFrameQueue.h"
-#include <thread>
 #include <pthread.h>
-#include "BugMediaVideoInfo.h"
-#include "BugMediaAudioInfo.h"
+#include "BugMediaVideoDecoder.h"
+#include "BugMediaAudioDecoder.h"
+#include <semaphore.h>
+#include "BugMediaStateChangedCallback.h"
 
 
 class BugMediaVideoLoader {
     int maxBufferSize;
-    int minBufferSize;
     BugMediaAudioFrameQueue *audioFrameQueue = nullptr;
     BugMediaVideoFrameQueue *videoFrameQueue = nullptr;
-    BugMediaVideoInfo *videoInfo{};
-    BugMediaAudioInfo *audioInfo{};
-
-    //std::thread *decodeThread;
+    BugMediaVideoDecoder *videoDecoder{};
+    BugMediaAudioDecoder *audioDecoder{};
     const char *url = nullptr;
     AVFormatContext *formatContext = nullptr;
-    AVCodecContext *codecContext = nullptr;
-    AVPacket *packet = nullptr;
-    AVFrame *frame = nullptr;
-    pthread_mutex_t mutex{};
-    pthread_cond_t cond{};
+    sem_t bufferReadable{};
+    sem_t bufferWritable{};
+    pthread_t worker{};
+    bool isRelease = false;
+    bool isEnd = false;
+
 
     void initDecoder();
 
-    void init();
+    static void *threadWorking(void *pVoid);
 
-protected:
-    virtual void release();
+    // 定义该函数是目的是为了在线程中直接使用类内的方法和变量，
+    // 而不需要用传过去的本类的指针去访问，简化写法而已。
+    void doWork();
+
 
 public:
+    BugMediaStateChangedCallback *stateChangedCallback{};
 
-    BugMediaVideoLoader(const char *url);
+    void release();
+
+    BugMediaVideoLoader(const char *url,int bufferSize);
 
     ~BugMediaVideoLoader();
 
     BugMediaAudioFrame *getNextAudioFrame();
 
-    BugMediaVideoFrame *getNextVideoFrame();
+
 
 };
 

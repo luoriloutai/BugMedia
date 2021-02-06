@@ -6,6 +6,8 @@
 #define SLOWER_BUGMEDIAVIDEORENDERER_H
 
 
+
+
 #include "core/BugMediaBaseRenderer.h"
 #include "../BugMediaVideoLoader.h"
 
@@ -14,7 +16,8 @@ class BugMediaVideoRenderer : public BugMediaBaseRenderer {
 
     void startDraw();
 
-    BugMediaVideoLoader *videoDecoder;
+    BugMediaVideoLoader *videoLoader{};
+    BugMediaStateChangedCallback * callback{};
 
     void prepare();
 
@@ -27,7 +30,7 @@ class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     State currentState;
 
 public:
-    BugMediaVideoRenderer(BugMediaVideoLoader *decoder);
+    BugMediaVideoRenderer(BugMediaVideoLoader *loader);
 
     ~BugMediaVideoRenderer();
 
@@ -36,6 +39,7 @@ public:
     void pause();
 
     void stop();
+
 };
 
 

@@ -5,6 +5,9 @@
 #include "BugMediaAudioFrameQueue.h"
 
 void BugMediaAudioFrameQueue::enqueueFrame(BugMediaAudioFrame *frame) {
+    if (frame == nullptr) {
+        return;
+    }
 
     if (head == nullptr) {
         head = frame;
@@ -27,7 +30,7 @@ BugMediaAudioFrame *BugMediaAudioFrameQueue::dequeueFrame() {
 BugMediaAudioFrameQueue::BugMediaAudioFrameQueue() {
     head = nullptr;
     tail = nullptr;
-    count=0;
+    count = 0;
 }
 
 BugMediaAudioFrameQueue::~BugMediaAudioFrameQueue() {
@@ -35,7 +38,7 @@ BugMediaAudioFrameQueue::~BugMediaAudioFrameQueue() {
     while (head) {
         next = head->next;
         delete head;
-        head=next;
+        head = next;
     }
 }
 

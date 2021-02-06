@@ -6,8 +6,17 @@
 #define SLOWER_BUGMEDIAVIDEOFRAME_H
 
 
+#include "include/ffmpeg/libavutil/frame.h"
+
 struct BugMediaVideoFrame {
     BugMediaVideoFrame *next;
+    bool isKeyframe{};
+    bool isInterlaced{};
+    int width{};
+    int height{};
+    uint8_t **data;
+    int64_t pts{};
+
 };
 
 

@@ -15,11 +15,11 @@ void BugMediaVideoRenderer::startDraw() {
     //
     // 不断读取数据进行渲染
     while (true) {
-        if (currentState==PLAYING){
+        if (currentState == PLAYING) {
             render();
-        } else if (currentState==PAUSE){
+        } else if (currentState == PAUSE) {
 
-        }else{
+        } else {
             break;
         }
     }
@@ -27,15 +27,23 @@ void BugMediaVideoRenderer::startDraw() {
     //
     // 释放资源，EGL资源不能跨线程释放所在在这里释放
     //
+    release();
 }
 
-BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaVideoLoader *decoder) {
-    videoDecoder = decoder;
+BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaVideoLoader *loader) {
+    videoLoader = loader;
     currentState = STOP;
+    callback = new BugMediaStateChangedCallback(this);
+    loader->stateChangedCallback = callback;
+    //
+    // 这里用了另外一个类为回调函数赋值，因为这里涉及到循环引用，所以
+    // 引入了第三个类
+
 }
 
 BugMediaVideoRenderer::~BugMediaVideoRenderer() {
-    delete videoDecoder;
+    delete videoLoader;
+    delete callback;
 
 }
 
@@ -59,3 +67,6 @@ void BugMediaVideoRenderer::prepare() {
 void BugMediaVideoRenderer::render() {
 
 }
+
+
+
