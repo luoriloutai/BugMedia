@@ -4,24 +4,6 @@
 
 #include "BugMediaBaseDecoder.h"
 
-int BugMediaBaseDecoder::getTrackCount() {
-    return trackIndices.size();
-}
-
-void BugMediaBaseDecoder::addTrackIndex(int32_t i) {
-    trackIndices.push_back(i);
-}
-
-std::vector<int32_t> BugMediaBaseDecoder::getTrackIndices() const {
-    return trackIndices;
-}
-
-int BugMediaBaseDecoder::getFirstTrackIndex() {
-    if (trackIndices.empty()) {
-        return -1;
-    }
-    return trackIndices[0];
-}
 
 BugMediaBaseDecoder::~BugMediaBaseDecoder() {
 
@@ -35,44 +17,26 @@ BugMediaBaseDecoder::~BugMediaBaseDecoder() {
         avcodec_close(avCodecContext);
         avcodec_free_context(&avCodecContext);
     }
-
-
-    delete avCodecPar;
-    delete avCodec;
-
 }
 
 
-bool BugMediaBaseDecoder::init(AVFormatContext *formatContext,AVCodecParameters *parameters, int32_t duration) {
-    if (avFormatContext== nullptr){
-        avFormatContext=formatContext;
-    }
-    if (this->durationSecond == 0) {
-        this->durationSecond = duration;
-    }
-    if (avCodecPar == nullptr) {
-        avCodecPar = parameters;
-    }
-    if (avCodec == nullptr) {
-        avCodec = avcodec_find_decoder(avCodecPar->codec_id);
-    }
-    if (avCodecContext == nullptr) {
-        avCodecContext = avcodec_alloc_context3(avCodec);
-        if (avcodec_open2(avCodecContext, avCodec, nullptr) != 0) {
-            LOGE("打开解码器失败");
-            return false;
-        }
-    }
-
-
-    return true;
-}
-
-long BugMediaBaseDecoder::getDuration() const {
+int32_t BugMediaBaseDecoder::getDuration() const {
     return durationSecond;
 }
 
-BugMediaBaseDecoder::BugMediaBaseDecoder() {
+BugMediaBaseDecoder::BugMediaBaseDecoder(AVFormatContext *formatContext, int trackIdx) {
+    avFormatContext = formatContext;
+    trackIndex = trackIdx;
+
+    // AV_TIME_BASE=1/1000000秒，即1微秒
+    AVStream * stream = formatContext->streams[trackIdx];
+    durationSecond = stream->duration/AV_TIME_BASE;
+    avCodec = avcodec_find_decoder(stream->codecpar->codec_id);
+    avCodecContext = avcodec_alloc_context3(avCodec);
+    if (avcodec_open2(avCodecContext, avCodec, nullptr) != 0) {
+        throw "打开解码器失败";
+    }
+
     avPacket = av_packet_alloc();
     avFrame = av_frame_alloc();
 }

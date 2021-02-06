@@ -34,14 +34,20 @@ BugMediaAudioFrameQueue::BugMediaAudioFrameQueue() {
 }
 
 BugMediaAudioFrameQueue::~BugMediaAudioFrameQueue() {
+    clear();
+}
+
+int BugMediaAudioFrameQueue::size() const {
+    return count;
+}
+
+void BugMediaAudioFrameQueue::clear() {
     BugMediaAudioFrame *next;
     while (head) {
         next = head->next;
         delete head;
         head = next;
     }
-}
-
-int BugMediaAudioFrameQueue::size() const {
-    return count;
+    head= nullptr;
+    tail= nullptr;
 }

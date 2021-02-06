@@ -19,6 +19,7 @@ public:
     int size() const;
     void enqueueFrame(BugMediaAudioFrame * frame);
     BugMediaAudioFrame * dequeueFrame();
+    void clear();
     BugMediaAudioFrameQueue();
     ~BugMediaAudioFrameQueue();
 

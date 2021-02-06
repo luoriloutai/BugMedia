@@ -21,38 +21,20 @@ extern "C" {
 #include "BugMediaAudioFrame.h"
 
 
-
 class BugMediaBaseDecoder {
 
 protected:
-    std::vector<int32_t> trackIndices;
     int32_t durationSecond = 0;
     AVCodec *avCodec = nullptr;
-    AVCodecParameters *avCodecPar = nullptr;
     AVCodecContext *avCodecContext = nullptr;
     AVPacket *avPacket = nullptr;
     AVFrame *avFrame = nullptr;
-    AVFormatContext * avFormatContext{};
+    AVFormatContext *avFormatContext{};
+    int trackIndex = -1;
 public:
-
-    int getFirstTrackIndex();
-
-    long getDuration() const;
-
-    int getTrackCount();
-
-    void addTrackIndex(int32_t i);
-
-    std::vector<int32_t> getTrackIndices() const;
-
-    bool init(AVFormatContext *formatContext,AVCodecParameters *parameters, int32_t duration);
-
+    int32_t getDuration() const;
     virtual ~ BugMediaBaseDecoder();
-
-    BugMediaBaseDecoder();
-
-
-
+    BugMediaBaseDecoder(AVFormatContext *formatContext, int trackIdx);
 
 };
 

@@ -8,11 +8,10 @@
 #include "BugMediaBaseDecoder.h"
 
 class BugMediaAudioDecoder : public BugMediaBaseDecoder {
-    bool isEnd = false;
 public:
     BugMediaAudioFrame *getFrame();
 
-    bool end() const;
+    BugMediaAudioDecoder(AVFormatContext * formatContext,int trackIdx);
 
 };
 

@@ -23,43 +23,67 @@ extern "C" {
 #include "BugMediaAudioDecoder.h"
 #include <semaphore.h>
 #include "BugMediaStateChangedCallback.h"
+#include <vector>
+#include "BugMediaFrameQueue.h"
+
+using namespace std;
 
 
 class BugMediaVideoLoader {
     int maxBufferSize;
-    BugMediaAudioFrameQueue *audioFrameQueue = nullptr;
-    BugMediaVideoFrameQueue *videoFrameQueue = nullptr;
-    BugMediaVideoDecoder *videoDecoder{};
-    BugMediaAudioDecoder *audioDecoder{};
+//    BugMediaAudioFrameQueue *audioFrameQueue = nullptr;
+//    BugMediaVideoFrameQueue *videoFrameQueue = nullptr;
     const char *url = nullptr;
     AVFormatContext *formatContext = nullptr;
-    sem_t bufferReadable{};
-    sem_t bufferWritable{};
-    pthread_t worker{};
+    pthread_t initThread{};
     bool isRelease = false;
-    bool isEnd = false;
-
+    bool isAudioEnd = false;
+    bool isVideoEnd = false;
+    vector<BugMediaAudioDecoder *> audioDecoders{};
+    vector<BugMediaVideoDecoder *> videoDecoders{};
+    int audioTrackCount{};
+    int videoTrackCount{};
+    BugMediaAudioDecoder *currentAudioDecoder{};
+    BugMediaVideoDecoder *currentVideoDecoder{};
+    BugMediaFrameQueue<BugMediaAudioFrame> *audioFrameQueue{};
+    BugMediaFrameQueue<BugMediaVideoFrame> *videoFrameQueue{};
+    pthread_t audioDecodeThread{};
+    pthread_t videoDecodeThread{};
+    sem_t canFillAudioFrame{};
+    sem_t canTakeAudioFrame{};
+    sem_t canFillVideoFrame{};
+    sem_t canTakeVideoFrame{};
 
     void initDecoder();
-
-    static void *threadWorking(void *pVoid);
-
+    static void *initThreadFunc(void *pVoid);
     // 定义该函数是目的是为了在线程中直接使用类内的方法和变量，
     // 而不需要用传过去的本类的指针去访问，简化写法而已。
-    void doWork();
-
+    void init();
+    static void *audioDecodeFunc(void *pVoid);
+    void doAudioDecode();
+    static void *videoDecodeFunc(void *pVoid);
+    void doVideoDecode();
 
 public:
     BugMediaStateChangedCallback *stateChangedCallback{};
 
     void release();
 
-    BugMediaVideoLoader(const char *url,int bufferSize);
+    BugMediaVideoLoader(const char *url, int bufferSize);
 
     ~BugMediaVideoLoader();
 
-    BugMediaAudioFrame *getNextAudioFrame();
+    BugMediaAudioFrame *getAudioFrame();
 
+    BugMediaVideoFrame *getVideoFrame();
+
+    void switchAudioChannel(int ch) {
+        currentAudioDecoder = audioDecoders[ch];
+    }
+
+    void switchVideoChannel(int ch) {
+        currentVideoDecoder = videoDecoders[ch];
+    }
 
 
 };

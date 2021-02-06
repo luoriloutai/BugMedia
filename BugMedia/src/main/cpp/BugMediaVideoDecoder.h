@@ -13,17 +13,12 @@
 class BugMediaVideoDecoder : public BugMediaBaseDecoder {
 private:
 
-    int maxBufferSize{};
-    BugMediaVideoFrameQueue *videoFrameQueue = nullptr;
-    bool isEnd = false;
-
 public:
 
-    BugMediaVideoDecoder();
+    BugMediaVideoDecoder(AVFormatContext *formatContext,int trackIdx);
 
     ~BugMediaVideoDecoder();
 
-    bool end() const;
     BugMediaVideoFrame *getFrame();
 
 };

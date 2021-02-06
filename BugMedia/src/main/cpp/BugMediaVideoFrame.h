@@ -9,13 +9,16 @@
 #include "include/ffmpeg/libavutil/frame.h"
 
 struct BugMediaVideoFrame {
-    BugMediaVideoFrame *next;
+    BugMediaVideoFrame *next{};
     bool isKeyframe{};
     bool isInterlaced{};
     int width{};
     int height{};
-    uint8_t **data;
+    uint8_t **data{};
     int64_t pts{};
+    bool isEnd= false;
+    int format{};
+    float_t  position{};
 
 };
 

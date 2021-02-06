@@ -6,35 +6,35 @@
 #include "BugMediaVideoLoader.h"
 #include "BugMediaCommon.h"
 
-BugMediaVideoLoader::BugMediaVideoLoader(const char *url,int bufferSize=100) {
+BugMediaVideoLoader::BugMediaVideoLoader(const char *url, int bufferSize = 100) {
     maxBufferSize = bufferSize;
-    videoFrameQueue = new BugMediaVideoFrameQueue();
-    audioFrameQueue = new BugMediaAudioFrameQueue();
+//    videoFrameQueue = new BugMediaVideoFrameQueue();
+//    audioFrameQueue = new BugMediaAudioFrameQueue();
     this->url = url;
-    this->audioDecoder = new BugMediaAudioDecoder();
-    this->videoDecoder = new BugMediaVideoDecoder();
-    sem_init(&bufferReadable, 0, 0);
-    sem_init(&bufferWritable, 0, maxBufferSize);
+    videoDecoders = vector<BugMediaVideoDecoder *>();
+    audioDecoders = vector<BugMediaAudioDecoder *>();
+    audioFrameQueue = new BugMediaFrameQueue<BugMediaAudioFrame>();
+    videoFrameQueue = new BugMediaFrameQueue<BugMediaVideoFrame>();
+
+    sem_init(&canTakeVideoFrame, 0, 0);
+    sem_init(&canTakeAudioFrame, 0, 0);
+    sem_init(&canFillVideoFrame, 0, maxBufferSize);
+    sem_init(&canFillAudioFrame, 0, maxBufferSize);
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_create(&worker, &attr, threadWorking, this);
+    pthread_create(&initThread, &attr, initThreadFunc, this);
 }
 
-BugMediaAudioFrame *BugMediaVideoLoader::getNextAudioFrame() {
-    sem_wait(&bufferReadable);
-    auto frame = audioFrameQueue->dequeueFrame();
-    if (frame == nullptr) {
-        sem_destroy(&bufferReadable);
-        return nullptr;
-    }
-    if (!isEnd) {
-        sem_post(&bufferWritable);
+BugMediaAudioFrame *BugMediaVideoLoader::getAudioFrame() {
+    sem_wait(&canTakeAudioFrame);
+    auto frame = audioFrameQueue->dequeue();
+    if(!frame->isEnd){
+        sem_post(&canFillAudioFrame);
     }
 
     return frame;
 }
-
 
 
 BugMediaVideoLoader::~BugMediaVideoLoader() {
@@ -58,33 +58,37 @@ void BugMediaVideoLoader::initDecoder() {
         return;
     }
 
-    // formatContext->duration以微秒为单位，AV_TIME_BASE恰好是1秒换算成微秒的数
-    auto duration = formatContext->duration / AV_TIME_BASE;
 
     for (int i = 0; i < formatContext->nb_streams; ++i) {
         AVCodecParameters *codecParameters = formatContext->streams[i]->codecpar;
         if (codecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
-            this->audioDecoder->addTrackIndex(i);
-            if (!this->audioDecoder->init(formatContext, codecParameters, duration)) {
+            try {
+                auto *audioDecoder = new BugMediaAudioDecoder(formatContext, i);
+                audioDecoders.push_back(audioDecoder);
+                audioTrackCount++;
+            } catch (char *e) {
+                LOGE("%s", e);
                 LOGE("初始化音频解码器失败");
+                release();
                 return;
             }
 
+
         } else if (codecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
-            this->videoDecoder->addTrackIndex(i);
-            if (!this->videoDecoder->init(formatContext, codecParameters, duration)) {
+            try {
+                auto *videoDecoder = new BugMediaVideoDecoder(formatContext, i);
+                videoDecoders.push_back(videoDecoder);
+                videoTrackCount++;
+            } catch (char *e) {
+                LOGE("%s", e);
                 LOGE("初始化图像解码器失败");
-                return;
+                release();
             }
         }
     }
 
-    if (audioDecoder->getTrackCount() == 0 && videoDecoder->getTrackCount() == 0) {
-        LOGE("未获取到音视频数据");
-        release();
-        return;
-    }
-
+    currentVideoDecoder = videoDecoders[0];
+    currentAudioDecoder = audioDecoders[0];
 
 }
 
@@ -97,10 +101,20 @@ void BugMediaVideoLoader::release() {
 
         delete videoFrameQueue;
         delete audioFrameQueue;
-        delete audioDecoder;
-        delete videoDecoder;
-        sem_destroy(&bufferWritable);
-        sem_destroy(&bufferReadable);
+
+        sem_destroy(&canFillAudioFrame);
+        sem_destroy(&canFillVideoFrame);
+        sem_destroy(&canTakeAudioFrame);
+        sem_destroy(&canTakeVideoFrame);
+
+        for (auto &audioDecoder : audioDecoders) {
+            delete audioDecoder;
+        }
+        for (auto &videoDecoder : videoDecoders) {
+            delete videoDecoder;
+        }
+        pthread_join(audioDecodeThread, nullptr);
+        pthread_join(videoDecodeThread, nullptr);
 
         isRelease = true;
     }
@@ -108,44 +122,78 @@ void BugMediaVideoLoader::release() {
 }
 
 // 线程执行函数,一个壳子，里面装着正经干活的函数
-void *BugMediaVideoLoader::threadWorking(void *pVoid) {
+void *BugMediaVideoLoader::initThreadFunc(void *pVoid) {
     auto *loader = (BugMediaVideoLoader *) pVoid;
     // 使用另一个方法，简化代码写法，不然每个变量访问
     // 都得类似于:loader->xxxx
-    loader->doWork();
+    loader->init();
     return nullptr;
 }
 
-// 正经执行操作的函数
-void BugMediaVideoLoader::doWork() {
+// 正经执行初始化操作的函数
+void BugMediaVideoLoader::init() {
     initDecoder();
+    pthread_create(&audioDecodeThread, nullptr, audioDecodeFunc, this);
+    pthread_create(&videoDecodeThread, nullptr, videoDecodeFunc, this);
+}
 
-    // 一个生产线程，一个消费线程的模式，不需要互斥，
-    // 生产者与消费者之间不需要互斥，
-    // 多生产者之间，多消费者之间才需要，因为它们执
-    // 行相同的操作，会碰撞在一起
+// 音频解码线程函数
+void *BugMediaVideoLoader::audioDecodeFunc(void *pVoid) {
+    auto *loader = (BugMediaVideoLoader *) pVoid;
+    loader->doAudioDecode();
+    return nullptr;
+}
+
+// 视频解码线程函数
+void *BugMediaVideoLoader::videoDecodeFunc(void *pVoid) {
+    auto *loader = (BugMediaVideoLoader *) pVoid;
+    loader->doVideoDecode();
+    return nullptr;
+}
+
+// 线程内音频解码工作
+void BugMediaVideoLoader::doAudioDecode() {
     while (true) {
-        sem_wait(&bufferWritable);
+        sem_wait(&canFillAudioFrame);
 
-        if (audioDecoder->end()) {
+        BugMediaAudioFrame *aFrame = currentAudioDecoder->getFrame();
+        audioFrameQueue->enqueue(aFrame);
+        if (aFrame->isEnd){
+            isAudioEnd= true;
             break;
         }
-        BugMediaAudioFrame *aFrame = audioDecoder->getFrame();
-        audioFrameQueue->enqueueFrame(aFrame);
 
-        if (videoDecoder->end()) {
-            break;
-        }
-        BugMediaVideoFrame *vFrame = videoDecoder->getFrame();
-        videoFrameQueue->enqueueFrame(vFrame);
-
-        sem_post(&bufferReadable);
+        sem_post(&canTakeAudioFrame);
 
     }
-    isEnd = true;
-    sem_destroy(&bufferWritable);
+}
+
+// 线程内视频解码工作
+void BugMediaVideoLoader::doVideoDecode() {
+    while (true) {
+        sem_wait(&canFillVideoFrame);
+
+        BugMediaVideoFrame *vFrame = currentVideoDecoder->getFrame();
+        videoFrameQueue->enqueue(vFrame);
+        if(vFrame->isEnd){
+            isVideoEnd= true;
+            break;
+        }
 
 
+        sem_post(&canTakeVideoFrame);
+
+    }
+
+}
+
+BugMediaVideoFrame *BugMediaVideoLoader::getVideoFrame() {
+    sem_wait(&canTakeVideoFrame);
+    BugMediaVideoFrame * frame = videoFrameQueue->dequeue();
+    if (!frame->isEnd){
+        sem_post(&canFillVideoFrame);
+    }
+    return frame;
 }
 
 
