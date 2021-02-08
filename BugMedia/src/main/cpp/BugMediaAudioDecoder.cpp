@@ -8,7 +8,7 @@ BugMediaAudioFrame *BugMediaAudioDecoder::getFrame() {
 
     sem_wait(&this->canTakeData);
     BugMediaAudioFrame *frame = frameQueue.front();
-    if(!frame->isEnd){
+    if (!frame->isEnd) {
         sem_post(&this->canFillData);
     }
 
@@ -16,9 +16,10 @@ BugMediaAudioFrame *BugMediaAudioDecoder::getFrame() {
 }
 
 
-BugMediaAudioDecoder::BugMediaAudioDecoder(AVFormatContext *formatContext, int trackIdx,int bufferSize) :
+BugMediaAudioDecoder::BugMediaAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize) :
         BugMediaBaseDecoder(formatContext, trackIdx) {
     this->bufferSize = bufferSize;
+
     sem_init(&this->canFillData, 0, this->bufferSize);
     sem_init(&this->canTakeData, 0, 0);
     this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
@@ -114,8 +115,8 @@ void *BugMediaAudioDecoder::decodeRoutine(void *ctx) {
 }
 
 BugMediaAudioDecoder::~BugMediaAudioDecoder() {
-    while (!frameQueue.empty()){
-        BugMediaAudioFrame * frame=frameQueue.front();
+    while (!frameQueue.empty()) {
+        BugMediaAudioFrame *frame = frameQueue.front();
         delete frame;
         frameQueue.pop();
     }
@@ -124,4 +125,16 @@ BugMediaAudioDecoder::~BugMediaAudioDecoder() {
     pthread_join(decodeThread, &retval);
     sem_destroy(&this->canFillData);
     sem_destroy(&this->canTakeData);
+}
+
+uint64_t BugMediaAudioDecoder::getInChannelLayout() {
+    return avCodecContext->channel_layout;
+}
+
+int BugMediaAudioDecoder::getInSampleRate() {
+    return avCodecContext->sample_rate;
+}
+
+AVSampleFormat BugMediaAudioDecoder::getInSampleFormat() {
+    return avCodecContext->sample_fmt;
 }

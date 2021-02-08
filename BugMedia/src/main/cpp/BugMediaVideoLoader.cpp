@@ -140,10 +140,6 @@ void BugMediaVideoLoader::switchVideoChannel(int ch) {
     currentVideoDecoder = videoDecoders[ch];
 }
 
-int BugMediaVideoLoader::fillVideoFrameData(uint8_t *data, int *width, int *height, void *ctx) {
-
-    return 0;
-}
 
 int BugMediaVideoLoader::getAudioTrackCount() const {
     return audioTrackCount;
@@ -156,6 +152,20 @@ int BugMediaVideoLoader::getVideoTrackCount() const {
 int64_t BugMediaVideoLoader::getAudioPts() const {
     return audioPts;
 }
+
+uint64_t BugMediaVideoLoader::getInAudioChannelLayout() {
+    return currentAudioDecoder->getInChannelLayout();
+}
+
+int BugMediaVideoLoader::getInAudioSampleRate() {
+    return currentAudioDecoder->getInSampleRate();
+}
+
+AVSampleFormat BugMediaVideoLoader::getInAudioSampleFormat() {
+    return currentAudioDecoder->getInSampleFormat();
+}
+
+
 
 
 

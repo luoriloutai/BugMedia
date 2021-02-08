@@ -75,7 +75,14 @@ public:
 
     void load();
 
-    static int fillVideoFrameData(uint8_t *data, int *width, int *height, void *ctx);
+    // 获取输入音频的声道格式
+    uint64_t getInAudioChannelLayout();
+
+    // 获取输入音频的采样率
+    int getInAudioSampleRate();
+
+    // 获取输入音频的采样格式
+    AVSampleFormat getInAudioSampleFormat();
 
 };
 
