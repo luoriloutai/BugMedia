@@ -129,7 +129,10 @@ void BugMediaPictureRenderer::onRender() {
     //
 
     // 用图像数据创建2D纹理
-    GLuint texId = set2DTexture0("texSampler", pixelData, width, height);
+    GLuint texId = -1;
+    create2DTexture0(&texId);
+    set2DTexture0ToShader("texSampler", texId, pixelData, width, height);
+
 
 #ifdef DEBUGAPP
     LOGD("纹理创建完毕");
@@ -156,7 +159,7 @@ void BugMediaPictureRenderer::onRender() {
     //
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
-    scaleCenter(viewWidth,viewHeight,width,height);
+    scaleCenter(viewWidth, viewHeight, width, height);
 
     //
     // 变换，未实现

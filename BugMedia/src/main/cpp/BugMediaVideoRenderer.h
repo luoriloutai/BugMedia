@@ -29,6 +29,7 @@ class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     int64_t startTimeMs = -1;
     int64_t videoPst{};
     int64_t delay{};
+    GLuint texId{}; // 纹理id
 
 public:
     BugMediaVideoRenderer(BugMediaVideoLoader *loader);

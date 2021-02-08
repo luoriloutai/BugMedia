@@ -147,22 +147,6 @@ GLuint BugMediaGraphics::getProgram() {
     return pGLES->getProgram();
 }
 
-GLuint BugMediaGraphics::set2DTexture0(const GLchar *uniformTexSamplerName, uint8_t *data, GLint width, GLint height) {
-    GLuint textureId = -1;
-    glGenTextures(1, &textureId);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    // 给纹理对象设置数据
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    GLuint samplerId = glGetUniformLocation(pGLES->getProgram(), uniformTexSamplerName);
-    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
-    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
-    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
-    glUniform1i(samplerId, 0);
-
-
-    return textureId;
-}
 
 void BugMediaGraphics::unbind2DTexture0(GLuint *texLocation) {
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -179,6 +163,23 @@ EGLint BugMediaGraphics::getViewWidth() {
 
 EGLint BugMediaGraphics::getViewHeight() {
     return pEGL->getViewHeight();
+}
+
+void BugMediaGraphics::create2DTexture0(GLuint *textureHandler) {
+    glGenTextures(1, textureHandler);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, *textureHandler);
+}
+
+void BugMediaGraphics::set2DTexture0ToShader(const GLchar *uniformTexSamplerName, GLuint textureHandler, uint8_t *data,
+                                             GLint width, GLint height) {
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    GLuint samplerId = glGetUniformLocation(pGLES->getProgram(), uniformTexSamplerName);
+    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
+    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
+    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
+    glUniform1i(samplerId, 0);
 }
 
 

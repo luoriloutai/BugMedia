@@ -66,10 +66,13 @@ protected:
 
     void useProgram();
 
-    // 使用2D texture0创建纹理对象并设置数据
-    GLuint set2DTexture0(const GLchar *uniformTexSamplerName,uint8_t * data,GLint width,GLint height);
+    // 创建2D texture0纹理对象
+    void create2DTexture0(GLuint *textureHandler);
+    // 给2D Texture0纹理设置图像数据，并传到着色器中
+    void set2DTexture0ToShader(const GLchar *uniformTexSamplerName,GLuint textureHandler, uint8_t *data, GLint width, GLint height);
     // 解绑 2D Texture0纹理单元，并删除纹理
     void unbind2DTexture0(GLuint *texLocation);
+
 
     EGLint getViewWidth();
     EGLint getViewHeight();
