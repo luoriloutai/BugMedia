@@ -13,20 +13,21 @@ BugMediaVideoLoader::BugMediaVideoLoader(const char *url) {
     this->url = url;
     videoDecoders = vector<BugMediaVideoDecoder *>();
     audioDecoders = vector<BugMediaAudioDecoder *>();
-    audioFrameQueue = new BugMediaFrameQueue<BugMediaAudioFrame>();
-    videoFrameQueue = new BugMediaFrameQueue<BugMediaVideoFrame>();
+//    audioFrameQueue = new BugMediaFrameQueue<BugMediaAudioFrame>();
+//    videoFrameQueue = new BugMediaFrameQueue<BugMediaVideoFrame>();
 
 
 }
 
 BugMediaAudioFrame *BugMediaVideoLoader::getAudioFrame() {
-    sem_wait(&canTakeAudioFrame);
-    auto frame = audioFrameQueue->dequeue();
-    if (!frame->isEnd) {
-        sem_post(&canFillAudioFrame);
-    }
-
-    return frame;
+//    sem_wait(&canTakeAudioFrame);
+//    auto frame = audioFrameQueue->dequeue();
+//    if (!frame->isEnd) {
+//        sem_post(&canFillAudioFrame);
+//    }
+//
+//    return frame;
+    return nullptr;
 }
 
 
@@ -70,6 +71,7 @@ void BugMediaVideoLoader::initDecoder() {
         } else if (codecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
             try {
                 auto *videoDecoder = new BugMediaVideoDecoder(formatContext, i);
+
                 videoDecoders.push_back(videoDecoder);
                 videoTrackCount++;
             } catch (char *e) {
@@ -92,13 +94,15 @@ void BugMediaVideoLoader::release() {
             avformat_free_context(formatContext);
         }
 
-        delete videoFrameQueue;
-        delete audioFrameQueue;
-
-        sem_destroy(&canFillAudioFrame);
-        sem_destroy(&canFillVideoFrame);
-        sem_destroy(&canTakeAudioFrame);
-        sem_destroy(&canTakeVideoFrame);
+//        videoFrameQueue->clear();
+//        audioFrameQueue->clear();
+//        delete videoFrameQueue;
+//        delete audioFrameQueue;
+//
+//        sem_destroy(&canFillAudioFrame);
+//        sem_destroy(&canFillVideoFrame);
+//        sem_destroy(&canTakeAudioFrame);
+//        sem_destroy(&canTakeVideoFrame);
 
         for (auto &audioDecoder : audioDecoders) {
             delete audioDecoder;
@@ -106,9 +110,9 @@ void BugMediaVideoLoader::release() {
         for (auto &videoDecoder : videoDecoders) {
             delete videoDecoder;
         }
-        pthread_join(audioDecodeThread, nullptr);
-        pthread_join(videoDecodeThread, nullptr);
-
+//        pthread_join(audioDecodeThread, nullptr);
+//        pthread_join(videoDecodeThread, nullptr);
+        pthread_join(initThread, nullptr);
         isRelease = true;
     }
 
@@ -126,8 +130,8 @@ void *BugMediaVideoLoader::initThreadFunc(void *pVoid) {
 // 正经执行初始化操作的函数
 void BugMediaVideoLoader::init() {
     initDecoder();
-    pthread_create(&audioDecodeThread, nullptr, audioDecodeFunc, this);
-    pthread_create(&videoDecodeThread, nullptr, videoDecodeFunc, this);
+//    pthread_create(&audioDecodeThread, nullptr, audioDecodeFunc, this);
+//    pthread_create(&videoDecodeThread, nullptr, videoDecodeFunc, this);
 }
 
 // 音频解码线程函数
@@ -146,47 +150,48 @@ void *BugMediaVideoLoader::videoDecodeFunc(void *pVoid) {
 
 // 线程内音频解码工作
 void BugMediaVideoLoader::doAudioDecode() {
-    while (true) {
-        sem_wait(&canFillAudioFrame);
-
-        BugMediaAudioFrame *aFrame = currentAudioDecoder->getFrame();
-        audioFrameQueue->enqueue(aFrame);
-        if (aFrame->isEnd) {
-            isAudioEnd = true;
-            break;
-        }
-
-        sem_post(&canTakeAudioFrame);
-
-    }
+//    while (true) {
+//        sem_wait(&canFillAudioFrame);
+//
+//        BugMediaAudioFrame *aFrame = currentAudioDecoder->getFrame();
+//        audioFrameQueue->enqueue(aFrame);
+//        if (aFrame->isEnd) {
+//            isAudioEnd = true;
+//            break;
+//        }
+//
+//        sem_post(&canTakeAudioFrame);
+//
+//    }
 }
 
 // 线程内视频解码工作
 void BugMediaVideoLoader::doVideoDecode() {
-    while (true) {
-        sem_wait(&canFillVideoFrame);
-
-        BugMediaVideoFrame *vFrame = currentVideoDecoder->getFrame();
-        videoFrameQueue->enqueue(vFrame);
-        if (vFrame->isEnd) {
-            isVideoEnd = true;
-            break;
-        }
-
-
-        sem_post(&canTakeVideoFrame);
-
-    }
+//    while (true) {
+//        sem_wait(&canFillVideoFrame);
+//
+//        BugMediaVideoFrame *vFrame = currentVideoDecoder->getFrame();
+//        videoFrameQueue->enqueue(vFrame);
+//        if (vFrame->isEnd) {
+//            isVideoEnd = true;
+//            break;
+//        }
+//
+//
+//        sem_post(&canTakeVideoFrame);
+//
+//    }
 
 }
 
 BugMediaVideoFrame *BugMediaVideoLoader::getVideoFrame() {
-    sem_wait(&canTakeVideoFrame);
-    BugMediaVideoFrame *frame = videoFrameQueue->dequeue();
-    if (!frame->isEnd) {
-        sem_post(&canFillVideoFrame);
-    }
-    return frame;
+//    sem_wait(&canTakeVideoFrame);
+//    BugMediaVideoFrame *frame = videoFrameQueue->dequeue();
+//    if (!frame->isEnd) {
+//        sem_post(&canFillVideoFrame);
+//    }
+//    return frame;
+    return nullptr;
 }
 
 void BugMediaVideoLoader::setBufferSize(int size) {
@@ -194,14 +199,29 @@ void BugMediaVideoLoader::setBufferSize(int size) {
 }
 
 void BugMediaVideoLoader::load() {
-    sem_init(&canTakeVideoFrame, 0, 0);
-    sem_init(&canTakeAudioFrame, 0, 0);
-    sem_init(&canFillVideoFrame, 0, maxBufferSize);
-    sem_init(&canFillAudioFrame, 0, maxBufferSize);
+//    sem_init(&canTakeVideoFrame, 0, 0);
+//    sem_init(&canTakeAudioFrame, 0, 0);
+//    sem_init(&canFillVideoFrame, 0, maxBufferSize);
+//    sem_init(&canFillAudioFrame, 0, maxBufferSize);
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_create(&initThread, &attr, initThreadFunc, this);
 }
+
+void BugMediaVideoLoader::switchAudioChannel(int ch) {
+    currentAudioDecoder = audioDecoders[ch];
+}
+
+void BugMediaVideoLoader::switchVideoChannel(int ch) {
+    currentVideoDecoder = videoDecoders[ch];
+}
+
+int BugMediaVideoLoader::fillVideoFrameData(uint8_t *data, int *width, int *height, void *ctx) {
+
+    return 0;
+}
+
+
 
 

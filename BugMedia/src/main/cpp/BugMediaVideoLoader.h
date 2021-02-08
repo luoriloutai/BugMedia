@@ -22,7 +22,6 @@ extern "C" {
 #include "BugMediaVideoDecoder.h"
 #include "BugMediaAudioDecoder.h"
 #include <semaphore.h>
-#include "BugMediaStateChangedCallback.h"
 #include <vector>
 #include "BugMediaFrameQueue.h"
 
@@ -45,14 +44,14 @@ class BugMediaVideoLoader {
     int videoTrackCount{};
     BugMediaAudioDecoder *currentAudioDecoder{};
     BugMediaVideoDecoder *currentVideoDecoder{};
-    BugMediaFrameQueue<BugMediaAudioFrame> *audioFrameQueue{};
-    BugMediaFrameQueue<BugMediaVideoFrame> *videoFrameQueue{};
-    pthread_t audioDecodeThread{};
-    pthread_t videoDecodeThread{};
-    sem_t canFillAudioFrame{};
-    sem_t canTakeAudioFrame{};
-    sem_t canFillVideoFrame{};
-    sem_t canTakeVideoFrame{};
+//    BugMediaFrameQueue<BugMediaAudioFrame> *audioFrameQueue{};
+//    BugMediaFrameQueue<BugMediaVideoFrame> *videoFrameQueue{};
+//    pthread_t audioDecodeThread{};
+//    pthread_t videoDecodeThread{};
+//    sem_t canFillAudioFrame{};
+//    sem_t canTakeAudioFrame{};
+//    sem_t canFillVideoFrame{};
+//    sem_t canTakeVideoFrame{};
 
     void initDecoder();
     static void *initThreadFunc(void *pVoid);
@@ -65,7 +64,6 @@ class BugMediaVideoLoader {
     void doVideoDecode();
 
 public:
-    BugMediaStateChangedCallback *stateChangedCallback{};
 
     void release();
 
@@ -77,17 +75,15 @@ public:
 
     BugMediaVideoFrame *getVideoFrame();
 
-    void switchAudioChannel(int ch) {
-        currentAudioDecoder = audioDecoders[ch];
-    }
+    void switchAudioChannel(int ch);
 
-    void switchVideoChannel(int ch) {
-        currentVideoDecoder = videoDecoders[ch];
-    }
+    void switchVideoChannel(int ch);
 
     void setBufferSize(int size);
 
     void load();
+
+    static int fillVideoFrameData(uint8_t *data,int *width,int *height,void * ctx);
 
 };
 

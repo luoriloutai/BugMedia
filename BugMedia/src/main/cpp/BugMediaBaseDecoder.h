@@ -17,9 +17,6 @@ extern "C" {
 
 #include <vector>
 #include "BugMediaCommon.h"
-#include "BugMediaVideoFrame.h"
-#include "BugMediaAudioFrame.h"
-
 
 class BugMediaBaseDecoder {
 
@@ -31,9 +28,13 @@ protected:
     AVFrame *avFrame = nullptr;
     AVFormatContext *avFormatContext{};
     int trackIndex = -1;
+    const char *codecType{};
+
 public:
     int32_t getDuration() const;
+
     virtual ~ BugMediaBaseDecoder();
+
     BugMediaBaseDecoder(AVFormatContext *formatContext, int trackIdx);
 
 };

@@ -12,6 +12,7 @@ void BugMediaVideoRenderer::setShaderSource() {
 void BugMediaVideoRenderer::startDraw() {
     prepare();
     //videoLoader->getVideoFrame();
+    //videoLoader->getAudioFrame();
 
     //
     // 不断读取数据进行渲染
@@ -31,21 +32,13 @@ void BugMediaVideoRenderer::startDraw() {
     release();
 }
 
-BugMediaVideoRenderer::BugMediaVideoRenderer(const char * url) {
+BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaVideoLoader *loader) {
     currentState = STOP;
-    videoLoader = new BugMediaVideoLoader(url);
-    //videoLoader->setBufferSize(500);
-    videoLoader->load();
-
-    callback = new BugMediaStateChangedCallback(this);
-    //loader->stateChangedCallback = callback;
-
-
+    videoLoader = loader;
 }
 
 BugMediaVideoRenderer::~BugMediaVideoRenderer() {
-    delete videoLoader;
-    delete callback;
+
 
 }
 
@@ -67,7 +60,16 @@ void BugMediaVideoRenderer::prepare() {
 }
 
 void BugMediaVideoRenderer::render() {
+    BugMediaVideoFrame *frame = videoLoader->getVideoFrame();
 
+
+//    if (getFrameData != nullptr) {
+//
+//       int ret = getFrameData(data, &width,&height,this);
+//       if(ret!=0){
+//           LOGE("获取视频帧数据错误");
+//       }
+//    }
 }
 
 

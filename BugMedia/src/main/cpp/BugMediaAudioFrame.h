@@ -11,6 +11,8 @@ struct BugMediaAudioFrame {
     BugMediaAudioFrame *next;
 
     uint8_t **data{};
+
+    // 以毫秒为单位的时间戳
     int64_t pts{};
     bool isEnd= false;
     int format{};
