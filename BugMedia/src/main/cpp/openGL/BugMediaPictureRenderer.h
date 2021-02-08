@@ -12,7 +12,7 @@
 class BugMediaPictureRenderer : public BugMediaBaseRenderer {
     void setShaderSource();
 
-    void startDraw();
+    void onRender();
 
     uint8_t *pixelData;
     GLint width;

@@ -66,7 +66,7 @@ void BugMediaPictureRenderer::setShaderSource() {
     setShaderSources(vertextShaderSource, fragShaderSource);
 }
 
-void BugMediaPictureRenderer::startDraw() {
+void BugMediaPictureRenderer::onRender() {
 #ifdef DEBUGAPP
     LOGD("图像绘制开始");
 #endif

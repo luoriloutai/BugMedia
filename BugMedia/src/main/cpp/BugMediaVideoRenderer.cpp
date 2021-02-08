@@ -9,7 +9,7 @@ void BugMediaVideoRenderer::setShaderSource() {
 
 }
 
-void BugMediaVideoRenderer::startDraw() {
+void BugMediaVideoRenderer::onRender() {
     prepare();
 
     //
@@ -20,7 +20,7 @@ void BugMediaVideoRenderer::startDraw() {
                 startTimeMs = getCurMsTime();
             }
 
-            if (render()){
+            if (renderOnce()){
                 break;
             }
 
@@ -66,7 +66,7 @@ void BugMediaVideoRenderer::prepare() {
 
 }
 
-bool BugMediaVideoRenderer::render() {
+bool BugMediaVideoRenderer::renderOnce() {
     BugMediaVideoFrame *frame = videoLoader->getVideoFrame();
     audioPts = videoLoader->getAudioPts();
     if (frame->isEnd) {

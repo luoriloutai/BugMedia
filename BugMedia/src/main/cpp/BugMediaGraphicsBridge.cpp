@@ -90,7 +90,7 @@ int createVideoRenderer() {
 
 
 void startRenderer(int32_t rendererId) {
-    renderers.at(rendererId)->draw();
+    renderers.at(rendererId)->render();
 }
 
 void setWindowSurface(JNIEnv *env, jobject surface, int32_t rendererId) {

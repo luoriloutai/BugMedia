@@ -31,7 +31,7 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 }
 
 
-void BugMediaGraphics::draw() {
+void BugMediaGraphics::render() {
     // 虚方法
     setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
     //
@@ -97,7 +97,7 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
     graphics->pGLES->activeProgram();
 
     // 虚方法
-    graphics->startDraw();
+    graphics->onRender();
 
 #ifdef DEBUGAPP
     LOGD("绘制结束");

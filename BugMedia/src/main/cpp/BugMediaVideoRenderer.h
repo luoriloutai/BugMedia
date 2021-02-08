@@ -12,12 +12,12 @@
 class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     void setShaderSource();
 
-    void startDraw();
+    void onRender();
 
     void prepare();
 
     //渲染并返回是否结束条件
-    bool render();
+    bool renderOnce();
 
     State currentState = UNSTART;
     int64_t audioPts{};

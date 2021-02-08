@@ -25,7 +25,7 @@ void BugMediaTriangleRenderer::setShaderSource() {
     setShaderSources(vertextShaderSource, fragShaderSource);
 }
 
-void BugMediaTriangleRenderer::startDraw() {
+void BugMediaTriangleRenderer::onRender() {
 #ifdef DEBUGAPP
     LOGD("startDraw开始");
 #endif
