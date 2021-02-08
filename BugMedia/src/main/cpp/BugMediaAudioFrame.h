@@ -4,6 +4,7 @@
 
 #ifndef SLOWER_BUGMEDIAAUDIOFRAME_H
 #define SLOWER_BUGMEDIAAUDIOFRAME_H
+
 #include "include/ffmpeg/libavutil/frame.h"
 
 struct BugMediaAudioFrame {
@@ -14,11 +15,12 @@ struct BugMediaAudioFrame {
 
     // 以毫秒为单位的时间戳
     int64_t pts{};
-    bool isEnd= false;
+    bool isEnd = false;
     int format{};
-    float_t  position{};
+    float_t position{};
     int sampleRate{};
     int channels{};
+    int sampleCount{};
 };
 
 

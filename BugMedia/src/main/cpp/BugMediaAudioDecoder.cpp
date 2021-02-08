@@ -80,6 +80,7 @@ void BugMediaAudioDecoder::decode() {
                 // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
                 aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
                 aFrame->data = avFrame->data;
+                aFrame->sampleCount = avFrame->nb_samples;
 
                 frameQueue.push(aFrame);
                 sem_post(&this->canTakeData);

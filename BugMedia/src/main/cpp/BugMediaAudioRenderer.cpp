@@ -37,9 +37,9 @@ BugMediaAudioRenderer::BugMediaAudioRenderer(BugMediaVideoLoader *loader) {
             nullptr, CHANNEL_COUNTS,
             resampleCount, getSampleFmt(), 1);
 
-
-    outputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
-    outputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
+    outputBuffer[0] = (uint8_t *) malloc(resampleSize);
+//    outputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
+//    outputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
 
 }
 
