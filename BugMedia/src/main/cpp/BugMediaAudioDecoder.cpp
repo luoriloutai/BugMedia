@@ -120,6 +120,8 @@ BugMediaAudioDecoder::~BugMediaAudioDecoder() {
         frameQueue.pop();
     }
 
+    void *retval;
+    pthread_join(decodeThread, &retval);
     sem_destroy(&this->canFillData);
     sem_destroy(&this->canTakeData);
 }

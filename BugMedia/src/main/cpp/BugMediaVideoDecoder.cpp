@@ -7,7 +7,7 @@
 BugMediaVideoFrame *BugMediaVideoDecoder::getFrame() {
     sem_wait(&this->canTakeData);
     BugMediaVideoFrame *frame = frameQueue.front();
-    if(!frame->isEnd){
+    if (!frame->isEnd) {
         sem_post(&this->canFillData);
     }
 
@@ -23,11 +23,14 @@ BugMediaVideoDecoder::BugMediaVideoDecoder(AVFormatContext *formatContext, int t
 }
 
 BugMediaVideoDecoder::~BugMediaVideoDecoder() {
-    while (!frameQueue.empty()){
-        BugMediaVideoFrame * frame=frameQueue.front();
+    while (!frameQueue.empty()) {
+        BugMediaVideoFrame *frame = frameQueue.front();
         delete frame;
         frameQueue.pop();
     }
+
+    void *retval;
+    pthread_join(decodeThread, &retval);
     sem_destroy(&this->canFillData);
     sem_destroy(&this->canTakeData);
 }
