@@ -87,9 +87,9 @@ void BugMediaVideoRenderer::stop() {
 // 相对固定的东西放在这里
 void BugMediaVideoRenderer::prepare() {
 
-    //
+    // ==============
     // 顶点与纹理坐标
-    //
+    // ==============
 
     // 顶点坐标，以物体中心为原点
     GLfloat vertices[] = {-1.0f, -1.0f,
@@ -144,16 +144,12 @@ void BugMediaVideoRenderer::prepare() {
 #endif
 
 
-    //
+    // ==========
     // 纹理操作
-    //
+    // ==========
 
     // 用图像数据创建2D纹理
-    //texId = set2DTexture0("texSampler", pixelData, width, height);
-
-#ifdef DEBUGAPP
-    LOGD("纹理创建完毕");
-#endif
+    create2DTexture0(&texId);
 
     //
     //设置纹理参数
@@ -172,6 +168,9 @@ void BugMediaVideoRenderer::prepare() {
 }
 
 bool BugMediaVideoRenderer::renderOnce() {
+    //
+    // 获取帧
+    //
     BugMediaVideoFrame *frame = videoLoader->getVideoFrame();
     audioPts = videoLoader->getAudioPts();
     if (frame->isEnd) {
@@ -179,8 +178,11 @@ bool BugMediaVideoRenderer::renderOnce() {
         return true;
     }
 
+
+
+    set2DTexture0ToShader("texSampler",texId ,*frame->data, frame->width, frame->height);
     //更新一个unform之前你必须先使用程序（调用glUseProgram)
-    // 有动态变换的地方也应该先调用useProgram，否则绘制的图形不会变
+    // 每次更新设置后都应调用
     useProgram();
 
     //
@@ -188,7 +190,7 @@ bool BugMediaVideoRenderer::renderOnce() {
     //
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
-    scaleCenter(viewWidth,viewHeight,width,height);
+    scaleCenter(viewWidth,viewHeight,frame->width, frame->height);
 
     //
     // 变换，未实现
@@ -202,9 +204,9 @@ bool BugMediaVideoRenderer::renderOnce() {
     GLuint viewLoc = glGetUniformLocation(getProgram(), "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMat));
 
-#ifdef DEBUGAPP
-    LOGD("视图宽度:%d,视图高度:%d\n图像宽度：%d，图像高度：%d", viewWidth, viewHeight, width, height);
-#endif
+    //
+    // 控制渲染时机
+    //
 
 
     //
