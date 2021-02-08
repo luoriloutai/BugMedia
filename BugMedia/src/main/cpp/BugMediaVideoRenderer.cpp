@@ -11,17 +11,24 @@ void BugMediaVideoRenderer::setShaderSource() {
 
 void BugMediaVideoRenderer::startDraw() {
     prepare();
-    //videoLoader->getVideoFrame();
-    //videoLoader->getAudioFrame();
 
     //
     // 不断读取数据进行渲染
     while (true) {
         if (currentState == PLAYING) {
-            render();
-        } else if (currentState == PAUSE) {
+            if (startTimeMs == -1) {
+                startTimeMs = getCurMsTime();
+            }
 
-        } else {
+            if (render()){
+                break;
+            }
+
+        } else if (currentState == PAUSE) {
+            startTimeMs = startTimeMs + videoPst;
+            //startTimeMs = getCurMsTime()-videoPst;
+
+        } else if (currentState == STOP) {
             break;
         }
     }
@@ -59,17 +66,17 @@ void BugMediaVideoRenderer::prepare() {
 
 }
 
-void BugMediaVideoRenderer::render() {
+bool BugMediaVideoRenderer::render() {
     BugMediaVideoFrame *frame = videoLoader->getVideoFrame();
+    audioPts = videoLoader->getAudioPts();
+    if (frame->isEnd) {
+        currentState = STOP;
+        return true;
+    }
 
 
-//    if (getFrameData != nullptr) {
-//
-//       int ret = getFrameData(data, &width,&height,this);
-//       if(ret!=0){
-//           LOGE("获取视频帧数据错误");
-//       }
-//    }
+
+    return false;
 }
 
 

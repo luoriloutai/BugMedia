@@ -6,8 +6,19 @@
 #define SLOWER_BUGMEDIAAUDIORENDERER_H
 
 
-class BugMediaAudioRenderer {
+#include "BugMediaVideoLoader.h"
 
+class BugMediaAudioRenderer {
+    State currentState = UNSTART;
+    BugMediaVideoLoader *videoLoader{};
+public:
+    void play();
+
+    void pause();
+
+    void stop();
+
+    BugMediaAudioRenderer(BugMediaVideoLoader *loader);
 };
 
 

@@ -18,6 +18,9 @@ class BugMediaPlayer {
 public:
     BugMediaPlayer(const char *url);
     ~BugMediaPlayer();
+    void play();
+    void pause();
+    void stop();
 };
 
 
