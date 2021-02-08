@@ -23,15 +23,12 @@ extern "C" {
 #include "BugMediaAudioDecoder.h"
 #include <semaphore.h>
 #include <vector>
-#include "BugMediaFrameQueue.h"
 
 using namespace std;
 
 
 class BugMediaVideoLoader {
     int maxBufferSize;
-//    BugMediaAudioFrameQueue *audioFrameQueue = nullptr;
-//    BugMediaVideoFrameQueue *videoFrameQueue = nullptr;
     const char *url = nullptr;
     AVFormatContext *formatContext = nullptr;
     pthread_t initThread{};
@@ -44,36 +41,31 @@ class BugMediaVideoLoader {
     int videoTrackCount{};
     BugMediaAudioDecoder *currentAudioDecoder{};
     BugMediaVideoDecoder *currentVideoDecoder{};
-//    BugMediaFrameQueue<BugMediaAudioFrame> *audioFrameQueue{};
-//    BugMediaFrameQueue<BugMediaVideoFrame> *videoFrameQueue{};
-//    pthread_t audioDecodeThread{};
-//    pthread_t videoDecodeThread{};
-//    sem_t canFillAudioFrame{};
-//    sem_t canTakeAudioFrame{};
-//    sem_t canFillVideoFrame{};
-//    sem_t canTakeVideoFrame{};
+    int64_t audioPts{};
 
-    void initDecoder();
     static void *initThreadFunc(void *pVoid);
+
     // 定义该函数是目的是为了在线程中直接使用类内的方法和变量，
     // 而不需要用传过去的本类的指针去访问，简化写法而已。
     void init();
-    static void *audioDecodeFunc(void *pVoid);
-    void doAudioDecode();
-    static void *videoDecodeFunc(void *pVoid);
-    void doVideoDecode();
 
 public:
 
     void release();
 
-    BugMediaVideoLoader(const char *url);
+    BugMediaVideoLoader(const char *url, int bufferSize = 100);
 
     ~BugMediaVideoLoader();
 
     BugMediaAudioFrame *getAudioFrame();
 
     BugMediaVideoFrame *getVideoFrame();
+
+    int64_t getAudioPts() const;
+
+    int getAudioTrackCount() const;
+
+    int getVideoTrackCount() const;
 
     void switchAudioChannel(int ch);
 
@@ -83,7 +75,7 @@ public:
 
     void load();
 
-    static int fillVideoFrameData(uint8_t *data,int *width,int *height,void * ctx);
+    static int fillVideoFrameData(uint8_t *data, int *width, int *height, void *ctx);
 
 };
 

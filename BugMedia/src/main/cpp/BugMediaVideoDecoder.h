@@ -7,14 +7,15 @@
 
 #include "BugMediaBaseDecoder.h"
 #include "BugMediaVideoFrame.h"
-#include "BugMediaFrameQueue.h"
 #include <pthread.h>
 #include <semaphore.h>
+#include <queue>
+using namespace std;
 
 class BugMediaVideoDecoder : public BugMediaBaseDecoder {
 private:
 
-    BugMediaFrameQueue<BugMediaVideoFrame> frameQueue{};
+    queue<BugMediaVideoFrame*> frameQueue{};
     int bufferSize{};
     pthread_t decodeThread{};
     sem_t canFillData{};

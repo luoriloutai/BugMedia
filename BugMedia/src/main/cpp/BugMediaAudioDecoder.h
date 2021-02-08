@@ -9,11 +9,12 @@
 #include "BugMediaAudioFrame.h"
 #include <pthread.h>
 #include <semaphore.h>
-#include "BugMediaFrameQueue.h"
+#include <queue>
+using namespace std;
 
 
 class BugMediaAudioDecoder : public BugMediaBaseDecoder {
-    BugMediaFrameQueue<BugMediaAudioFrame> frameQueue{};
+    queue<BugMediaAudioFrame*> frameQueue{};
     int bufferSize{};
     pthread_t decodeThread{};
     sem_t canFillData{};
@@ -28,7 +29,7 @@ class BugMediaAudioDecoder : public BugMediaBaseDecoder {
 public:
     BugMediaAudioFrame *getFrame();
 
-    BugMediaAudioDecoder(AVFormatContext * formatContext,int trackIdx);
+    BugMediaAudioDecoder(AVFormatContext * formatContext,int trackIdx,int bufferSize=100);
 
     ~BugMediaAudioDecoder();
 

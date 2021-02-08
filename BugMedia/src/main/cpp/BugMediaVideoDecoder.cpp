@@ -6,8 +6,11 @@
 
 BugMediaVideoFrame *BugMediaVideoDecoder::getFrame() {
     sem_wait(&this->canTakeData);
-    BugMediaVideoFrame *frame = frameQueue.dequeue();
-    sem_post(&this->canFillData);
+    BugMediaVideoFrame *frame = frameQueue.front();
+    if(!frame->isEnd){
+        sem_post(&this->canFillData);
+    }
+
     return frame;
 }
 
@@ -20,7 +23,11 @@ BugMediaVideoDecoder::BugMediaVideoDecoder(AVFormatContext *formatContext, int t
 }
 
 BugMediaVideoDecoder::~BugMediaVideoDecoder() {
-    frameQueue.clear();
+    while (!frameQueue.empty()){
+        BugMediaVideoFrame * frame=frameQueue.front();
+        delete frame;
+        frameQueue.pop();
+    }
     sem_destroy(&this->canFillData);
     sem_destroy(&this->canTakeData);
 }
@@ -35,7 +42,7 @@ void BugMediaVideoDecoder::decode() {
             // 非正常结束
             auto *frame = new BugMediaVideoFrame();
             frame->isEnd = true;
-            frameQueue.enqueue(frame);
+            frameQueue.push(frame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
             return;
@@ -55,7 +62,7 @@ void BugMediaVideoDecoder::decode() {
                 // 让帧来作为判断结束的依据
                 auto *frame = new BugMediaVideoFrame();
                 frame->isEnd = true;
-                frameQueue.enqueue(frame);
+                frameQueue.push(frame);
                 sem_post(&this->canTakeData);
                 return;
             }
@@ -85,7 +92,7 @@ void BugMediaVideoDecoder::decode() {
                 vFrame->width = avFrame->width;
                 vFrame->height = avFrame->height;
 
-                frameQueue.enqueue(vFrame);
+                frameQueue.push(vFrame);
                 sem_post(&this->canTakeData);
 
 
@@ -98,7 +105,7 @@ void BugMediaVideoDecoder::decode() {
                 // 就是整个流中的最后一帧，此时解码应结束
                 auto *frame = new BugMediaVideoFrame();
                 frame->isEnd = true;
-                frameQueue.enqueue(frame);
+                frameQueue.push(frame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
                 break;

@@ -7,13 +7,16 @@
 BugMediaAudioFrame *BugMediaAudioDecoder::getFrame() {
 
     sem_wait(&this->canTakeData);
-    BugMediaAudioFrame *frame = frameQueue.dequeue();
-    sem_post(&this->canFillData);
+    BugMediaAudioFrame *frame = frameQueue.front();
+    if(!frame->isEnd){
+        sem_post(&this->canFillData);
+    }
+
     return frame;
 }
 
 
-BugMediaAudioDecoder::BugMediaAudioDecoder(AVFormatContext *formatContext, int trackIdx) :
+BugMediaAudioDecoder::BugMediaAudioDecoder(AVFormatContext *formatContext, int trackIdx,int bufferSize) :
         BugMediaBaseDecoder(formatContext, trackIdx) {
     this->bufferSize = bufferSize;
     sem_init(&this->canFillData, 0, this->bufferSize);
@@ -30,7 +33,7 @@ void BugMediaAudioDecoder::decode() {
             // 非正常结束
             auto *frame = new BugMediaAudioFrame();
             frame->isEnd = true;
-            frameQueue.enqueue(frame);
+            frameQueue.push(frame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
             return;
@@ -50,7 +53,7 @@ void BugMediaAudioDecoder::decode() {
                 // 让帧来作为判断结束的依据
                 auto *frame = new BugMediaAudioFrame();
                 frame->isEnd = true;
-                frameQueue.enqueue(frame);
+                frameQueue.push(frame);
                 sem_post(&this->canTakeData);
                 return;
             }
@@ -77,7 +80,7 @@ void BugMediaAudioDecoder::decode() {
                 aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
                 aFrame->data = avFrame->data;
 
-                frameQueue.enqueue(aFrame);
+                frameQueue.push(aFrame);
                 sem_post(&this->canTakeData);
 
             } else if (receiveRet == AVERROR_EOF) {
@@ -86,7 +89,7 @@ void BugMediaAudioDecoder::decode() {
                 // 就是整个流中的最后一帧，此时解码应结束
                 auto *frame = new BugMediaAudioFrame();
                 frame->isEnd = true;
-                frameQueue.enqueue(frame);
+                frameQueue.push(frame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
                 break;
@@ -111,7 +114,12 @@ void *BugMediaAudioDecoder::decodeRoutine(void *ctx) {
 }
 
 BugMediaAudioDecoder::~BugMediaAudioDecoder() {
-    frameQueue.clear();
+    while (!frameQueue.empty()){
+        BugMediaAudioFrame * frame=frameQueue.front();
+        delete frame;
+        frameQueue.pop();
+    }
+
     sem_destroy(&this->canFillData);
     sem_destroy(&this->canTakeData);
 }
