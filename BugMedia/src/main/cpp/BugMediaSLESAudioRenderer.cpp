@@ -130,7 +130,7 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
     // 获取帧
     //
     BugMediaDecoder::BugMediaAVFrame *frame = videoLoader->getAudioFrame();
-    if(frame== nullptr){
+    if (frame == nullptr) {
         currentState = STOP;
         return true;
     }
@@ -139,8 +139,15 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
         return true;
     }
 
+    int64_t pass= getCurMsTime() - startTimeMs;
+    delay = frame->audioFrame->pts - pass;
+    // pts比当前时间大，说明要等待时间到
+    if (delay>0) {
+        av_usleep(delay);
+    }
+
     // 转换音频，统一格式，便于播放
-    int ret = swr_convert(swrContext, outputBuffer, resampleSize / 2,
+    int ret = swr_convert(swrContext, outputBuffer, resampleSize,
                           (const uint8_t **) (frame->audioFrame->data), frame->audioFrame->sampleCount);
     if (ret > 0) {
         auto *data = (uint8_t *) malloc(resampleSize);
@@ -200,6 +207,7 @@ void BugMediaSLESAudioRenderer::doRender() {
             if (renderOnce()) {
                 break;
             }
+
 
             resumePlay();
 
