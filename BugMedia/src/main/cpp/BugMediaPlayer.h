@@ -12,7 +12,7 @@
 class BugMediaPlayer {
 
     BugMediaRenderer *audioRenderer{};
-    BugMediaRenderer *videoRenderer{};
+    BugMediaVideoRenderer *videoRenderer{};
     BugMediaVideoLoader *videoLoader{};
 
 public:

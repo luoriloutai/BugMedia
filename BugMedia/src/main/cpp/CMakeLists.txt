@@ -116,6 +116,7 @@ add_library( # Sets the name of the library.
         BugMediaFFmpegBaseDecoder.cpp
         BugMediaSLESAudioRenderer.cpp
         BugMediaPlayer.cpp
+        interfaces/BugMediaVideoRenderer.cpp
 
         )
 

@@ -15,7 +15,7 @@ public:
 
     virtual void stop() = 0;
 
-    virtual ~BugMediaRenderer() = 0;
+    virtual ~BugMediaRenderer() {};
 };
 
 #endif //SLOWER_BUGMEDIARENDERER_H

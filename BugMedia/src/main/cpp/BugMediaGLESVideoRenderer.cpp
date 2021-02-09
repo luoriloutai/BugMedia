@@ -227,5 +227,17 @@ void BugMediaGLESVideoRenderer::render() {
     BugMediaGraphics::render();
 }
 
+void BugMediaGLESVideoRenderer::setWindowSurface(JNIEnv *env, jobject jSurface) {
+    BugMediaGraphics::setWindowSurface(env, jSurface);
+}
+
+void BugMediaGLESVideoRenderer::setPBufferSurface(EGLint width, EGLint height) {
+    BugMediaGraphics::setPBufferSurface(width, height);
+}
+
+void BugMediaGLESVideoRenderer::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
+    BugMediaGraphics::resizeView(x, y, width, height);
+}
+
 
 

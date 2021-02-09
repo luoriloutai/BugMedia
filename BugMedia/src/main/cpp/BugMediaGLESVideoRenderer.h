@@ -8,10 +8,10 @@
 
 #include "openGL/BugMediaBaseRenderer.h"
 #include "BugMediaVideoLoader.h"
-#include "interfaces/BugMediaRenderer.h"
+#include "interfaces/BugMediaVideoRenderer.h"
 
 
-class BugMediaGLESVideoRenderer :virtual protected BugMediaBaseRenderer, public BugMediaRenderer {
+class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer, virtual public BugMediaVideoRenderer {
     void setShaderSource();
 
     void onRender();
@@ -45,6 +45,12 @@ public:
     void stop();
 
     void render();
+
+    void setWindowSurface(JNIEnv *env, jobject jSurface);
+
+    void setPBufferSurface(EGLint width, EGLint height);
+
+    void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 
 //    typedef int (*GetVideoFrameCallback)(uint8_t* data,int *width,int *height,void *ctx);
 //

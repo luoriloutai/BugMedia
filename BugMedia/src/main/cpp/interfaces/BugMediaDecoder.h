@@ -17,6 +17,7 @@ public:
 
 
     virtual BugMediaAVFrame *getFrame()=0;
+    virtual ~BugMediaDecoder(){}
 };
 
 #endif //SLOWER_BUGMEDIADECODER_H
