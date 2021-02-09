@@ -4,15 +4,18 @@
 
 #ifndef SLOWER_BUGMEDIARENDERER_H
 #define SLOWER_BUGMEDIARENDERER_H
-class BugMediaRenderer{
+
+class BugMediaRenderer {
 public:
-    virtual void render()=0;
+    virtual void render() = 0;
 
-    virtual void play()=0;
+    virtual void play() = 0;
 
-    virtual void pause()=0;
+    virtual void pause() = 0;
 
-    virtual void stop()=0;
+    virtual void stop() = 0;
+
+    virtual ~BugMediaRenderer() = 0;
 };
 
 #endif //SLOWER_BUGMEDIARENDERER_H
