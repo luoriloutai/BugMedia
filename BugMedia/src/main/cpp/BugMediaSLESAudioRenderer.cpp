@@ -130,6 +130,10 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
     // 获取帧
     //
     BugMediaDecoder::BugMediaAVFrame *frame = videoLoader->getAudioFrame();
+    if(frame== nullptr){
+        currentState = STOP;
+        return true;
+    }
     if (frame->audioFrame->isEnd) {
         currentState = STOP;
         return true;
@@ -139,13 +143,17 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
     int ret = swr_convert(swrContext, outputBuffer, resampleSize / 2,
                           (const uint8_t **) (frame->audioFrame->data), frame->audioFrame->sampleCount);
     if (ret > 0) {
-        auto *pcmData = new PcmData(outputBuffer[0], resampleSize);
+        auto *data = (uint8_t *) malloc(resampleSize);
+        memcpy(data, outputBuffer[0], resampleSize);
+        auto *pcmData = new PcmData(data, resampleSize);
         playQueue.push(pcmData);
         sem_post(&canTakeData);
     } else {
         sem_post(&canFillQueue);
     }
 
+    delete frame->audioFrame;
+    delete frame;
 
     return false;
 }
