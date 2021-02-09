@@ -11,9 +11,6 @@ extern "C"{
 
 
 struct BugMediaAudioFrame {
-
-    BugMediaAudioFrame *next;
-
     uint8_t **data{};
 
     // 以毫秒为单位的时间戳

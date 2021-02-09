@@ -2,10 +2,10 @@
 // Created by Gshine on 2021/2/4.
 //
 
-#ifndef SLOWER_BUGMEDIAAUDIODECODER_H
-#define SLOWER_BUGMEDIAAUDIODECODER_H
+#ifndef SLOWER_BUGMEDIAFFMPEGAUDIODECODER_H
+#define SLOWER_BUGMEDIAFFMPEGAUDIODECODER_H
 
-#include "BugMediaBaseDecoder.h"
+#include "BugMediaFFmpegBaseDecoder.h"
 #include "BugMediaAudioFrame.h"
 #include <pthread.h>
 #include <semaphore.h>
@@ -15,7 +15,7 @@
 using namespace std;
 
 
-class BugMediaAudioDecoder : public BugMediaBaseDecoder, public BugMediaDecoder {
+class BugMediaFFmpegAudioDecoder : public BugMediaFFmpegBaseDecoder, public BugMediaDecoder {
     //queue<BugMediaAudioFrame *> frameQueue{};
     queue<BugMediaAVFrame *> frameQueue{};
     int bufferSize{};
@@ -47,11 +47,11 @@ public:
     // 获取输入音频的采样格式
     AVSampleFormat getInSampleFormat();
 
-    BugMediaAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
+    BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
 
-    ~BugMediaAudioDecoder();
+    ~BugMediaFFmpegAudioDecoder();
 
 };
 
 
-#endif //SLOWER_BUGMEDIAAUDIODECODER_H
+#endif //SLOWER_BUGMEDIAFFMPEGAUDIODECODER_H

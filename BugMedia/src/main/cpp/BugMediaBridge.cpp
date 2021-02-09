@@ -16,7 +16,7 @@
 
 #include "openGL/BugMediaBaseRenderer.h"
 #include <jni.h>
-#include "BugMediaGraphicsBridge.h"
+#include "BugMediaBridge.h"
 #include "openGL/BugMediaTriangleRenderer.h"
 #include "openGL/core/BugMediaGraphicsCommon.h"
 #include "openGL/BugMediaPictureRenderer.h"

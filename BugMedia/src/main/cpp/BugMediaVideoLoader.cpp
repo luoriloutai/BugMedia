@@ -9,8 +9,8 @@
 BugMediaVideoLoader::BugMediaVideoLoader(const char *url, int bufferSize) {
     maxBufferSize = bufferSize;
     this->url = url;
-    //videoDecoders = vector<BugMediaVideoDecoder *>();
-    //audioDecoders = vector<BugMediaAudioDecoder *>();
+    //videoDecoders = vector<BugMediaFFmpegVideoDecoder *>();
+    //audioDecoders = vector<BugMediaFFmpegAudioDecoder *>();
 
 }
 
@@ -71,7 +71,7 @@ void BugMediaVideoLoader::init() {
         AVCodecParameters *codecParameters = formatContext->streams[i]->codecpar;
         if (codecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
             try {
-                auto *audioDecoder = new BugMediaAudioDecoder(formatContext, i, maxBufferSize);
+                auto *audioDecoder = new BugMediaFFmpegAudioDecoder(formatContext, i, maxBufferSize);
                 audioDecoders.push_back(audioDecoder);
                 audioTrackCount++;
             } catch (char *e) {
@@ -84,7 +84,7 @@ void BugMediaVideoLoader::init() {
 
         } else if (codecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
             try {
-                auto *videoDecoder = new BugMediaVideoDecoder(formatContext, i, maxBufferSize);
+                auto *videoDecoder = new BugMediaFFmpegVideoDecoder(formatContext, i, maxBufferSize);
 
                 videoDecoders.push_back(videoDecoder);
                 videoTrackCount++;

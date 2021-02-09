@@ -2,10 +2,10 @@
 // Created by Gshine on 2021/2/4.
 //
 
-#include "BugMediaBaseDecoder.h"
+#include "BugMediaFFmpegBaseDecoder.h"
 
 
-BugMediaBaseDecoder::~BugMediaBaseDecoder() {
+BugMediaFFmpegBaseDecoder::~BugMediaFFmpegBaseDecoder() {
 
     if (avPacket != nullptr) {
         av_packet_free(&avPacket);
@@ -20,11 +20,11 @@ BugMediaBaseDecoder::~BugMediaBaseDecoder() {
 }
 
 
-int32_t BugMediaBaseDecoder::getDuration() const {
+int32_t BugMediaFFmpegBaseDecoder::getDuration() const {
     return durationSecond;
 }
 
-BugMediaBaseDecoder::BugMediaBaseDecoder(AVFormatContext *formatContext, int trackIdx) {
+BugMediaFFmpegBaseDecoder::BugMediaFFmpegBaseDecoder(AVFormatContext *formatContext, int trackIdx) {
     avFormatContext = formatContext;
     trackIndex = trackIdx;
 

@@ -11,7 +11,6 @@ extern "C"{
 
 
 struct BugMediaVideoFrame {
-    BugMediaVideoFrame *next{};
     bool isKeyframe{};
     bool isInterlaced{};
     int width{};

@@ -2,10 +2,10 @@
 // Created by Gshine on 2021/2/4.
 //
 
-#ifndef SLOWER_BUGMEDIAVIDEODECODER_H
-#define SLOWER_BUGMEDIAVIDEODECODER_H
+#ifndef SLOWER_BUGMEDIAFFMPEGVIDEODECODER_H
+#define SLOWER_BUGMEDIAFFMPEGVIDEODECODER_H
 
-#include "BugMediaBaseDecoder.h"
+#include "BugMediaFFmpegBaseDecoder.h"
 #include "BugMediaVideoFrame.h"
 #include <pthread.h>
 #include <semaphore.h>
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-class BugMediaVideoDecoder : public BugMediaBaseDecoder, public BugMediaDecoder {
+class BugMediaFFmpegVideoDecoder : public BugMediaFFmpegBaseDecoder, public BugMediaDecoder {
 private:
 
     //queue<BugMediaVideoFrame *> frameQueue{};
@@ -36,9 +36,9 @@ private:
 
 public:
 
-    BugMediaVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
+    BugMediaFFmpegVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
 
-    ~BugMediaVideoDecoder();
+    ~BugMediaFFmpegVideoDecoder();
 
     //BugMediaVideoFrame *getFrame();
 
@@ -47,4 +47,4 @@ public:
 };
 
 
-#endif //SLOWER_BUGMEDIAVIDEODECODER_H
+#endif //SLOWER_BUGMEDIAFFMPEGVIDEODECODER_H

@@ -2,11 +2,12 @@
 // Created by Gshine on 2021/2/4.
 //
 
-#include "BugMediaVideoDecoder.h"
+#include "BugMediaFFmpegAudioDecoder.h"
 
-//BugMediaVideoFrame *BugMediaVideoDecoder::getFrame() {
+//BugMediaAudioFrame *BugMediaFFmpegAudioDecoder::getFrame() {
+//
 //    sem_wait(&this->canTakeData);
-//    BugMediaVideoFrame *frame = frameQueue.front();
+//    BugMediaAudioFrame *frame = frameQueue.front();
 //    if (!frame->isEnd) {
 //        sem_post(&this->canFillData);
 //    }
@@ -14,30 +15,17 @@
 //    return frame;
 //}
 
-BugMediaVideoDecoder::BugMediaVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize)
-        : BugMediaBaseDecoder(formatContext, trackIdx) {
+
+BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize) :
+        BugMediaFFmpegBaseDecoder(formatContext, trackIdx) {
     this->bufferSize = bufferSize;
+
     sem_init(&this->canFillData, 0, this->bufferSize);
     sem_init(&this->canTakeData, 0, 0);
     this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
 }
 
-BugMediaVideoDecoder::~BugMediaVideoDecoder() {
-    while (!frameQueue.empty()) {
-        BugMediaAVFrame *frame = frameQueue.front();
-        delete frame->videoFrame;
-        delete frame;
-        frameQueue.pop();
-    }
-
-    void *retval;
-    pthread_join(decodeThread, &retval);
-    sem_destroy(&this->canFillData);
-    sem_destroy(&this->canTakeData);
-}
-
-
-void BugMediaVideoDecoder::decode() {
+void BugMediaFFmpegAudioDecoder::decode() {
     bool continueDecode = true;
     while (continueDecode) {
         sem_wait(&this->canFillData);
@@ -45,9 +33,9 @@ void BugMediaVideoDecoder::decode() {
         if (av_read_frame(avFormatContext, avPacket) != 0) {
             // 非正常结束
             auto *frame = new BugMediaAVFrame();
-            auto *vFrame = new BugMediaVideoFrame();
-            frame->videoFrame=vFrame;
-            frame->videoFrame->isEnd = true;
+            auto aFrame = new BugMediaAudioFrame();
+            frame->audioFrame = aFrame;
+            frame->audioFrame->isEnd = true;
             frameQueue.push(frame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
@@ -67,9 +55,9 @@ void BugMediaVideoDecoder::decode() {
                 // 结束的时候也往队列放一个帧，将其结束标志设置上，
                 // 让帧来作为判断结束的依据
                 auto *frame = new BugMediaAVFrame();
-                auto *vFrame = new BugMediaVideoFrame();
-                frame->videoFrame=vFrame;
-                frame->videoFrame->isEnd = true;
+                auto aFrame = new BugMediaAudioFrame();
+                frame->audioFrame = aFrame;
+                frame->audioFrame->isEnd = true;
                 frameQueue.push(frame);
                 sem_post(&this->canTakeData);
                 return;
@@ -84,39 +72,33 @@ void BugMediaVideoDecoder::decode() {
             if (receiveRet == 0) {
                 // 返回0说明取帧成功，并且该包中还有其他帧没取出来，需要再次取
 
-                auto *frame = new BugMediaAVFrame();
-                auto *vFrame = new BugMediaVideoFrame();
-                frame->videoFrame=vFrame;
-                frame->videoFrame->isKeyframe = avFrame->key_frame == 1;
-
+                auto *aFrame = new BugMediaAudioFrame();
+                aFrame->channels = avFrame->channels;
+                aFrame->format = avFrame->format;
+                aFrame->position = avFrame->pkt_pos;
+                aFrame->sampleRate = avFrame->sample_rate;
                 // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
                 // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
                 // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
                 // 分母得出的数。
                 // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-                frame->videoFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
-                frame->videoFrame->data = avFrame->data;
-                frame->videoFrame->isInterlaced = avFrame->interlaced_frame == 1;
-                frame->videoFrame->position = avFrame->pkt_pos;
-                frame->videoFrame->format = avFrame->format;
-                frame->videoFrame->width = avFrame->width;
-                frame->videoFrame->height = avFrame->height;
-
+                aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
+                aFrame->data = avFrame->data;
+                aFrame->sampleCount = avFrame->nb_samples;
+                auto *frame = new BugMediaAVFrame();
+                frame->audioFrame=aFrame;
                 frameQueue.push(frame);
                 sem_post(&this->canTakeData);
 
-
-                // hint:
-                //avFrame->repeat_pict
-                //av_packet_rescale_ts()
             } else if (receiveRet == AVERROR_EOF) {
                 // 正常结束
                 // 一个包有可能是流中的最后一个包，最后一个包的最后一帧
                 // 就是整个流中的最后一帧，此时解码应结束
+                auto *aFrame = new BugMediaAudioFrame();
+                aFrame->isEnd = true;
                 auto *frame = new BugMediaAVFrame();
-                auto *vFrame = new BugMediaVideoFrame();
-                frame->videoFrame=vFrame;
-                frame->videoFrame->isEnd = true;
+                frame->audioFrame=aFrame;
+
                 frameQueue.push(frame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
@@ -133,31 +115,49 @@ void BugMediaVideoDecoder::decode() {
         av_packet_unref(avPacket);
         // av_frame_unref()可以对帧解引用，但这里不需要调用，因为avcodec_receive_frame()会调用它。
     }
-
-
 }
 
-void *BugMediaVideoDecoder::decodeRoutine(void *ctx) {
-    auto self = (BugMediaVideoDecoder *) ctx;
+void *BugMediaFFmpegAudioDecoder::decodeRoutine(void *ctx) {
+    auto self = (BugMediaFFmpegAudioDecoder *) ctx;
     self->decode();
     return nullptr;
 }
 
-BugMediaDecoder::BugMediaAVFrame *BugMediaVideoDecoder::getFrame() {
+BugMediaFFmpegAudioDecoder::~BugMediaFFmpegAudioDecoder() {
+    while (!frameQueue.empty()) {
+        BugMediaAVFrame *frame = frameQueue.front();
+        delete frame->audioFrame;
+        delete frame;
+        frameQueue.pop();
+    }
+
+    void *retval;
+    pthread_join(decodeThread, &retval);
+    sem_destroy(&this->canFillData);
+    sem_destroy(&this->canTakeData);
+}
+
+uint64_t BugMediaFFmpegAudioDecoder::getInChannelLayout() {
+    return avCodecContext->channel_layout;
+}
+
+int BugMediaFFmpegAudioDecoder::getInSampleRate() {
+    return avCodecContext->sample_rate;
+}
+
+AVSampleFormat BugMediaFFmpegAudioDecoder::getInSampleFormat() {
+    return avCodecContext->sample_fmt;
+}
+
+BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegAudioDecoder::getFrame() {
+
     sem_wait(&this->canTakeData);
     BugMediaAVFrame *frame = frameQueue.front();
     frameQueue.pop();
-    if (!frame->videoFrame->isEnd) {
+    if (!frame->audioFrame->isEnd) {
         sem_post(&this->canFillData);
     }
 
-    return frame;
+
+    return nullptr;
 }
-
-
-
-
-
-
-
-

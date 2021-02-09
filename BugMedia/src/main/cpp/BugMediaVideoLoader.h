@@ -16,11 +16,9 @@ extern "C" {
 }
 
 
-#include "BugMediaAudioFrameQueue.h"
-#include "BugMediaVideoFrameQueue.h"
 #include <pthread.h>
-#include "BugMediaVideoDecoder.h"
-#include "BugMediaAudioDecoder.h"
+#include "BugMediaFFmpegVideoDecoder.h"
+#include "BugMediaFFmpegAudioDecoder.h"
 #include <semaphore.h>
 #include <vector>
 #include "interfaces/BugMediaDecoder.h"
@@ -36,12 +34,12 @@ class BugMediaVideoLoader {
     bool isRelease = false;
     bool isAudioEnd = false;
     bool isVideoEnd = false;
-    vector<BugMediaAudioDecoder *> audioDecoders{};
-    vector<BugMediaVideoDecoder *> videoDecoders{};
+    vector<BugMediaFFmpegAudioDecoder *> audioDecoders{};
+    vector<BugMediaFFmpegVideoDecoder *> videoDecoders{};
     int audioTrackCount{};
     int videoTrackCount{};
-    BugMediaAudioDecoder *currentAudioDecoder{};
-    BugMediaVideoDecoder *currentVideoDecoder{};
+    BugMediaFFmpegAudioDecoder *currentAudioDecoder{};
+    BugMediaFFmpegVideoDecoder *currentVideoDecoder{};
     int64_t audioPts{};
 
     static void *initThreadFunc(void *pVoid);

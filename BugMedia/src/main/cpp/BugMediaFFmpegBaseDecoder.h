@@ -2,8 +2,8 @@
 // Created by Gshine on 2021/2/4.
 //
 
-#ifndef SLOWER_BUGMEDIABASEDECODER_H
-#define SLOWER_BUGMEDIABASEDECODER_H
+#ifndef SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
+#define SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
 
 extern "C" {
 #include "include/ffmpeg/libavcodec/avcodec.h"
@@ -18,7 +18,7 @@ extern "C" {
 #include <vector>
 #include "BugMediaCommon.h"
 
-class BugMediaBaseDecoder {
+class BugMediaFFmpegBaseDecoder {
 
 protected:
     int32_t durationSecond = 0;
@@ -33,11 +33,11 @@ protected:
 public:
     int32_t getDuration() const;
 
-    virtual ~ BugMediaBaseDecoder();
+    virtual ~ BugMediaFFmpegBaseDecoder();
 
-    BugMediaBaseDecoder(AVFormatContext *formatContext, int trackIdx);
+    BugMediaFFmpegBaseDecoder(AVFormatContext *formatContext, int trackIdx);
 
 };
 
 
-#endif //SLOWER_BUGMEDIABASEDECODER_H
+#endif //SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
