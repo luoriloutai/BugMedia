@@ -23,6 +23,10 @@ BugMediaFFmpegVideoDecoder::BugMediaFFmpegVideoDecoder(AVFormatContext *formatCo
 }
 
 BugMediaFFmpegVideoDecoder::~BugMediaFFmpegVideoDecoder() {
+    quit = true;
+    sem_post(&canTakeData);
+    sem_post(&canFillData);
+
     while (!frameQueue.empty()) {
         BugMediaAVFrame *frame = frameQueue.front();
         delete frame->videoFrame;
@@ -145,6 +149,12 @@ void *BugMediaFFmpegVideoDecoder::decodeRoutine(void *ctx) {
 
 BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegVideoDecoder::getFrame() {
     sem_wait(&this->canTakeData);
+    if (quit){
+        // 用于退出等待，当没有数据时处于等待状态，
+        // 析构函数里再次发送一个信号就会执行到这里，
+        // 等待状态就退出了
+        return nullptr;
+    }
     BugMediaAVFrame *frame = frameQueue.front();
     frameQueue.pop();
     if (!frame->videoFrame->isEnd) {

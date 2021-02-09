@@ -22,6 +22,7 @@ class BugMediaFFmpegAudioDecoder : public BugMediaFFmpegBaseDecoder, public BugM
     pthread_t decodeThread{};
     sem_t canFillData{};
     sem_t canTakeData{};
+    bool quit= false;
 
     // 解码并入队
     void decode();

@@ -172,6 +172,9 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     // 获取帧
     //
     BugMediaDecoder::BugMediaAVFrame *frame = videoLoader->getVideoFrame();
+    if (frame== nullptr){
+        return true;
+    }
     audioPts = videoLoader->getAudioPts();
     if (frame->videoFrame->isEnd) {
         currentState = STOP;

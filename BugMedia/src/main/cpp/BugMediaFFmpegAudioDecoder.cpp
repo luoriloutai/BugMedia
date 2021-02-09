@@ -29,6 +29,9 @@ void BugMediaFFmpegAudioDecoder::decode() {
     bool continueDecode = true;
     while (continueDecode) {
         sem_wait(&this->canFillData);
+        if (quit){
+            return;
+        }
 
         if (av_read_frame(avFormatContext, avPacket) != 0) {
             // 非正常结束
@@ -86,7 +89,7 @@ void BugMediaFFmpegAudioDecoder::decode() {
                 aFrame->data = avFrame->data;
                 aFrame->sampleCount = avFrame->nb_samples;
                 auto *frame = new BugMediaAVFrame();
-                frame->audioFrame=aFrame;
+                frame->audioFrame = aFrame;
                 frameQueue.push(frame);
                 sem_post(&this->canTakeData);
 
@@ -97,7 +100,7 @@ void BugMediaFFmpegAudioDecoder::decode() {
                 auto *aFrame = new BugMediaAudioFrame();
                 aFrame->isEnd = true;
                 auto *frame = new BugMediaAVFrame();
-                frame->audioFrame=aFrame;
+                frame->audioFrame = aFrame;
 
                 frameQueue.push(frame);
                 continueDecode = false;
@@ -124,6 +127,10 @@ void *BugMediaFFmpegAudioDecoder::decodeRoutine(void *ctx) {
 }
 
 BugMediaFFmpegAudioDecoder::~BugMediaFFmpegAudioDecoder() {
+    quit = true;
+    sem_post(&canTakeData);
+    sem_post(&canFillData);
+
     while (!frameQueue.empty()) {
         BugMediaAVFrame *frame = frameQueue.front();
         delete frame->audioFrame;
@@ -132,9 +139,9 @@ BugMediaFFmpegAudioDecoder::~BugMediaFFmpegAudioDecoder() {
     }
 
     void *retval;
-    pthread_join(decodeThread, &retval);
     sem_destroy(&this->canFillData);
     sem_destroy(&this->canTakeData);
+    pthread_join(decodeThread, &retval);
 }
 
 uint64_t BugMediaFFmpegAudioDecoder::getInChannelLayout() {
@@ -152,6 +159,9 @@ AVSampleFormat BugMediaFFmpegAudioDecoder::getInSampleFormat() {
 BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegAudioDecoder::getFrame() {
 
     sem_wait(&this->canTakeData);
+    if (quit){
+        return nullptr;
+    }
     BugMediaAVFrame *frame = frameQueue.front();
     frameQueue.pop();
     if (!frame->audioFrame->isEnd) {
@@ -159,5 +169,5 @@ BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegAudioDecoder::getFrame() {
     }
 
 
-    return nullptr;
+    return frame;
 }

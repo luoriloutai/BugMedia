@@ -146,6 +146,10 @@ AVSampleFormat BugMediaVideoLoader::getInAudioSampleFormat() {
 
 BugMediaDecoder::BugMediaAVFrame *BugMediaVideoLoader::getAudioFrame() {
     auto frame = currentAudioDecoder->getFrame();
+    if (frame== nullptr){
+        isAudioEnd=true;
+        return nullptr;
+    }
     audioPts = frame->audioFrame->pts;
     if (!frame->audioFrame->isEnd) {
         isAudioEnd = true;
@@ -157,6 +161,10 @@ BugMediaDecoder::BugMediaAVFrame *BugMediaVideoLoader::getAudioFrame() {
 
 BugMediaDecoder::BugMediaAVFrame *BugMediaVideoLoader::getVideoFrame() {
     auto frame = currentVideoDecoder->getFrame();
+    if (frame== nullptr){
+        isVideoEnd=true;
+        return nullptr;
+    }
     if (!frame->videoFrame->isEnd) {
         isVideoEnd = true;
     }

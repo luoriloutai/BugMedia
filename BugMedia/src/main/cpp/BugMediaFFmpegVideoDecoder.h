@@ -23,6 +23,7 @@ private:
     pthread_t decodeThread{};
     sem_t canFillData{};
     sem_t canTakeData{};
+    bool quit= false;
     // 视频编码帧率
     static const int ENCODE_VIDEO_FPS = 25;
 

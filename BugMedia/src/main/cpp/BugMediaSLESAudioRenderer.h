@@ -15,6 +15,7 @@ extern "C" {
 #include <pthread.h>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+#include <semaphore.h>
 
 class BugMediaSLESAudioRenderer : public BugMediaRenderer {
     class PcmData {
@@ -51,6 +52,18 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
 
     pthread_t renderThread{};
 
+    sem_t canFillQueue{};
+
+    sem_t canTakeData{};
+
+    pthread_mutex_t mutex{};
+
+    pthread_cond_t condPlay{};
+
+    bool quit = false;
+
+    int queueSize{};
+
     static void *renderRoutine(void *ctx);
 
     // 格式转换上下文
@@ -78,26 +91,26 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
     // ACC音频一帧采样数
     static const int SAMPLES_COUNT = 1024;
 
-    const SLuint32 SL_QUEUE_BUFFER_COUNT = 2;
+    const SLuint32 QUEUE_BUFFER_COUNT = 2;
 
-    // 引擎接口
-    SLObjectItf m_engine_obj = NULL;
-    SLEngineItf m_engine = NULL;
+    // 引擎
+    SLObjectItf engineObj = NULL;
+    SLEngineItf engine = NULL;
 
     //混音器
-    SLObjectItf m_output_mix_obj = NULL;
-    SLEnvironmentalReverbItf m_output_mix_evn_reverb = NULL;
-    SLEnvironmentalReverbSettings m_reverb_settings = SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT;
+    SLObjectItf mixObj = NULL;
+    SLEnvironmentalReverbItf envReverb = NULL;
+    SLEnvironmentalReverbSettings envReverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT;
 
-    //pcm播放器
-    SLObjectItf m_pcm_player_obj = NULL;
-    SLPlayItf m_pcm_player = NULL;
-    SLVolumeItf m_pcm_player_volume = NULL;
+    //播放器
+    SLObjectItf playerObj = NULL;
+    SLPlayItf player = NULL;
+    SLVolumeItf playerVolume = NULL;
 
-    //缓冲器队列接口
-    SLAndroidSimpleBufferQueueItf m_pcm_buffer;
+    // 这个接口用于向播放器缓冲区输入数据
+    SLAndroidSimpleBufferQueueItf simpleBufferQueue;
 
-    std::queue<PcmData *> m_data_queue;
+    queue<PcmData *> playQueue{};
 
 
     AVSampleFormat getSampleFmt();
@@ -118,7 +131,18 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
 
     bool createOutputMixer();
 
-    bool configPlayer();
+    bool createPlayer();
+
+    bool resultErr(SLresult r, const char *errMsg);
+
+    static void bufferQueueCallback(SLAndroidSimpleBufferQueueItf bufferQueueItf, void *ctx);
+
+    // 给缓冲区填充数据
+    void doBufferQueue();
+
+    void waitPlay();
+
+    void resumePlay();
 
 public:
 
@@ -130,7 +154,7 @@ public:
 
     void stop();
 
-    BugMediaSLESAudioRenderer(BugMediaVideoLoader *loader);
+    BugMediaSLESAudioRenderer(BugMediaVideoLoader *loader, int bufferSize = 100);
 
     ~BugMediaSLESAudioRenderer();
 
