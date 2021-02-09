@@ -23,6 +23,7 @@ extern "C" {
 #include "BugMediaAudioDecoder.h"
 #include <semaphore.h>
 #include <vector>
+#include "interfaces/BugMediaDecoder.h"
 
 using namespace std;
 
@@ -57,9 +58,14 @@ public:
 
     ~BugMediaVideoLoader();
 
-    BugMediaAudioFrame *getAudioFrame();
+    BugMediaDecoder::BugMediaAVFrame *getAudioFrame();
 
-    BugMediaVideoFrame *getVideoFrame();
+    BugMediaDecoder::BugMediaAVFrame *getVideoFrame();
+
+//    BugMediaAudioFrame *getAudioFrame();
+//
+//    BugMediaVideoFrame *getVideoFrame();
+
 
     int64_t getAudioPts() const;
 

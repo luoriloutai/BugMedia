@@ -4,16 +4,16 @@
 
 #include "BugMediaAudioDecoder.h"
 
-BugMediaAudioFrame *BugMediaAudioDecoder::getFrame() {
-
-    sem_wait(&this->canTakeData);
-    BugMediaAudioFrame *frame = frameQueue.front();
-    if (!frame->isEnd) {
-        sem_post(&this->canFillData);
-    }
-
-    return frame;
-}
+//BugMediaAudioFrame *BugMediaAudioDecoder::getFrame() {
+//
+//    sem_wait(&this->canTakeData);
+//    BugMediaAudioFrame *frame = frameQueue.front();
+//    if (!frame->isEnd) {
+//        sem_post(&this->canFillData);
+//    }
+//
+//    return frame;
+//}
 
 
 BugMediaAudioDecoder::BugMediaAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize) :
@@ -32,8 +32,10 @@ void BugMediaAudioDecoder::decode() {
 
         if (av_read_frame(avFormatContext, avPacket) != 0) {
             // 非正常结束
-            auto *frame = new BugMediaAudioFrame();
-            frame->isEnd = true;
+            auto *frame = new BugMediaAVFrame();
+            auto aFrame = new BugMediaAudioFrame();
+            frame->audioFrame = aFrame;
+            frame->audioFrame->isEnd = true;
             frameQueue.push(frame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
@@ -52,8 +54,10 @@ void BugMediaAudioDecoder::decode() {
                 //
                 // 结束的时候也往队列放一个帧，将其结束标志设置上，
                 // 让帧来作为判断结束的依据
-                auto *frame = new BugMediaAudioFrame();
-                frame->isEnd = true;
+                auto *frame = new BugMediaAVFrame();
+                auto aFrame = new BugMediaAudioFrame();
+                frame->audioFrame = aFrame;
+                frame->audioFrame->isEnd = true;
                 frameQueue.push(frame);
                 sem_post(&this->canTakeData);
                 return;
@@ -81,16 +85,20 @@ void BugMediaAudioDecoder::decode() {
                 aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
                 aFrame->data = avFrame->data;
                 aFrame->sampleCount = avFrame->nb_samples;
-
-                frameQueue.push(aFrame);
+                auto *frame = new BugMediaAVFrame();
+                frame->audioFrame=aFrame;
+                frameQueue.push(frame);
                 sem_post(&this->canTakeData);
 
             } else if (receiveRet == AVERROR_EOF) {
                 // 正常结束
                 // 一个包有可能是流中的最后一个包，最后一个包的最后一帧
                 // 就是整个流中的最后一帧，此时解码应结束
-                auto *frame = new BugMediaAudioFrame();
-                frame->isEnd = true;
+                auto *aFrame = new BugMediaAudioFrame();
+                aFrame->isEnd = true;
+                auto *frame = new BugMediaAVFrame();
+                frame->audioFrame=aFrame;
+
                 frameQueue.push(frame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
@@ -117,7 +125,8 @@ void *BugMediaAudioDecoder::decodeRoutine(void *ctx) {
 
 BugMediaAudioDecoder::~BugMediaAudioDecoder() {
     while (!frameQueue.empty()) {
-        BugMediaAudioFrame *frame = frameQueue.front();
+        BugMediaAVFrame *frame = frameQueue.front();
+        delete frame->audioFrame;
         delete frame;
         frameQueue.pop();
     }
@@ -138,4 +147,17 @@ int BugMediaAudioDecoder::getInSampleRate() {
 
 AVSampleFormat BugMediaAudioDecoder::getInSampleFormat() {
     return avCodecContext->sample_fmt;
+}
+
+BugMediaDecoder::BugMediaAVFrame *BugMediaAudioDecoder::getFrame() {
+
+    sem_wait(&this->canTakeData);
+    BugMediaAVFrame *frame = frameQueue.front();
+    frameQueue.pop();
+    if (!frame->audioFrame->isEnd) {
+        sem_post(&this->canFillData);
+    }
+
+
+    return nullptr;
 }

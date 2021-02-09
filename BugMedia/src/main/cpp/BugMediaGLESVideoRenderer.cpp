@@ -2,11 +2,12 @@
 // Created by Gshine on 2021/1/31.
 //
 
-#include "BugMediaVideoRenderer.h"
+#include "BugMediaGLESVideoRenderer.h"
 #include "glm/ext.hpp"
 #include "openGL/BugMediaRendererCommon.h"
+#include "interfaces/BugMediaDecoder.h"
 
-void BugMediaVideoRenderer::setShaderSource() {
+void BugMediaGLESVideoRenderer::setShaderSource() {
 
 
     const char *vertexShaderSource = "attribute vec2 position; \n"
@@ -29,7 +30,7 @@ void BugMediaVideoRenderer::setShaderSource() {
     setShaderSources(vertexShaderSource, fragmentShaderSource);
 }
 
-void BugMediaVideoRenderer::onRender() {
+void BugMediaGLESVideoRenderer::onRender() {
     prepare();
 
     //
@@ -61,31 +62,31 @@ void BugMediaVideoRenderer::onRender() {
     release();
 }
 
-BugMediaVideoRenderer::BugMediaVideoRenderer(BugMediaVideoLoader *loader) {
+BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(BugMediaVideoLoader *loader) {
     currentState = STOP;
     videoLoader = loader;
 }
 
-BugMediaVideoRenderer::~BugMediaVideoRenderer() {
+BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
 
 
 }
 
-void BugMediaVideoRenderer::play() {
+void BugMediaGLESVideoRenderer::play() {
     currentState = PLAYING;
 }
 
-void BugMediaVideoRenderer::pause() {
+void BugMediaGLESVideoRenderer::pause() {
     currentState = PAUSE;
 
 }
 
-void BugMediaVideoRenderer::stop() {
+void BugMediaGLESVideoRenderer::stop() {
     currentState = STOP;
 }
 
 // 相对固定的东西放在这里
-void BugMediaVideoRenderer::prepare() {
+void BugMediaGLESVideoRenderer::prepare() {
 
     // ==============
     // 顶点与纹理坐标
@@ -164,23 +165,21 @@ void BugMediaVideoRenderer::prepare() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 
-
 }
 
-bool BugMediaVideoRenderer::renderOnce() {
+bool BugMediaGLESVideoRenderer::renderOnce() {
     //
     // 获取帧
     //
-    BugMediaVideoFrame *frame = videoLoader->getVideoFrame();
+    BugMediaDecoder::BugMediaAVFrame *frame = videoLoader->getVideoFrame();
     audioPts = videoLoader->getAudioPts();
-    if (frame->isEnd) {
+    if (frame->videoFrame->isEnd) {
         currentState = STOP;
         return true;
     }
 
 
-
-    set2DTexture0ToShader("texSampler",texId ,*frame->data, frame->width, frame->height);
+    set2DTexture0ToShader("texSampler", texId, *frame->videoFrame->data, frame->videoFrame->width, frame->videoFrame->height);
     //更新一个unform之前你必须先使用程序（调用glUseProgram)
     // 每次更新设置后都应调用
     useProgram();
@@ -190,7 +189,7 @@ bool BugMediaVideoRenderer::renderOnce() {
     //
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
-    scaleCenter(viewWidth,viewHeight,frame->width, frame->height);
+    scaleCenter(viewWidth, viewHeight, frame->videoFrame->width, frame->videoFrame->height);
 
     //
     // 变换，未实现
@@ -214,7 +213,15 @@ bool BugMediaVideoRenderer::renderOnce() {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
 
+    // 绘制完毕后释放帧资源，包括队列节点数据及节点内部的数据
+    delete frame->videoFrame;
+    delete frame;
+
     return false;
+}
+
+void BugMediaGLESVideoRenderer::render() {
+    BugMediaGraphics::render();
 }
 
 

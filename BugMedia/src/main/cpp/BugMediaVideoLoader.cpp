@@ -14,27 +14,6 @@ BugMediaVideoLoader::BugMediaVideoLoader(const char *url, int bufferSize) {
 
 }
 
-BugMediaAudioFrame *BugMediaVideoLoader::getAudioFrame() {
-
-    auto frame = currentAudioDecoder->getFrame();
-    audioPts = frame->pts;
-    if (!frame->isEnd) {
-        isAudioEnd = true;
-    }
-
-    return frame;
-}
-
-BugMediaVideoFrame *BugMediaVideoLoader::getVideoFrame() {
-
-    auto frame = currentVideoDecoder->getFrame();
-    if (!frame->isEnd) {
-        isVideoEnd = true;
-    }
-    return frame;
-}
-
-
 BugMediaVideoLoader::~BugMediaVideoLoader() {
     if (!isRelease) {
         release();
@@ -92,7 +71,7 @@ void BugMediaVideoLoader::init() {
         AVCodecParameters *codecParameters = formatContext->streams[i]->codecpar;
         if (codecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
             try {
-                auto *audioDecoder = new BugMediaAudioDecoder(formatContext, i,maxBufferSize);
+                auto *audioDecoder = new BugMediaAudioDecoder(formatContext, i, maxBufferSize);
                 audioDecoders.push_back(audioDecoder);
                 audioTrackCount++;
             } catch (char *e) {
@@ -105,7 +84,7 @@ void BugMediaVideoLoader::init() {
 
         } else if (codecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
             try {
-                auto *videoDecoder = new BugMediaVideoDecoder(formatContext, i,maxBufferSize);
+                auto *videoDecoder = new BugMediaVideoDecoder(formatContext, i, maxBufferSize);
 
                 videoDecoders.push_back(videoDecoder);
                 videoTrackCount++;
@@ -164,6 +143,46 @@ int BugMediaVideoLoader::getInAudioSampleRate() {
 AVSampleFormat BugMediaVideoLoader::getInAudioSampleFormat() {
     return currentAudioDecoder->getInSampleFormat();
 }
+
+BugMediaDecoder::BugMediaAVFrame *BugMediaVideoLoader::getAudioFrame() {
+    auto frame = currentAudioDecoder->getFrame();
+    audioPts = frame->audioFrame->pts;
+    if (!frame->audioFrame->isEnd) {
+        isAudioEnd = true;
+    }
+
+    return frame;
+
+}
+
+BugMediaDecoder::BugMediaAVFrame *BugMediaVideoLoader::getVideoFrame() {
+    auto frame = currentVideoDecoder->getFrame();
+    if (!frame->videoFrame->isEnd) {
+        isVideoEnd = true;
+    }
+    return frame;
+}
+
+//BugMediaAudioFrame *BugMediaVideoLoader::getAudioFrame() {
+//
+//    auto frame = currentAudioDecoder->getFrame();
+//    audioPts = frame->pts;
+//    if (!frame->isEnd) {
+//        isAudioEnd = true;
+//    }
+//
+//    return frame;
+//}
+//
+//BugMediaVideoFrame *BugMediaVideoLoader::getVideoFrame() {
+//
+//    auto frame = currentVideoDecoder->getFrame();
+//    if (!frame->isEnd) {
+//        isVideoEnd = true;
+//    }
+//    return frame;
+//}
+
 
 
 

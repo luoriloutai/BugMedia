@@ -4,15 +4,15 @@
 
 #include "BugMediaVideoDecoder.h"
 
-BugMediaVideoFrame *BugMediaVideoDecoder::getFrame() {
-    sem_wait(&this->canTakeData);
-    BugMediaVideoFrame *frame = frameQueue.front();
-    if (!frame->isEnd) {
-        sem_post(&this->canFillData);
-    }
-
-    return frame;
-}
+//BugMediaVideoFrame *BugMediaVideoDecoder::getFrame() {
+//    sem_wait(&this->canTakeData);
+//    BugMediaVideoFrame *frame = frameQueue.front();
+//    if (!frame->isEnd) {
+//        sem_post(&this->canFillData);
+//    }
+//
+//    return frame;
+//}
 
 BugMediaVideoDecoder::BugMediaVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize)
         : BugMediaBaseDecoder(formatContext, trackIdx) {
@@ -24,7 +24,8 @@ BugMediaVideoDecoder::BugMediaVideoDecoder(AVFormatContext *formatContext, int t
 
 BugMediaVideoDecoder::~BugMediaVideoDecoder() {
     while (!frameQueue.empty()) {
-        BugMediaVideoFrame *frame = frameQueue.front();
+        BugMediaAVFrame *frame = frameQueue.front();
+        delete frame->videoFrame;
         delete frame;
         frameQueue.pop();
     }
@@ -43,8 +44,10 @@ void BugMediaVideoDecoder::decode() {
 
         if (av_read_frame(avFormatContext, avPacket) != 0) {
             // 非正常结束
-            auto *frame = new BugMediaVideoFrame();
-            frame->isEnd = true;
+            auto *frame = new BugMediaAVFrame();
+            auto *vFrame = new BugMediaVideoFrame();
+            frame->videoFrame=vFrame;
+            frame->videoFrame->isEnd = true;
             frameQueue.push(frame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
@@ -63,8 +66,10 @@ void BugMediaVideoDecoder::decode() {
                 //
                 // 结束的时候也往队列放一个帧，将其结束标志设置上，
                 // 让帧来作为判断结束的依据
-                auto *frame = new BugMediaVideoFrame();
-                frame->isEnd = true;
+                auto *frame = new BugMediaAVFrame();
+                auto *vFrame = new BugMediaVideoFrame();
+                frame->videoFrame=vFrame;
+                frame->videoFrame->isEnd = true;
                 frameQueue.push(frame);
                 sem_post(&this->canTakeData);
                 return;
@@ -79,23 +84,25 @@ void BugMediaVideoDecoder::decode() {
             if (receiveRet == 0) {
                 // 返回0说明取帧成功，并且该包中还有其他帧没取出来，需要再次取
 
+                auto *frame = new BugMediaAVFrame();
                 auto *vFrame = new BugMediaVideoFrame();
-                vFrame->isKeyframe = avFrame->key_frame == 1;
+                frame->videoFrame=vFrame;
+                frame->videoFrame->isKeyframe = avFrame->key_frame == 1;
 
                 // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
                 // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
                 // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
                 // 分母得出的数。
                 // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-                vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
-                vFrame->data = avFrame->data;
-                vFrame->isInterlaced = avFrame->interlaced_frame == 1;
-                vFrame->position = avFrame->pkt_pos;
-                vFrame->format = avFrame->format;
-                vFrame->width = avFrame->width;
-                vFrame->height = avFrame->height;
+                frame->videoFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
+                frame->videoFrame->data = avFrame->data;
+                frame->videoFrame->isInterlaced = avFrame->interlaced_frame == 1;
+                frame->videoFrame->position = avFrame->pkt_pos;
+                frame->videoFrame->format = avFrame->format;
+                frame->videoFrame->width = avFrame->width;
+                frame->videoFrame->height = avFrame->height;
 
-                frameQueue.push(vFrame);
+                frameQueue.push(frame);
                 sem_post(&this->canTakeData);
 
 
@@ -106,8 +113,10 @@ void BugMediaVideoDecoder::decode() {
                 // 正常结束
                 // 一个包有可能是流中的最后一个包，最后一个包的最后一帧
                 // 就是整个流中的最后一帧，此时解码应结束
-                auto *frame = new BugMediaVideoFrame();
-                frame->isEnd = true;
+                auto *frame = new BugMediaAVFrame();
+                auto *vFrame = new BugMediaVideoFrame();
+                frame->videoFrame=vFrame;
+                frame->videoFrame->isEnd = true;
                 frameQueue.push(frame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
@@ -132,6 +141,17 @@ void *BugMediaVideoDecoder::decodeRoutine(void *ctx) {
     auto self = (BugMediaVideoDecoder *) ctx;
     self->decode();
     return nullptr;
+}
+
+BugMediaDecoder::BugMediaAVFrame *BugMediaVideoDecoder::getFrame() {
+    sem_wait(&this->canTakeData);
+    BugMediaAVFrame *frame = frameQueue.front();
+    frameQueue.pop();
+    if (!frame->videoFrame->isEnd) {
+        sem_post(&this->canFillData);
+    }
+
+    return frame;
 }
 
 

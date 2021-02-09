@@ -10,12 +10,15 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <queue>
+#include "interfaces/BugMediaDecoder.h"
+
 using namespace std;
 
-class BugMediaVideoDecoder : public BugMediaBaseDecoder {
+class BugMediaVideoDecoder : public BugMediaBaseDecoder, public BugMediaDecoder {
 private:
 
-    queue<BugMediaVideoFrame*> frameQueue{};
+    //queue<BugMediaVideoFrame *> frameQueue{};
+    queue<BugMediaAVFrame *> frameQueue{};
     int bufferSize{};
     pthread_t decodeThread{};
     sem_t canFillData{};
@@ -25,6 +28,7 @@ private:
 
     // 解码并入队
     void decode();
+
     // 解码线程运行的函数，由于是静态的，需要将本类对象传入以访问类对象的成员
     // 由于在该方法内访问对象成员需要用本对象的指针，写起来麻烦，于是又定义了
     // decode()方法，这样只需要在这个函数里将ctx转成本类对象指针后调用一次decode()
@@ -32,13 +36,13 @@ private:
 
 public:
 
-    BugMediaVideoDecoder(AVFormatContext *formatContext,int trackIdx,int bufferSize=100);
+    BugMediaVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
 
     ~BugMediaVideoDecoder();
 
-    BugMediaVideoFrame *getFrame();
+    //BugMediaVideoFrame *getFrame();
 
-
+    BugMediaAVFrame *getFrame();
 
 };
 

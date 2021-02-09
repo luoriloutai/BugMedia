@@ -8,7 +8,7 @@
 #include "core/BugMediaGraphics.h"
 
 
-class BugMediaBaseRenderer : public BugMediaGraphics {
+class BugMediaBaseRenderer : virtual public BugMediaGraphics {
 public:
 
     int id{};

@@ -106,17 +106,17 @@ add_library( # Sets the name of the library.
         openGL/BugMediaTriangleRenderer.cpp
         openGL/BugMediaPictureRenderer.cpp
         openGL/BugMediaRendererCommon.cpp
-        BugMediaVideoRenderer.cpp
+        BugMediaGLESVideoRenderer.cpp
         BugMediaVideoLoader.cpp
         BugMediaAudioDecoder.cpp
         BugMediaAudioFrame.cpp
         BugMediaVideoDecoder.cpp
-        BugMediaVideoFrame.h
+        BugMediaVideoFrame.cpp
         BugMediaAudioFrameQueue.cpp
         BugMediaVideoFrameQueue.cpp
         BugMediaCommon.cpp
         BugMediaBaseDecoder.cpp
-        BugMediaAudioRenderer.cpp
+        BugMediaSLESAudioRenderer.cpp
         BugMediaPlayer.cpp
 
         )
@@ -150,6 +150,7 @@ target_link_libraries( # Specifies the target library.
 
         EGL
         GLESv2
+        OpenSLES
         avutil
         swresample
         avcodec

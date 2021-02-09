@@ -8,10 +8,11 @@ BugMediaPlayer::BugMediaPlayer(const char *url) {
     this->videoLoader = new BugMediaVideoLoader(url);
     videoLoader->load();
 
-    this->videoRenderer = new BugMediaVideoRenderer(videoLoader);
+    this->videoRenderer = new BugMediaGLESVideoRenderer(videoLoader);
     videoRenderer->render();
 
-    this->audioRenderer = new BugMediaAudioRenderer(videoLoader);
+    this->audioRenderer = new BugMediaSLESAudioRenderer(videoLoader);
+    audioRenderer->render();
 }
 
 BugMediaPlayer::~BugMediaPlayer() {

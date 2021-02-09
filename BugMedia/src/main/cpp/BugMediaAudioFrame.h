@@ -5,7 +5,10 @@
 #ifndef SLOWER_BUGMEDIAAUDIOFRAME_H
 #define SLOWER_BUGMEDIAAUDIOFRAME_H
 
+extern "C"{
 #include "include/ffmpeg/libavutil/frame.h"
+}
+
 
 struct BugMediaAudioFrame {
 

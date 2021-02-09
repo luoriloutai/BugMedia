@@ -5,8 +5,10 @@
 #ifndef SLOWER_BUGMEDIAVIDEOFRAME_H
 #define SLOWER_BUGMEDIAVIDEOFRAME_H
 
-
+extern "C"{
 #include "include/ffmpeg/libavutil/frame.h"
+};
+
 
 struct BugMediaVideoFrame {
     BugMediaVideoFrame *next{};

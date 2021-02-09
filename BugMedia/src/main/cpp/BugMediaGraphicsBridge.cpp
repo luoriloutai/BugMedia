@@ -20,7 +20,7 @@
 #include "openGL/BugMediaTriangleRenderer.h"
 #include "openGL/core/BugMediaGraphicsCommon.h"
 #include "openGL/BugMediaPictureRenderer.h"
-#include "BugMediaVideoRenderer.h"
+#include "BugMediaGLESVideoRenderer.h"
 #include <mutex>
 #include <map>
 #include "BugMediaVideoLoader.h"
@@ -81,7 +81,7 @@ int createPictureRenderer(uint8_t *data, GLint width, GLint height) {
 int createVideoRenderer() {
     lock_guard<mutex> lockGuard(lockObj);
 
-    //auto *newRenderer= new BugMediaVideoRenderer();
+    //auto *newRenderer= new BugMediaGLESVideoRenderer();
     //addRenderer(newRenderer);
     //return newRenderer->id;
 

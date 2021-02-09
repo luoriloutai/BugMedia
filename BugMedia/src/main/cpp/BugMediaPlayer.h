@@ -5,14 +5,14 @@
 #ifndef SLOWER_BUGMEDIAPLAYER_H
 #define SLOWER_BUGMEDIAPLAYER_H
 
-#include "BugMediaAudioRenderer.h"
-#include "BugMediaVideoRenderer.h"
+#include "BugMediaSLESAudioRenderer.h"
+#include "BugMediaGLESVideoRenderer.h"
 #include "BugMediaVideoLoader.h"
 
 class BugMediaPlayer {
 
-    BugMediaAudioRenderer *audioRenderer{};
-    BugMediaVideoRenderer *videoRenderer{};
+    BugMediaRenderer *audioRenderer{};
+    BugMediaRenderer *videoRenderer{};
     BugMediaVideoLoader *videoLoader{};
 
 public:

@@ -2,14 +2,16 @@
 // Created by Gshine on 2021/1/31.
 //
 
-#ifndef SLOWER_BUGMEDIAVIDEORENDERER_H
-#define SLOWER_BUGMEDIAVIDEORENDERER_H
+#ifndef SLOWER_BUGMEDIAGLESVIDEORENDERER_H
+#define SLOWER_BUGMEDIAGLESVIDEORENDERER_H
 
 
 #include "openGL/BugMediaBaseRenderer.h"
 #include "BugMediaVideoLoader.h"
+#include "interfaces/BugMediaRenderer.h"
 
-class BugMediaVideoRenderer : public BugMediaBaseRenderer {
+
+class BugMediaGLESVideoRenderer :virtual protected BugMediaBaseRenderer, public BugMediaRenderer {
     void setShaderSource();
 
     void onRender();
@@ -32,15 +34,17 @@ class BugMediaVideoRenderer : public BugMediaBaseRenderer {
     GLuint texId{}; // 纹理id
 
 public:
-    BugMediaVideoRenderer(BugMediaVideoLoader *loader);
+    BugMediaGLESVideoRenderer(BugMediaVideoLoader *loader);
 
-    ~BugMediaVideoRenderer();
+    ~BugMediaGLESVideoRenderer();
 
     void play();
 
     void pause();
 
     void stop();
+
+    void render();
 
 //    typedef int (*GetVideoFrameCallback)(uint8_t* data,int *width,int *height,void *ctx);
 //
@@ -49,4 +53,4 @@ public:
 };
 
 
-#endif //SLOWER_BUGMEDIAVIDEORENDERER_H
+#endif //SLOWER_BUGMEDIAGLESVIDEORENDERER_H
