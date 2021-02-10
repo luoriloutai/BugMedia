@@ -7,11 +7,11 @@
 
 
 #include "openGL/BugMediaBaseRenderer.h"
-#include "BugMediaVideoLoader.h"
-#include "interfaces/BugMediaVideoRenderer.h"
+#include "BugMediaCommon.h"
+#include "BugMediaVideoFrame.h"
 
 
-class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer, virtual public BugMediaVideoRenderer {
+class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
     void setShaderSource();
 
     void onRender();
@@ -26,7 +26,7 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer, virtual p
     uint8_t *data{};
     int width = 0;
     int height = 0;
-    BugMediaVideoLoader *videoLoader{};
+
     // 开始执行操作时的时间（毫秒）
     int64_t startTimeMs = -1;
     int64_t videoPst{};
@@ -34,7 +34,7 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer, virtual p
     GLuint texId{}; // 纹理id
 
 public:
-    BugMediaGLESVideoRenderer(BugMediaVideoLoader *loader);
+    BugMediaGLESVideoRenderer();
 
     ~BugMediaGLESVideoRenderer();
 
@@ -44,17 +44,13 @@ public:
 
     void stop();
 
-    void render();
+    typedef BugMediaVideoFrame *(*GetVideoFrameCallback)(void *ctx);
 
-    void setWindowSurface(JNIEnv *env, jobject jSurface);
+    GetVideoFrameCallback getVideoFrame{};
 
-    void setPBufferSurface(EGLint width, EGLint height);
+    typedef int64_t (*GetAudioPtsCallback)(void * ctx);
 
-    void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
-
-//    typedef int (*GetVideoFrameCallback)(uint8_t* data,int *width,int *height,void *ctx);
-//
-//    GetVideoFrameCallback getFrameData{};
+    GetAudioPtsCallback getAudioPts{};
 
 };
 

@@ -35,11 +35,10 @@ void BugMediaFFmpegAudioDecoder::decode() {
 
         if (av_read_frame(avFormatContext, avPacket) != 0) {
             // 非正常结束
-            auto *frame = new BugMediaAVFrame();
+
             auto aFrame = new BugMediaAudioFrame();
-            frame->audioFrame = aFrame;
-            frame->audioFrame->isEnd = true;
-            frameQueue.push(frame);
+            aFrame->isEnd=true;
+            frameQueue.push(aFrame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
             return;
@@ -57,11 +56,10 @@ void BugMediaFFmpegAudioDecoder::decode() {
                 //
                 // 结束的时候也往队列放一个帧，将其结束标志设置上，
                 // 让帧来作为判断结束的依据
-                auto *frame = new BugMediaAVFrame();
+
                 auto aFrame = new BugMediaAudioFrame();
-                frame->audioFrame = aFrame;
-                frame->audioFrame->isEnd = true;
-                frameQueue.push(frame);
+                aFrame->isEnd=true;
+                frameQueue.push(aFrame);
                 sem_post(&this->canTakeData);
                 return;
             }
@@ -88,9 +86,8 @@ void BugMediaFFmpegAudioDecoder::decode() {
                 aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
                 aFrame->data = avFrame->data;
                 aFrame->sampleCount = avFrame->nb_samples;
-                auto *frame = new BugMediaAVFrame();
-                frame->audioFrame = aFrame;
-                frameQueue.push(frame);
+
+                frameQueue.push(aFrame);
                 sem_post(&this->canTakeData);
 
             } else if (receiveRet == AVERROR_EOF) {
@@ -99,10 +96,7 @@ void BugMediaFFmpegAudioDecoder::decode() {
                 // 就是整个流中的最后一帧，此时解码应结束
                 auto *aFrame = new BugMediaAudioFrame();
                 aFrame->isEnd = true;
-                auto *frame = new BugMediaAVFrame();
-                frame->audioFrame = aFrame;
-
-                frameQueue.push(frame);
+                frameQueue.push(aFrame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
                 break;
@@ -132,8 +126,7 @@ BugMediaFFmpegAudioDecoder::~BugMediaFFmpegAudioDecoder() {
     sem_post(&canFillData);
 
     while (!frameQueue.empty()) {
-        BugMediaAVFrame *frame = frameQueue.front();
-        delete frame->audioFrame;
+        BugMediaAudioFrame *frame = frameQueue.front();
         delete frame;
         frameQueue.pop();
     }
@@ -156,15 +149,15 @@ AVSampleFormat BugMediaFFmpegAudioDecoder::getInSampleFormat() {
     return avCodecContext->sample_fmt;
 }
 
-BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegAudioDecoder::getFrame() {
+BugMediaAudioFrame *BugMediaFFmpegAudioDecoder::getFrame() {
 
     sem_wait(&this->canTakeData);
     if (quit){
         return nullptr;
     }
-    BugMediaAVFrame *frame = frameQueue.front();
+    BugMediaAudioFrame *frame = frameQueue.front();
     frameQueue.pop();
-    if (!frame->audioFrame->isEnd) {
+    if (!frame->isEnd) {
         sem_post(&this->canFillData);
     }
 

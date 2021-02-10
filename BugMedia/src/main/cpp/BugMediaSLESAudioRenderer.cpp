@@ -4,6 +4,7 @@
 
 #include "BugMediaSLESAudioRenderer.h"
 
+
 void BugMediaSLESAudioRenderer::play() {
     currentState = PLAYING;
     resumePlay();
@@ -18,9 +19,16 @@ void BugMediaSLESAudioRenderer::stop() {
     resumePlay();
 }
 
-BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(BugMediaVideoLoader *loader, int bufferSize) {
-    this->videoLoader = loader;
+BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(int inputSampleRate, uint64_t inputChannelLayout,
+                                                     AVSampleFormat inputSampleFormat, GetAudioFrameCallback callback,
+                                                     void *ctx, int bufferSize) {
+
     queueSize = bufferSize;
+    inSampleRate = inputSampleRate;
+    inChannelLayout = inputChannelLayout;
+    inSampleFormat = inputSampleFormat;
+    callbackContext = ctx;
+
     sem_init(&canFillQueue, 0, queueSize);
     sem_init(&canTakeData, 0, 0);
 
@@ -33,8 +41,8 @@ BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(BugMediaVideoLoader *loader
 void BugMediaSLESAudioRenderer::initOutputBuffer() {
     // 根据输入的采样数和采样率计算出重采样的个数
     // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
-    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(videoLoader->getInAudioSampleRate()),
-                                         videoLoader->getInAudioSampleRate(), AV_ROUND_UP);
+    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(inSampleRate),
+                                         inSampleRate, AV_ROUND_UP);
     // 重采样后一帧数据的大小
     resampleSize = (size_t) av_samples_get_buffer_size(
             nullptr, CHANNEL_COUNTS,
@@ -48,11 +56,11 @@ void BugMediaSLESAudioRenderer::initOutputBuffer() {
 
 void BugMediaSLESAudioRenderer::initSwrContext() {
     swrContext = swr_alloc();
-    av_opt_set_int(swrContext, "in_channel_layout", videoLoader->getInAudioChannelLayout(), 0);
+    av_opt_set_int(swrContext, "in_channel_layout", inChannelLayout, 0);
     av_opt_set_int(swrContext, "out_channel_layout", CHANNEL_LAYOUT, 0);
-    av_opt_set_int(swrContext, "in_sample_rate", videoLoader->getInAudioSampleRate(), 0);
-    av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(videoLoader->getInAudioSampleRate()), 0);
-    av_opt_set_sample_fmt(swrContext, "in_sample_fmt", videoLoader->getInAudioSampleFormat(), 0);
+    av_opt_set_int(swrContext, "in_sample_rate", inSampleRate, 0);
+    av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(inSampleRate), 0);
+    av_opt_set_sample_fmt(swrContext, "in_sample_fmt", inSampleFormat, 0);
     av_opt_set_sample_fmt(swrContext, "out_sample_fmt", getSampleFmt(), 0);
     swr_init(swrContext);
 }
@@ -119,6 +127,7 @@ void BugMediaSLESAudioRenderer::render() {
 
 }
 
+// 如果有错返回true，跳出循环
 bool BugMediaSLESAudioRenderer::renderOnce() {
 
     sem_wait(&canFillQueue);
@@ -127,28 +136,34 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
         return true;
     }
     //
-    // 获取帧
+    // 获取帧，通过回调函数。因为不知道其他线程在什么时候初始化完毕
+    // 所以用回调函数，其他线程执行初始化完成后再初始化本对象
     //
-    BugMediaDecoder::BugMediaAVFrame *frame = videoLoader->getAudioFrame();
+    if (getAudioFrame == nullptr) {
+        return true;
+    }
+
+    auto *frame = getAudioFrame(callbackContext);
+
     if (frame == nullptr) {
         currentState = STOP;
         return true;
     }
-    if (frame->audioFrame->isEnd) {
+    if (frame->isEnd) {
         currentState = STOP;
         return true;
     }
 
-    int64_t pass= getCurMsTime() - startTimeMs;
-    delay = frame->audioFrame->pts - pass;
+    int64_t pass = getCurMsTime() - startTimeMs;
+    delay = frame->pts - pass;
     // pts比当前时间大，说明要等待时间到
-    if (delay>0) {
+    if (delay > 0) {
         av_usleep(delay);
     }
 
     // 转换音频，统一格式，便于播放
     int ret = swr_convert(swrContext, outputBuffer, resampleSize,
-                          (const uint8_t **) (frame->audioFrame->data), frame->audioFrame->sampleCount);
+                          (const uint8_t **) (frame->data), frame->sampleCount);
     if (ret > 0) {
         auto *data = (uint8_t *) malloc(resampleSize);
         memcpy(data, outputBuffer[0], resampleSize);
@@ -159,16 +174,21 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
         sem_post(&canFillQueue);
     }
 
-    delete frame->audioFrame;
     delete frame;
 
     return false;
 }
 
+//
+// 待完善
+//
 AVSampleFormat BugMediaSLESAudioRenderer::getSampleFmt() {
     return AV_SAMPLE_FMT_S16;
 }
 
+//
+// 待完善
+//
 int BugMediaSLESAudioRenderer::getSampleRate(int inSampleRate) {
     return SAMPLE_RATE;
 }
@@ -259,12 +279,19 @@ bool BugMediaSLESAudioRenderer::createOutputMixer() {
     result = (*mixObj)->Realize(mixObj, SL_BOOLEAN_FALSE);
     if (resultErr(result, "(*mixObj)->Realize")) return false;
 
-    result = (*mixObj)->GetInterface(mixObj, SL_IID_ENVIRONMENTALREVERB, &envReverb);
-    if (resultErr(result, "mixObj")) return false;
+//    // 混响设置不了，程序崩溃
+//
+//    result = (*mixObj)->GetInterface(mixObj, SL_IID_ENVIRONMENTALREVERB, &envReverb);
+//    if (resultErr(result, "mixObj")) return false;
+//
+//#ifdef DEBUGAPP
+//    LOGD("混响器接口是否为空：%s",envReverb== nullptr?"是":"否");
+//#endif
+//
+//    result = (*envReverb)->SetEnvironmentalReverbProperties(envReverb, &envReverbSettings);
+//    return !resultErr(result, "SetEnvironmentalReverbProperties");
 
-    result = (*envReverb)->SetEnvironmentalReverbProperties(envReverb, &envReverbSettings);
-    return !resultErr(result, "SetEnvironmentalReverbProperties");
-
+    return true;
 }
 
 bool BugMediaSLESAudioRenderer::createPlayer() {
@@ -313,7 +340,7 @@ bool BugMediaSLESAudioRenderer::createPlayer() {
 
 bool BugMediaSLESAudioRenderer::resultErr(SLresult r, const char *errMsg) {
     if (r != SL_RESULT_SUCCESS) {
-        LOGE("%s", errMsg);
+        LOGE("%s,%s", errMsg,av_err2str(r));
         return true;
     }
     return false;

@@ -2,7 +2,7 @@ package com.bugmedia.media;
 
 import android.view.Surface;
 
-public class GraphicsBridge {
+public class BugMediaBridge {
     static {
         System.loadLibrary("bugmedia");
     }
@@ -25,5 +25,7 @@ public class GraphicsBridge {
     public static native int createPictureRenderer(byte[] data,int width,int height);
 
     public static native void startRenderer(int rendererId);
+
+    public static native void createPlayer(String url,Surface surface);
 
 }

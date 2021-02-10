@@ -10,15 +10,13 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <queue>
-#include "interfaces/BugMediaDecoder.h"
 
 using namespace std;
 
-class BugMediaFFmpegVideoDecoder : public BugMediaFFmpegBaseDecoder, public BugMediaDecoder {
+class BugMediaFFmpegVideoDecoder : public BugMediaFFmpegBaseDecoder {
 private:
 
-    //queue<BugMediaVideoFrame *> frameQueue{};
-    queue<BugMediaAVFrame *> frameQueue{};
+    queue<BugMediaVideoFrame *> frameQueue{};
     int bufferSize{};
     pthread_t decodeThread{};
     sem_t canFillData{};
@@ -37,13 +35,12 @@ private:
 
 public:
 
-    BugMediaFFmpegVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
+    BugMediaFFmpegVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 50);
 
     ~BugMediaFFmpegVideoDecoder();
 
-    //BugMediaVideoFrame *getFrame();
+    BugMediaVideoFrame *getFrame();
 
-    BugMediaAVFrame *getFrame();
 
 };
 

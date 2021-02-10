@@ -10,14 +10,12 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <queue>
-#include "interfaces/BugMediaDecoder.h"
 
 using namespace std;
 
 
-class BugMediaFFmpegAudioDecoder : public BugMediaFFmpegBaseDecoder, public BugMediaDecoder {
-    //queue<BugMediaAudioFrame *> frameQueue{};
-    queue<BugMediaAVFrame *> frameQueue{};
+class BugMediaFFmpegAudioDecoder : virtual public BugMediaFFmpegBaseDecoder {
+    queue<BugMediaAudioFrame *> frameQueue{};
     int bufferSize{};
     pthread_t decodeThread{};
     sem_t canFillData{};
@@ -35,9 +33,7 @@ class BugMediaFFmpegAudioDecoder : public BugMediaFFmpegBaseDecoder, public BugM
 
 
 public:
-    //BugMediaAudioFrame *getFrame();
-
-    BugMediaAVFrame *getFrame();
+    BugMediaAudioFrame *getFrame();
 
     // 获取输入音频的声道格式
     uint64_t getInChannelLayout();
@@ -48,7 +44,7 @@ public:
     // 获取输入音频的采样格式
     AVSampleFormat getInSampleFormat();
 
-    BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 100);
+    BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 50);
 
     ~BugMediaFFmpegAudioDecoder();
 

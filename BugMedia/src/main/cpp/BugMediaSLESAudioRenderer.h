@@ -5,19 +5,29 @@
 #ifndef SLOWER_BUGMEDIASLESAUDIORENDERER_H
 #define SLOWER_BUGMEDIASLESAUDIORENDERER_H
 
+#define DEBUGAPP
+
 extern "C" {
 #include "include/ffmpeg/libavutil/opt.h"
 #include "include/ffmpeg/libavutil/mem.h"
-}
-
-#include "BugMediaVideoLoader.h"
-#include "interfaces/BugMediaRenderer.h"
-#include <pthread.h>
+#include "include/ffmpeg/libswresample/swresample.h"
+#include "include/ffmpeg/libavutil/time.h"
+#include "include/ffmpeg/libswresample/swresample.h"
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
-#include <semaphore.h>
+}
 
-class BugMediaSLESAudioRenderer : public BugMediaRenderer {
+
+#include <pthread.h>
+#include <semaphore.h>
+#include "BugMediaCommon.h"
+#include "BugMediaAudioFrame.h"
+#include <queue>
+
+using namespace std;
+
+
+class BugMediaSLESAudioRenderer {
     class PcmData {
     public:
         PcmData(uint8_t *pcm, int size) {
@@ -41,7 +51,6 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
 
     State currentState = UNSTART;
 
-    BugMediaVideoLoader *videoLoader{};
 
     // 开始执行操作时的时间（毫秒）
     int64_t startTimeMs = -1;
@@ -63,6 +72,12 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
     bool quit = false;
 
     int queueSize{};
+
+    int inSampleRate{};
+
+    uint64_t inChannelLayout{};
+
+    AVSampleFormat inSampleFormat{};
 
     static void *renderRoutine(void *ctx);
 
@@ -100,7 +115,9 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
     //混音器
     SLObjectItf mixObj = NULL;
     SLEnvironmentalReverbItf envReverb = NULL;
-    SLEnvironmentalReverbSettings envReverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT;
+    // SL_I3DL2_ENVIRONMENT_PRESET_ROOM
+    // SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT
+    const SLEnvironmentalReverbSettings envReverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT;
 
     //播放器
     SLObjectItf playerObj = NULL;
@@ -108,9 +125,11 @@ class BugMediaSLESAudioRenderer : public BugMediaRenderer {
     SLVolumeItf playerVolume = NULL;
 
     // 这个接口用于向播放器缓冲区输入数据
-    SLAndroidSimpleBufferQueueItf simpleBufferQueue;
+    SLAndroidSimpleBufferQueueItf simpleBufferQueue{};
 
     queue<PcmData *> playQueue{};
+
+    void* callbackContext{};
 
 
     AVSampleFormat getSampleFmt();
@@ -154,9 +173,15 @@ public:
 
     void stop();
 
-    BugMediaSLESAudioRenderer(BugMediaVideoLoader *loader, int bufferSize = 100);
+    typedef BugMediaAudioFrame *(*GetAudioFrameCallback)(void *ctx);
+
+    BugMediaSLESAudioRenderer(int inputSampleRate, uint64_t inputChannelLayout, AVSampleFormat inputSampleFormat,
+                              GetAudioFrameCallback callback, void *ctx,
+                              int bufferSize = 50);
 
     ~BugMediaSLESAudioRenderer();
+
+    GetAudioFrameCallback getAudioFrame{};
 
 };
 

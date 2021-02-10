@@ -6,7 +6,7 @@
 #define SLOWER_BUGMEDIARENDERERCOMMON_H
 
 
-#define DEBUGAPP
+// #define DEBUGAPP
 
 
 #include <android/log.h>

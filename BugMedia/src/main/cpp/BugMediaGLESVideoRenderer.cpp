@@ -5,7 +5,9 @@
 #include "BugMediaGLESVideoRenderer.h"
 #include "glm/ext.hpp"
 #include "openGL/BugMediaRendererCommon.h"
-#include "interfaces/BugMediaDecoder.h"
+
+#define DEBUGAPP
+
 
 void BugMediaGLESVideoRenderer::setShaderSource() {
 
@@ -62,9 +64,8 @@ void BugMediaGLESVideoRenderer::onRender() {
     release();
 }
 
-BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(BugMediaVideoLoader *loader) {
-    currentState = STOP;
-    videoLoader = loader;
+BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer() {
+    currentState = UNSTART;
 }
 
 BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
@@ -171,18 +172,24 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     //
     // 获取帧
     //
-    BugMediaDecoder::BugMediaAVFrame *frame = videoLoader->getVideoFrame();
+    if (getVideoFrame== nullptr){
+        return true;
+    }
+    auto *frame = getVideoFrame(this);
     if (frame== nullptr){
         return true;
     }
-    audioPts = videoLoader->getAudioPts();
-    if (frame->videoFrame->isEnd) {
+    if (getAudioPts!= nullptr){
+        audioPts = getAudioPts(this);
+    }
+
+    if (frame->isEnd) {
         currentState = STOP;
         return true;
     }
 
 
-    set2DTexture0ToShader("texSampler", texId, *frame->videoFrame->data, frame->videoFrame->width, frame->videoFrame->height);
+    set2DTexture0ToShader("texSampler", texId, *frame->data, frame->width, frame->height);
     //更新一个unform之前你必须先使用程序（调用glUseProgram)
     // 每次更新设置后都应调用
     useProgram();
@@ -192,7 +199,7 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     //
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
-    scaleCenter(viewWidth, viewHeight, frame->videoFrame->width, frame->videoFrame->height);
+    scaleCenter(viewWidth, viewHeight, frame->width, frame->height);
 
     //
     // 变换，未实现
@@ -216,28 +223,13 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
 
-    // 绘制完毕后释放帧资源，包括队列节点数据及节点内部的数据
-    delete frame->videoFrame;
+    // 绘制完毕后释放帧资源
     delete frame;
 
     return false;
 }
 
-void BugMediaGLESVideoRenderer::render() {
-    BugMediaGraphics::render();
-}
 
-void BugMediaGLESVideoRenderer::setWindowSurface(JNIEnv *env, jobject jSurface) {
-    BugMediaGraphics::setWindowSurface(env, jSurface);
-}
-
-void BugMediaGLESVideoRenderer::setPBufferSurface(EGLint width, EGLint height) {
-    BugMediaGraphics::setPBufferSurface(width, height);
-}
-
-void BugMediaGLESVideoRenderer::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
-    BugMediaGraphics::resizeView(x, y, width, height);
-}
 
 
 

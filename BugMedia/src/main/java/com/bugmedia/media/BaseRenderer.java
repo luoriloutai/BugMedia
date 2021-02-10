@@ -6,19 +6,19 @@ public abstract class BaseRenderer {
 
 
     public void setPBufferSurface(int width, int height) {
-        GraphicsBridge.setPBufferSurface(width, height, id);
+        BugMediaBridge.setPBufferSurface(width, height, id);
     }
 
     public void destroy() {
-        GraphicsBridge.destroy(id);
+        BugMediaBridge.destroy(id);
     }
 
     public void resizeView(int x, int y, int width, int height) {
-        GraphicsBridge.resizeView(x, y, width, height, id);
+        BugMediaBridge.resizeView(x, y, width, height, id);
     }
 
     public void startRenderer() {
-        GraphicsBridge.startRenderer(id);
+        BugMediaBridge.startRenderer(id);
     }
 
 }

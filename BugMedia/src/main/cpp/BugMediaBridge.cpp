@@ -23,7 +23,7 @@
 #include "BugMediaGLESVideoRenderer.h"
 #include <mutex>
 #include <map>
-#include "BugMediaVideoLoader.h"
+#include "BugMediaPlayer.h"
 
 using namespace std;
 
@@ -61,7 +61,7 @@ int createTriangleRenderer() {
     lock_guard<mutex> lockGuard(lockObj);
 
     // tmd C++无参构造函数这样调用，不需要加个括号
-    auto *newRenderer=new BugMediaTriangleRenderer;
+    auto *newRenderer = new BugMediaTriangleRenderer;
     addRenderer(newRenderer);
     return newRenderer->id;
 }
@@ -70,7 +70,7 @@ int createTriangleRenderer() {
 int createPictureRenderer(uint8_t *data, GLint width, GLint height) {
     lock_guard<mutex> lockGuard(lockObj);
 
-    auto *newRenderer=new BugMediaPictureRenderer(data, width, height);
+    auto *newRenderer = new BugMediaPictureRenderer(data, width, height);
 
     addRenderer(newRenderer);
 
@@ -105,51 +105,59 @@ void resizeView(int32_t x, int32_t y, int32_t width, int32_t height, int32_t ren
     renderers.at(rendererId)->resizeView(x, y, width, height);
 }
 
+// ==================
+//        测试
+// ==================
 
+
+BugMediaPlayer *player{};
 
 //^^^^^^^^^^^ jni ^^^^^^^^^^^^
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setWindowSurface(JNIEnv *env, jclass clazz, jobject surface, jint rendererId) {
+Java_com_bugmedia_media_BugMediaBridge_setWindowSurface(JNIEnv *env, jclass clazz, jobject surface, jint rendererId) {
 #ifdef DEBUGIT
     testCreate(getWindow(env, surface));
 #else
 #endif
 
-    setWindowSurface(env, surface, rendererId);
+    //setWindowSurface(env, surface, rendererId);
+    //player->setWindowSurface(env,surface);
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_setPBufferSurface(JNIEnv *env, jclass clazz, jint width, jint height,
+Java_com_bugmedia_media_BugMediaBridge_setPBufferSurface(JNIEnv *env, jclass clazz, jint width, jint height,
                                                          jint renderer_id) {
     setPBufferSurface(width, height, renderer_id);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_destroy(JNIEnv *env, jclass clazz, jint renderer_id) {
-    removeRenderer(renderer_id);
+Java_com_bugmedia_media_BugMediaBridge_destroy(JNIEnv *env, jclass clazz, jint renderer_id) {
+    //removeRenderer(renderer_id);
+
+    delete player;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_pause(JNIEnv *env, jclass clazz, jint renderer_id) {
-
+Java_com_bugmedia_media_BugMediaBridge_pause(JNIEnv *env, jclass clazz, jint renderer_id) {
+    player->pause();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_resizeView(JNIEnv *env, jclass thiz, jint x, jint y, jint width, jint height,
+Java_com_bugmedia_media_BugMediaBridge_resizeView(JNIEnv *env, jclass thiz, jint x, jint y, jint width, jint height,
                                                   jint renderer_id) {
-    resizeView(x, y, width, height, renderer_id);
-
+    //resizeView(x, y, width, height, renderer_id);
+    player->resizeView(x, y, width, height);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_bugmedia_media_GraphicsBridge_createPictureRenderer(JNIEnv *env, jclass thiz, jbyteArray data, jint width,
+Java_com_bugmedia_media_BugMediaBridge_createPictureRenderer(JNIEnv *env, jclass thiz, jbyteArray data, jint width,
                                                              jint height) {
     jbyte *bytes = env->GetByteArrayElements(data, nullptr);
     if (bytes == nullptr) {
@@ -176,19 +184,27 @@ Java_com_bugmedia_media_GraphicsBridge_createPictureRenderer(JNIEnv *env, jclass
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_startRenderer(JNIEnv *env, jclass thiz, jint renderer_id) {
+Java_com_bugmedia_media_BugMediaBridge_startRenderer(JNIEnv *env, jclass thiz, jint renderer_id) {
 
     startRenderer(renderer_id);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_play(JNIEnv *env, jclass clazz, jint renderer_id) {
-    // TODO: implement play()
+Java_com_bugmedia_media_BugMediaBridge_play(JNIEnv *env, jclass clazz, jint renderer_id) {
+    player->play();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_GraphicsBridge_stop(JNIEnv *env, jclass clazz, jint renderer_id) {
-    // TODO: implement stop()
+Java_com_bugmedia_media_BugMediaBridge_stop(JNIEnv *env, jclass clazz, jint renderer_id) {
+    player->stop();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, jstring url, jobject surface) {
+    player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr));
+    player->setWindowSurface(env, surface);
+
 }

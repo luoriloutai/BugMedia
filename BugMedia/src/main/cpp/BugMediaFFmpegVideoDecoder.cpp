@@ -28,8 +28,7 @@ BugMediaFFmpegVideoDecoder::~BugMediaFFmpegVideoDecoder() {
     sem_post(&canFillData);
 
     while (!frameQueue.empty()) {
-        BugMediaAVFrame *frame = frameQueue.front();
-        delete frame->videoFrame;
+        auto *frame = frameQueue.front();
         delete frame;
         frameQueue.pop();
     }
@@ -48,11 +47,10 @@ void BugMediaFFmpegVideoDecoder::decode() {
 
         if (av_read_frame(avFormatContext, avPacket) != 0) {
             // 非正常结束
-            auto *frame = new BugMediaAVFrame();
+
             auto *vFrame = new BugMediaVideoFrame();
-            frame->videoFrame=vFrame;
-            frame->videoFrame->isEnd = true;
-            frameQueue.push(frame);
+            vFrame->isEnd= true;
+            frameQueue.push(vFrame);
             sem_post(&this->canTakeData);
             LOGE("av_read_frame 失败");
             return;
@@ -70,11 +68,10 @@ void BugMediaFFmpegVideoDecoder::decode() {
                 //
                 // 结束的时候也往队列放一个帧，将其结束标志设置上，
                 // 让帧来作为判断结束的依据
-                auto *frame = new BugMediaAVFrame();
+
                 auto *vFrame = new BugMediaVideoFrame();
-                frame->videoFrame=vFrame;
-                frame->videoFrame->isEnd = true;
-                frameQueue.push(frame);
+                vFrame->isEnd= true;
+                frameQueue.push(vFrame);
                 sem_post(&this->canTakeData);
                 return;
             }
@@ -88,25 +85,23 @@ void BugMediaFFmpegVideoDecoder::decode() {
             if (receiveRet == 0) {
                 // 返回0说明取帧成功，并且该包中还有其他帧没取出来，需要再次取
 
-                auto *frame = new BugMediaAVFrame();
                 auto *vFrame = new BugMediaVideoFrame();
-                frame->videoFrame=vFrame;
-                frame->videoFrame->isKeyframe = avFrame->key_frame == 1;
+                vFrame->isKeyframe = avFrame->key_frame == 1;
 
                 // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
                 // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
                 // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
                 // 分母得出的数。
                 // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-                frame->videoFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
-                frame->videoFrame->data = avFrame->data;
-                frame->videoFrame->isInterlaced = avFrame->interlaced_frame == 1;
-                frame->videoFrame->position = avFrame->pkt_pos;
-                frame->videoFrame->format = avFrame->format;
-                frame->videoFrame->width = avFrame->width;
-                frame->videoFrame->height = avFrame->height;
+                vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
+                vFrame->data = avFrame->data;
+                vFrame->isInterlaced = avFrame->interlaced_frame == 1;
+                vFrame->position = avFrame->pkt_pos;
+                vFrame->format = avFrame->format;
+                vFrame->width = avFrame->width;
+                vFrame->height = avFrame->height;
 
-                frameQueue.push(frame);
+                frameQueue.push(vFrame);
                 sem_post(&this->canTakeData);
 
 
@@ -117,11 +112,10 @@ void BugMediaFFmpegVideoDecoder::decode() {
                 // 正常结束
                 // 一个包有可能是流中的最后一个包，最后一个包的最后一帧
                 // 就是整个流中的最后一帧，此时解码应结束
-                auto *frame = new BugMediaAVFrame();
+
                 auto *vFrame = new BugMediaVideoFrame();
-                frame->videoFrame=vFrame;
-                frame->videoFrame->isEnd = true;
-                frameQueue.push(frame);
+                vFrame->isEnd = true;
+                frameQueue.push(vFrame);
                 continueDecode = false;
                 sem_post(&this->canTakeData);
                 break;
@@ -147,7 +141,7 @@ void *BugMediaFFmpegVideoDecoder::decodeRoutine(void *ctx) {
     return nullptr;
 }
 
-BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegVideoDecoder::getFrame() {
+BugMediaVideoFrame *BugMediaFFmpegVideoDecoder::getFrame() {
     sem_wait(&this->canTakeData);
     if (quit){
         // 用于退出等待，当没有数据时处于等待状态，
@@ -155,9 +149,9 @@ BugMediaDecoder::BugMediaAVFrame *BugMediaFFmpegVideoDecoder::getFrame() {
         // 等待状态就退出了
         return nullptr;
     }
-    BugMediaAVFrame *frame = frameQueue.front();
+    auto *frame = frameQueue.front();
     frameQueue.pop();
-    if (!frame->videoFrame->isEnd) {
+    if (!frame->isEnd) {
         sem_post(&this->canFillData);
     }
 
