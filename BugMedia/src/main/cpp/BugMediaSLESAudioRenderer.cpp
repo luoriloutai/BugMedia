@@ -263,7 +263,7 @@ void BugMediaSLESAudioRenderer::bufferQueueCallback(SLAndroidSimpleBufferQueueIt
     renderer->doBufferQueue();
 }
 
-// 向播放器缓冲填充数据
+// 向播放器缓冲填充数据。该方法SLES会自动回调，不需要控制延时
 void BugMediaSLESAudioRenderer::doBufferQueue() {
     if (player == nullptr) {
         LOGE("播放器未初始化");
@@ -302,27 +302,25 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
     }
 
     if (currentState == PAUSE) {
-        startTimeMs = getCurMsTime()-frame->pts;
-
+        //startTimeMs = getCurMsTime()-frame->pts;
+        //startTimeMs = getCurMsTime();
         sem_wait(&playSem);
     }
 
-#ifdef DEBUGAPP
-    LOGD("计算延时");
-#endif
 
-    int64_t pass = getCurMsTime() - startTimeMs;
-    delay = frame->pts - pass;
-
-
-#ifdef DEBUGAPP
-    LOGD("延时时间：%lld", delay);
-#endif
-
-    // pts比当前时间大，说明要等待时间到
-    if (delay > 0) {
-        av_usleep(delay * 1000);
-    }
+//    int64_t pass = getCurMsTime() - startTimeMs;
+//    delay = frame->pts - pass;
+//    //delay = getCurMsTime()-frame->pts-startTimeMs-passtimeMs;
+//
+//
+//
+//    // pts比当前时间大，说明要等待时间到
+//    if (delay > 0) {
+//#ifdef DEBUGAPP
+//        LOGD("延时时长：%lld", delay);
+//#endif
+//        av_usleep(delay * 1000);
+//    }
 
 
     SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->resampleSize);

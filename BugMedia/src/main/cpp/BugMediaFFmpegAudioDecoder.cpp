@@ -46,13 +46,12 @@ void BugMediaFFmpegAudioDecoder::decode() {
         ret = av_read_frame(avFormatContext, avPacket);
         if (ret != 0) {
 
-            // 非正常结束
-
+            // 流结束或者出错
             auto aFrame = new BugMediaAudioFrame();
             aFrame->isEnd = true;
             frameQueue.push(aFrame);
             sem_post(&this->canTakeData);
-            LOGE("音频解码异常结束：av_read_frame,%s", av_err2str(ret));
+
             return;
         }
 
@@ -82,7 +81,7 @@ void BugMediaFFmpegAudioDecoder::decode() {
             }
         }
 
-        // 该方法执行不返回0需要再次读取帧，直至成功返回0表示取到了一帧
+        // 该方法执行不返回0需要再次从头开始执行读取帧，直至成功返回0表示取到了一帧
         ret = avcodec_receive_frame(avCodecContext, avFrame);
 #ifdef DEBUGAPP
         LOGD("avcodec_receive_frame执行结果：%d ,%s", ret, av_err2str(ret));
