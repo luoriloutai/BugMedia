@@ -116,46 +116,6 @@ void BugMediaSLESAudioRenderer::doRender() {
     bufferQueueCallback(simpleBufferQueue, this);
 
 
-//    while (true) {
-//
-//        sem_wait(&playSem);
-//
-//
-//#ifdef DEBUGAPP
-//        LOGD("是否播放：%s",currentState==PLAYING?"是":"否");
-//        LOGD("是否暂停：%s",currentState==PAUSE?"是":"否");
-//        LOGD("是否停止：%s",currentState==STOP?"是":"否");
-//#endif
-//
-//        if (currentState == STOP) {
-//            return;
-//        }
-//
-//        if (currentState == PLAYING) {
-//
-//            (*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
-//            bufferQueueCallback(simpleBufferQueue, this);
-//
-//        }
-//        else if (currentState == PAUSE) {
-//
-//
-//            // 将播放起始时间点向前移即可
-//            //startTimeMs = startTimeMs + pst;
-//            //startTimeMs = getCurMsTime()-pst;
-//
-//            //sem_wait(&playSem);
-//
-//
-//            if (quit) {
-//                return;
-//            }
-//
-//        } else if (currentState == STOP) {
-//            break;
-//        }
-//    }
-
 #ifdef DEBUGAPP
     LOGD("渲染结束");
 #endif
