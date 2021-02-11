@@ -44,8 +44,11 @@ BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callb
 BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
     // 使线程退出等待状态
     // 在获取到信号后判断状态退出，使线程不会一直等待
-    currentState = STOP;
-    sem_post(&playSem);
+    if (currentState==PAUSE){
+        currentState = STOP;
+        sem_post(&playSem);
+    }
+
 
 
     //停止播放器
@@ -73,10 +76,8 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
         engine = nullptr;
     }
 
-    sem_destroy(&playSem);
-
     pthread_join(renderThread, nullptr);
-
+    sem_destroy(&playSem);
 }
 
 void BugMediaSLESAudioRenderer::render() {
@@ -265,6 +266,11 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
         //startTimeMs = getCurMsTime()-frame->pts;
         //startTimeMs = getCurMsTime();
         sem_wait(&playSem);
+    }
+
+    if (currentState==STOP){
+        (*simpleBufferQueue)->Clear(simpleBufferQueue);
+        return;
     }
 
 

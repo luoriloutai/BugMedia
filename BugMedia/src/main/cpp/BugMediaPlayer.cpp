@@ -145,7 +145,7 @@ LOGD("音频解码器数量:%d,",audioDecoders.size());
     if (currentVideoDecoder != nullptr) {
 #ifdef DEBUGAPP
         LOGD("视频解码器数量:%d",videoDecoders.size());
-        //currentVideoDecoder->startDecode();
+        currentVideoDecoder->startDecode();
 #else
         currentVideoDecoder->startDecode();
         videoRenderer = new BugMediaGLESVideoRenderer();

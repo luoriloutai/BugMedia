@@ -114,6 +114,14 @@ void BugMediaFFmpegVideoDecoder::decode() {
             frameQueue.push(vFrame);
             sem_post(&this->canTakeData);
 
+#ifdef DEBUGAPP
+            static int couter = 0;
+            LOGD("第%d帧解码完毕", ++couter);
+            LOGD("视频宽度：%d,视频高度：%d,格式：%d",vFrame->width,vFrame->height,vFrame->format);
+            LOGD("队列大小：%d", frameQueue.size());
+
+#endif
+
         } else {
             // 这一次做的事情没有成功，返还信号
             sem_post(&canFillData);
