@@ -38,7 +38,7 @@ public:
 
     BugMediaFFmpegBaseDecoder(AVFormatContext *formatContext, int trackIdx);
 
-protected:
+private:
     void openDecoder();
 };
 
