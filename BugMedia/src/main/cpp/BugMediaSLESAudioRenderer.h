@@ -60,7 +60,7 @@ class BugMediaSLESAudioRenderer {
     SLEnvironmentalReverbItf envReverb = NULL;
     // SL_I3DL2_ENVIRONMENT_PRESET_ROOM
     // SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT
-    const SLEnvironmentalReverbSettings envReverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_DEFAULT;
+    const SLEnvironmentalReverbSettings envReverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
 
     //播放器
     SLObjectItf playerObj = NULL;

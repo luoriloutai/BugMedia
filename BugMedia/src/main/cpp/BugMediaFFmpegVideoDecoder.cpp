@@ -4,15 +4,7 @@
 
 #include "BugMediaFFmpegVideoDecoder.h"
 
-//BugMediaVideoFrame *BugMediaFFmpegVideoDecoder::getFrame() {
-//    sem_wait(&this->canTakeData);
-//    BugMediaVideoFrame *frame = frameQueue.front();
-//    if (!frame->isEnd) {
-//        sem_post(&this->canFillData);
-//    }
-//
-//    return frame;
-//}
+#define DEBUGAPP
 
 BugMediaFFmpegVideoDecoder::BugMediaFFmpegVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize)
         : BugMediaFFmpegBaseDecoder(formatContext, trackIdx) {
@@ -41,12 +33,21 @@ BugMediaFFmpegVideoDecoder::~BugMediaFFmpegVideoDecoder() {
 
 
 void BugMediaFFmpegVideoDecoder::decode() {
-    bool continueDecode = true;
-    while (continueDecode) {
+#ifdef DEBUGAPP
+    LOGD("开始解码视频");
+#endif
+
+    int ret;
+
+    while (true) {
+
         sem_wait(&this->canFillData);
+        if (quit) {
+            return;
+        }
 
         if (av_read_frame(avFormatContext, avPacket) != 0) {
-            // 非正常结束
+            // 结束
 
             auto *vFrame = new BugMediaVideoFrame();
             vFrame->isEnd= true;
@@ -56,11 +57,12 @@ void BugMediaFFmpegVideoDecoder::decode() {
             return;
         }
 
-        // avcodec_send_packet()如果在帧没有完全被取完时不会返回0，
-        // 而是返回AVERROR(EAGAIN)
-        // 这就需要不断调用avcodec_receive_frame()消耗完。
-        // 这种情形一般只存在于音频包，音频包有可能一个包内含有多个帧，
-        // 视频包一般只有一个帧
+        // 读取的包视频和音频混合在一起，需要判断选取
+        if (avPacket->stream_index != trackIndex) {
+            sem_post(&canFillData);
+            continue;
+        }
+
         int packetRet = avcodec_send_packet(avCodecContext, avPacket);
         if (packetRet != 0) {
             if (AVERROR_EOF == packetRet) {
@@ -74,63 +76,54 @@ void BugMediaFFmpegVideoDecoder::decode() {
                 frameQueue.push(vFrame);
                 sem_post(&this->canTakeData);
                 return;
+
             }
         }
 
-        // 取一个包内的所有帧
-        // 取完所有帧后下次avcodec_send_packet()才能调用成功
-        while (true) {
-            sem_wait(&this->canFillData);
-            int receiveRet = avcodec_receive_frame(avCodecContext, avFrame);
-            if (receiveRet == 0) {
-                // 返回0说明取帧成功，并且该包中还有其他帧没取出来，需要再次取
-
-                auto *vFrame = new BugMediaVideoFrame();
-                vFrame->isKeyframe = avFrame->key_frame == 1;
-
-                // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
-                // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
-                // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
-                // 分母得出的数。
-                // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-                vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
-                vFrame->data = avFrame->data;
-                vFrame->isInterlaced = avFrame->interlaced_frame == 1;
-                vFrame->position = avFrame->pkt_pos;
-                vFrame->format = avFrame->format;
-                vFrame->width = avFrame->width;
-                vFrame->height = avFrame->height;
-
-                frameQueue.push(vFrame);
-                sem_post(&this->canTakeData);
-
-
-                // hint:
-                //avFrame->repeat_pict
-                //av_packet_rescale_ts()
-            } else if (receiveRet == AVERROR_EOF) {
-                // 正常结束
-                // 一个包有可能是流中的最后一个包，最后一个包的最后一帧
-                // 就是整个流中的最后一帧，此时解码应结束
-
-                auto *vFrame = new BugMediaVideoFrame();
-                vFrame->isEnd = true;
-                frameQueue.push(vFrame);
-                continueDecode = false;
-                sem_post(&this->canTakeData);
-                break;
-            } else {
-                // 返回其他值说明这个包的帧都取完了，开始下一个包
-                break;
-            }
-
+        // 该方法执行不返回0需要再次av_read_frame从头开始执行读取帧，直至成功返回0表示取到了一帧
+        ret = avcodec_receive_frame(avCodecContext, avFrame);
+#ifdef DEBUGAPP
+        LOGD("avcodec_receive_frame执行结果：%d ,%s", ret, av_err2str(ret));
+#endif
+        if (ret == AVERROR_EOF) {
+            auto *vFrame = new BugMediaVideoFrame();
+            vFrame->isEnd = true;
+            frameQueue.push(vFrame);
+            sem_post(&this->canTakeData);
+            return;
 
         }
+
+        if (ret == 0) {
+            auto *vFrame = new BugMediaVideoFrame();
+            vFrame->isKeyframe = avFrame->key_frame == 1;
+
+            // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
+            // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
+            // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
+            // 分母得出的数。
+            // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
+            vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
+            vFrame->data = avFrame->data;
+            vFrame->isInterlaced = avFrame->interlaced_frame == 1;
+            vFrame->position = avFrame->pkt_pos;
+            vFrame->format = avFrame->format;
+            vFrame->width = avFrame->width;
+            vFrame->height = avFrame->height;
+
+            frameQueue.push(vFrame);
+            sem_post(&this->canTakeData);
+
+        } else {
+            // 这一次做的事情没有成功，返还信号
+            sem_post(&canFillData);
+        }
+
 
         // 解除对包的引用，以便下次再用
         av_packet_unref(avPacket);
-        // av_frame_unref()可以对帧解引用，但这里不需要调用，因为avcodec_receive_frame()会调用它。
-    }
+
+    }  // 最外层while
 
 
 }
@@ -159,7 +152,7 @@ BugMediaVideoFrame *BugMediaFFmpegVideoDecoder::getFrame() {
 }
 
 void BugMediaFFmpegVideoDecoder::startDecode() {
-    openDecoder();
+
     this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
 }
 

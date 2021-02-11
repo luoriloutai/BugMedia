@@ -174,8 +174,8 @@ if(_surface==null){
 
     void createPlayer() {
         String dir = Environment.getExternalStorageDirectory().getPath();
-        //String path = dir + "/testfile.mp4";
-        String path = dir + "/bingo.aac";
+        String path = dir + "/testfile.mp4";
+        //String path = dir + "/bingo.aac";
         player1 = new BugPlayer(path, _surface);
         
     }
