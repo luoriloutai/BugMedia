@@ -11,7 +11,7 @@ extern "C"{
 
 
 struct BugMediaAudioFrame {
-    uint8_t **data{};
+    uint8_t *data{};
 
     // 以毫秒为单位的时间戳
     int64_t pts{};
@@ -21,6 +21,7 @@ struct BugMediaAudioFrame {
     int sampleRate{};
     int channels{};
     int sampleCount{};
+    size_t resampleSize{};
 };
 
 

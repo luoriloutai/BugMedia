@@ -13,7 +13,7 @@
 
 using namespace std;
 
-class BugMediaFFmpegVideoDecoder : public BugMediaFFmpegBaseDecoder {
+class BugMediaFFmpegVideoDecoder : virtual public BugMediaFFmpegBaseDecoder {
 private:
 
     queue<BugMediaVideoFrame *> frameQueue{};
@@ -40,6 +40,8 @@ public:
     ~BugMediaFFmpegVideoDecoder();
 
     BugMediaVideoFrame *getFrame();
+
+    void startDecode();
 
 
 };

@@ -14,9 +14,6 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize) {
     maxBufferSize = bufferSize;
     this->url = url;
 
-    //videoDecoders = vector<BugMediaFFmpegVideoDecoder *>();
-    //audioDecoders = vector<BugMediaFFmpegAudioDecoder *>();
-
 }
 
 BugMediaPlayer::~BugMediaPlayer() {
@@ -42,7 +39,9 @@ void BugMediaPlayer::release() {
         }
 
         delete audioRenderer;
+        audioRenderer= nullptr;
         delete videoRenderer;
+        videoRenderer = nullptr;
 
         pthread_join(initThread, nullptr);
 
@@ -64,10 +63,6 @@ void BugMediaPlayer::init() {
 
     formatContext = avformat_alloc_context();
 
-#ifdef DEBUGAPP
-    LOGD("formatContext是否为空：%s", formatContext == nullptr ? "是" : "否");
-#endif
-
     int ret = avformat_open_input(&formatContext, url, nullptr, nullptr);
     if (ret != 0) {
         LOGE("打开URL [%s] 失败:%s", url, av_err2str(ret));
@@ -75,19 +70,18 @@ void BugMediaPlayer::init() {
         return;
     }
 
-#ifdef DEBUGAPP
-    LOGD("av_format_open_input end");
-#endif
-
-    ret = avformat_find_stream_info(formatContext, NULL);
+    ret = avformat_find_stream_info(formatContext, nullptr);
     if (ret != 0) {
         LOGE("查找流信息失败:%s", av_err2str(ret));
         release();
         return;
     }
 
+    duration = formatContext->duration*av_q2d(AV_TIME_BASE_Q);
+
+
 #ifdef DEBUGAPP
-    LOGD("avformat_find_stream_info end");
+    LOGD("总时长：%lld，转换后：%ds,比特率：%lld",formatContext->duration,duration,formatContext->bit_rate);
 #endif
 
     for (int i = 0; i < formatContext->nb_streams; ++i) {
@@ -120,26 +114,30 @@ void BugMediaPlayer::init() {
         }
     }
 
-#ifdef DEBUGAPP
-    LOGD("音轨数:%d,视轨数:%d", audioTrackCount, videoTrackCount);
-
-#endif
-
     currentVideoDecoder = videoDecoders[0];
     currentAudioDecoder = audioDecoders[0];
 
-    currentAudioDecoder->openDecoder();
-    currentVideoDecoder->openDecoder();
+    if (currentAudioDecoder != nullptr) {
+#ifdef DEBUGAPP
+LOGD("音频解码器数量:%d,",audioDecoders.size());
+        currentAudioDecoder->startDecode();
+#else
 
-    audioRenderer = new BugMediaSLESAudioRenderer(currentAudioDecoder->getInSampleRate(),
-                                                  currentAudioDecoder->getInChannelLayout(),
-                                                  currentAudioDecoder->getInSampleFormat(),
-                                                  getAudioFrameData, this);
-    audioRenderer->getAudioFrame = getAudioFrameData;
-    audioRenderer->render();
+        currentAudioDecoder->startDecode();
+        audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameData, this);
+        audioRenderer->render();
+#endif
+    }
 
-    videoRenderer = new BugMediaGLESVideoRenderer();
-    //videoRenderer->render();
+    if (currentVideoDecoder != nullptr) {
+#ifdef DEBUGAPP
+        LOGD("视频解码器数量:%d",videoDecoders.size());
+#else
+        currentVideoDecoder->startDecode();
+        videoRenderer = new BugMediaGLESVideoRenderer();
+        videoRenderer->render();
+#endif
+    }
 
 
 }
@@ -160,12 +158,12 @@ void BugMediaPlayer::load() {
 
 void BugMediaPlayer::switchAudioChannel(int ch) {
     currentAudioDecoder = audioDecoders[ch];
-    currentAudioDecoder->openDecoder();
+    //currentAudioDecoder->openDecoder();
 }
 
 void BugMediaPlayer::switchVideoChannel(int ch) {
     currentVideoDecoder = videoDecoders[ch];
-    currentVideoDecoder->openDecoder();
+    //currentVideoDecoder->openDecoder();
 }
 
 

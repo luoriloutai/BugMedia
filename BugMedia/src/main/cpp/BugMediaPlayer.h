@@ -44,6 +44,7 @@ class BugMediaPlayer {
     int64_t audioPts{};
     BugMediaSLESAudioRenderer *audioRenderer{};
     BugMediaGLESVideoRenderer *videoRenderer{};
+    int duration{};
 
 
     static void *initThreadFunc(void *pVoid);
@@ -59,7 +60,7 @@ class BugMediaPlayer {
 public:
 
 
-    BugMediaPlayer(const char *url, int bufferSize = 100);
+    BugMediaPlayer(const char *url, int bufferSize = 50);
 
     ~BugMediaPlayer();
 

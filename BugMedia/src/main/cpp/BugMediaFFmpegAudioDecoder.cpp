@@ -1,118 +1,164 @@
+#include <alloca.h>
 //
 // Created by Gshine on 2021/2/4.
 //
 
+#define DEBUGAPP
+
 #include "BugMediaFFmpegAudioDecoder.h"
 
-//BugMediaAudioFrame *BugMediaFFmpegAudioDecoder::getFrame() {
-//
-//    sem_wait(&this->canTakeData);
-//    BugMediaAudioFrame *frame = frameQueue.front();
-//    if (!frame->isEnd) {
-//        sem_post(&this->canFillData);
-//    }
-//
-//    return frame;
-//}
+extern "C" {
+#include "include/ffmpeg/libavutil/opt.h"
+}
 
 
 BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize) :
         BugMediaFFmpegBaseDecoder(formatContext, trackIdx) {
     this->bufferSize = bufferSize;
 
+#ifdef DEBUGAPP
+    LOGD("音频采样率：%d", avCodecContext->sample_rate);
+    LOGD("音频采样格式：%d", avCodecContext->sample_fmt);
+#endif
+
+    initSwrContext();
+    initOutputBuffer();
     sem_init(&this->canFillData, 0, this->bufferSize);
     sem_init(&this->canTakeData, 0, 0);
-    this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
+
 }
 
 void BugMediaFFmpegAudioDecoder::decode() {
-    bool continueDecode = true;
-    while (continueDecode) {
+
+#ifdef DEBUGAPP
+    LOGD("开始解码音频");
+#endif
+
+    int ret;
+
+    while (true) {
+
         sem_wait(&this->canFillData);
-        if (quit){
+        if (quit) {
             return;
         }
 
-        if (av_read_frame(avFormatContext, avPacket) != 0) {
+        ret = av_read_frame(avFormatContext, avPacket);
+        if (ret != 0) {
+
             // 非正常结束
 
             auto aFrame = new BugMediaAudioFrame();
-            aFrame->isEnd=true;
+            aFrame->isEnd = true;
             frameQueue.push(aFrame);
             sem_post(&this->canTakeData);
-            LOGE("av_read_frame 失败");
+            LOGE("音频解码异常结束：av_read_frame,%s", av_err2str(ret));
             return;
         }
 
-        // avcodec_send_packet()如果在帧没有完全被取完时不会返回0，
-        // 而是返回AVERROR(EAGAIN)
-        // 这就需要不断调用avcodec_receive_frame()消耗完。
-        // 这种情形一般只存在于音频包，音频包有可能一个包内含有多个帧，
-        // 视频包一般只有一个帧
-        int packetRet = avcodec_send_packet(avCodecContext, avPacket);
-        if (packetRet != 0) {
-            if (AVERROR_EOF == packetRet) {
+        // 读取的包视频和音频混合在一起，需要判断选取
+        if (avPacket->stream_index != trackIndex) {
+            sem_post(&canFillData);
+            continue;
+        }
+
+        ret = avcodec_send_packet(avCodecContext, avPacket);
+        if (ret != 0) {
+            if (AVERROR_EOF == ret) {
                 // 正常结束
                 //
                 // 结束的时候也往队列放一个帧，将其结束标志设置上，
                 // 让帧来作为判断结束的依据
 
+#ifdef DEBUGAPP
+                LOGD("音频解码结束");
+#endif
+
                 auto aFrame = new BugMediaAudioFrame();
-                aFrame->isEnd=true;
+                aFrame->isEnd = true;
                 frameQueue.push(aFrame);
                 sem_post(&this->canTakeData);
                 return;
             }
         }
 
-        // 取一个包内的所有帧
-        // 取完所有帧后下次avcodec_send_packet()才能调用成功
-        while (true) {
-            sem_wait(&this->canFillData);
-            int receiveRet = avcodec_receive_frame(avCodecContext, avFrame);
-            if (receiveRet == 0) {
-                // 返回0说明取帧成功，并且该包中还有其他帧没取出来，需要再次取
+        // 该方法执行不返回0需要再次读取帧，直至成功返回0表示取到了一帧
+        ret = avcodec_receive_frame(avCodecContext, avFrame);
+#ifdef DEBUGAPP
+        LOGD("avcodec_receive_frame执行结果：%d ,%s", ret, av_err2str(ret));
+#endif
+        if (ret == AVERROR_EOF) {
+            auto aFrame = new BugMediaAudioFrame();
+            aFrame->isEnd = true;
+            frameQueue.push(aFrame);
+            sem_post(&this->canTakeData);
 
-                auto *aFrame = new BugMediaAudioFrame();
-                aFrame->channels = avFrame->channels;
-                aFrame->format = avFrame->format;
-                aFrame->position = avFrame->pkt_pos;
-                aFrame->sampleRate = avFrame->sample_rate;
-                // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
-                // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
-                // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
-                // 分母得出的数。
-                // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-                aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
-                aFrame->data = avFrame->data;
-                aFrame->sampleCount = avFrame->nb_samples;
-
-                frameQueue.push(aFrame);
-                sem_post(&this->canTakeData);
-
-            } else if (receiveRet == AVERROR_EOF) {
-                // 正常结束
-                // 一个包有可能是流中的最后一个包，最后一个包的最后一帧
-                // 就是整个流中的最后一帧，此时解码应结束
-                auto *aFrame = new BugMediaAudioFrame();
-                aFrame->isEnd = true;
-                frameQueue.push(aFrame);
-                continueDecode = false;
-                sem_post(&this->canTakeData);
-                break;
-            } else {
-                // 返回其他值说明这个包的帧都取完了，开始下一个包
-                break;
-            }
-
+            return;
 
         }
 
+        if (ret == 0) {
+            auto *aFrame = new BugMediaAudioFrame();
+            aFrame->channels = avFrame->channels;
+            aFrame->format = avFrame->format;
+            aFrame->position = avFrame->pkt_pos;
+            aFrame->sampleRate = avFrame->sample_rate;
+            aFrame->sampleCount = avFrame->nb_samples;
+
+
+
+            // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
+            // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
+            // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
+            // 分母得出的数。
+            // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
+            aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
+
+            aFrame->resampleSize = resampleSize;
+
+            // 音频重采样转换
+            int sampleCount = swr_convert(swrContext, outputBuffer, resampleSize,
+                                   (const uint8_t **) (avFrame->data), avFrame->nb_samples);
+#ifdef DEBUGAPP
+
+            LOGD("音频帧转换，每通道样本数：%d,%s", sampleCount, av_err2str(sampleCount));
+
+
+#endif
+
+            if (sampleCount > 0) {
+
+                // 将缓冲中的数据复制到新开辟的空间，并入队
+                auto *data = (uint8_t *) malloc(resampleSize);
+                memcpy(data, outputBuffer[0], resampleSize);
+                aFrame->data = data;
+                frameQueue.push(aFrame);
+                sem_post(&this->canTakeData);
+
+#ifdef DEBUGAPP
+static int couter=0;
+                LOGD("第%d帧解码完毕",++couter);
+                LOGD("帧大小：%d",sizeof(data));
+                LOGD("队列大小：%d", frameQueue.size());
+                //return;
+#endif
+
+
+            }
+        }else{
+            // 这一次做的事情没有成功，返还信号
+            sem_post(&canFillData);
+        }
+
+
         // 解除对包的引用，以便下次再用
         av_packet_unref(avPacket);
-        // av_frame_unref()可以对帧解引用，但这里不需要调用，因为avcodec_receive_frame()会调用它。
-    }
+
+    }  // 最外层while
+
+
 }
+
 
 void *BugMediaFFmpegAudioDecoder::decodeRoutine(void *ctx) {
     auto self = (BugMediaFFmpegAudioDecoder *) ctx;
@@ -124,6 +170,15 @@ BugMediaFFmpegAudioDecoder::~BugMediaFFmpegAudioDecoder() {
     quit = true;
     sem_post(&canTakeData);
     sem_post(&canFillData);
+
+    if (outputBuffer[0] != nullptr) {
+        free(outputBuffer[0]);
+        outputBuffer[0] = nullptr;
+    }
+
+    if (swrContext != nullptr) {
+        swr_free(&swrContext);
+    }
 
     while (!frameQueue.empty()) {
         BugMediaAudioFrame *frame = frameQueue.front();
@@ -137,22 +192,11 @@ BugMediaFFmpegAudioDecoder::~BugMediaFFmpegAudioDecoder() {
     pthread_join(decodeThread, &retval);
 }
 
-uint64_t BugMediaFFmpegAudioDecoder::getInChannelLayout() {
-    return avCodecContext->channel_layout;
-}
-
-int BugMediaFFmpegAudioDecoder::getInSampleRate() {
-    return avCodecContext->sample_rate;
-}
-
-AVSampleFormat BugMediaFFmpegAudioDecoder::getInSampleFormat() {
-    return avCodecContext->sample_fmt;
-}
 
 BugMediaAudioFrame *BugMediaFFmpegAudioDecoder::getFrame() {
 
     sem_wait(&this->canTakeData);
-    if (quit){
+    if (quit) {
         return nullptr;
     }
     BugMediaAudioFrame *frame = frameQueue.front();
@@ -163,4 +207,50 @@ BugMediaAudioFrame *BugMediaFFmpegAudioDecoder::getFrame() {
 
 
     return frame;
+}
+
+void BugMediaFFmpegAudioDecoder::startDecode() {
+
+    this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
+}
+
+void BugMediaFFmpegAudioDecoder::initSwrContext() {
+
+    swrContext = swr_alloc();
+    av_opt_set_int(swrContext, "in_channel_layout", avCodecContext->channel_layout, 0);
+    av_opt_set_int(swrContext, "out_channel_layout", CHANNEL_LAYOUT, 0);
+    av_opt_set_int(swrContext, "in_sample_rate", avCodecContext->sample_rate, 0);
+    av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(avCodecContext->sample_rate), 0);
+    av_opt_set_sample_fmt(swrContext, "in_sample_fmt", avCodecContext->sample_fmt, 0);
+    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", getSampleFmt(), 0);
+    swr_init(swrContext);
+}
+
+void BugMediaFFmpegAudioDecoder::initOutputBuffer() {
+
+    // 根据输入的采样数和采样率计算出重采样的个数
+    // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
+    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(avCodecContext->sample_rate),
+                                         avCodecContext->sample_rate, AV_ROUND_UP);
+    // 重采样后一帧数据的大小
+    resampleSize = (size_t) av_samples_get_buffer_size(
+            nullptr, CHANNEL_COUNTS,
+            resampleCount, getSampleFmt(), 1);
+
+    outputBuffer[0] = (uint8_t *) malloc(resampleSize);
+//    outputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
+//    outputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
+
+#ifdef DEBUGAPP
+    LOGD("重采样数：%d，重采样大小：%d", resampleCount, resampleSize);
+#endif
+
+}
+
+int BugMediaFFmpegAudioDecoder::getSampleRate(int inSampleRate) {
+    return SAMPLE_RATE;
+}
+
+AVSampleFormat BugMediaFFmpegAudioDecoder::getSampleFmt() {
+    return AV_SAMPLE_FMT_S16;
 }

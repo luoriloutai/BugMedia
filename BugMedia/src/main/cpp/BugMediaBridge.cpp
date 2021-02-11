@@ -192,6 +192,10 @@ Java_com_bugmedia_media_BugMediaBridge_startRenderer(JNIEnv *env, jclass thiz, j
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bugmedia_media_BugMediaBridge_play(JNIEnv *env, jclass clazz, jint renderer_id) {
+#ifdef DEBUGAPP
+    LOGD("播放");
+#endif
+
     player->play();
 }
 
@@ -205,6 +209,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, jstring url, jobject surface) {
     player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr));
-    player->setWindowSurface(env, surface);
+    player->load();
+    //player->setWindowSurface(env, surface);
 
 }

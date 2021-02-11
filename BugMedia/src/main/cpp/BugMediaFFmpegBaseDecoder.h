@@ -5,6 +5,7 @@
 #ifndef SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
 #define SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
 
+
 extern "C" {
 #include "include/ffmpeg/libavcodec/avcodec.h"
 #include "include/ffmpeg/libavformat/avformat.h"
@@ -21,7 +22,7 @@ extern "C" {
 class BugMediaFFmpegBaseDecoder {
 
 protected:
-    int32_t durationSecond = 0;
+    int32_t streamDuration = 0;
     AVCodec *avCodec = nullptr;
     AVCodecContext *avCodecContext = nullptr;
     AVPacket *avPacket = nullptr;
@@ -31,14 +32,14 @@ protected:
     const char *codecType{};
 
 public:
-    int32_t getDuration() const;
+    int32_t getStreamDuration() const;
 
     virtual ~ BugMediaFFmpegBaseDecoder();
 
-    void openDecoder();
-
     BugMediaFFmpegBaseDecoder(AVFormatContext *formatContext, int trackIdx);
 
+protected:
+    void openDecoder();
 };
 
 

@@ -28,26 +28,6 @@ using namespace std;
 
 
 class BugMediaSLESAudioRenderer {
-    class PcmData {
-    public:
-        PcmData(uint8_t *pcm, int size) {
-            this->pcm = pcm;
-            this->size = size;
-        }
-
-        ~PcmData() {
-            if (pcm != NULL) {
-                //释放已使用的内存
-                free(pcm);
-                pcm = NULL;
-                used = false;
-            }
-        }
-
-        uint8_t *pcm = NULL;
-        int size = 0;
-        bool used = false;
-    };
 
     State currentState = UNSTART;
 
@@ -73,38 +53,7 @@ class BugMediaSLESAudioRenderer {
 
     int queueSize{};
 
-    int inSampleRate{};
-
-    uint64_t inChannelLayout{};
-
-    AVSampleFormat inSampleFormat{};
-
     static void *renderRoutine(void *ctx);
-
-    // 格式转换上下文
-    SwrContext *swrContext{};
-    // 输出缓冲
-    uint8_t *outputBuffer[2] = {};
-
-    // 重采样个数
-    // acc默认为1024，重采样后可能会变化
-    int resampleCount = 1024;
-
-    // 重采样以后，一帧数据的大小
-    size_t resampleSize = 0;
-
-    // 编码格式：浮点型数据（32位）
-    static const AVSampleFormat ENCODE_FORMAT = AV_SAMPLE_FMT_FLTP;
-    // 采样率
-    static const int SAMPLE_RATE = 44100;
-    // 声道数
-    static const int CHANNEL_COUNTS = 2;
-    // 声道格式:立体声（双声道）
-    static const uint64_t CHANNEL_LAYOUT = AV_CH_LAYOUT_STEREO;
-    // 比特率
-    static const int BIT_RATE = 64000;
-    // ACC音频一帧采样数
-    static const int SAMPLES_COUNT = 1024;
 
     const SLuint32 QUEUE_BUFFER_COUNT = 2;
 
@@ -127,24 +76,16 @@ class BugMediaSLESAudioRenderer {
     // 这个接口用于向播放器缓冲区输入数据
     SLAndroidSimpleBufferQueueItf simpleBufferQueue{};
 
-    queue<PcmData *> playQueue{};
+    //queue<PcmData *> playQueue{};
 
-    void* callbackContext{};
+    queue<BugMediaAudioFrame *> playQueue{};
 
-
-    AVSampleFormat getSampleFmt();
-
-
-    int getSampleRate(int inSampleRate);
+    void *callbackContext{};
 
     //渲染并返回是否结束条件
     bool renderOnce();
 
     void doRender();
-
-    void initSwrContext();
-
-    void initOutputBuffer();
 
     bool createEngine();
 
@@ -175,11 +116,11 @@ public:
 
     typedef BugMediaAudioFrame *(*GetAudioFrameCallback)(void *ctx);
 
-    BugMediaSLESAudioRenderer(int inputSampleRate, uint64_t inputChannelLayout, AVSampleFormat inputSampleFormat,
-                              GetAudioFrameCallback callback, void *ctx,
-                              int bufferSize = 50);
+    BugMediaSLESAudioRenderer(GetAudioFrameCallback callback, void *ctx, int bufferSize = 50);
 
     ~BugMediaSLESAudioRenderer();
+
+private:
 
     GetAudioFrameCallback getAudioFrame{};
 

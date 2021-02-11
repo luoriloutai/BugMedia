@@ -4,6 +4,7 @@
 
 #include "BugMediaSLESAudioRenderer.h"
 
+#define DEBUGAPP
 
 void BugMediaSLESAudioRenderer::play() {
     currentState = PLAYING;
@@ -19,51 +20,19 @@ void BugMediaSLESAudioRenderer::stop() {
     resumePlay();
 }
 
-BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(int inputSampleRate, uint64_t inputChannelLayout,
-                                                     AVSampleFormat inputSampleFormat, GetAudioFrameCallback callback,
+BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callback,
                                                      void *ctx, int bufferSize) {
 
     queueSize = bufferSize;
-    inSampleRate = inputSampleRate;
-    inChannelLayout = inputChannelLayout;
-    inSampleFormat = inputSampleFormat;
     callbackContext = ctx;
+    getAudioFrame = callback;
 
     sem_init(&canFillQueue, 0, queueSize);
     sem_init(&canTakeData, 0, 0);
 
 
-    initSwrContext();
-    initOutputBuffer();
-
 }
 
-void BugMediaSLESAudioRenderer::initOutputBuffer() {
-    // 根据输入的采样数和采样率计算出重采样的个数
-    // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
-    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(inSampleRate),
-                                         inSampleRate, AV_ROUND_UP);
-    // 重采样后一帧数据的大小
-    resampleSize = (size_t) av_samples_get_buffer_size(
-            nullptr, CHANNEL_COUNTS,
-            resampleCount, getSampleFmt(), 1);
-
-    outputBuffer[0] = (uint8_t *) malloc(resampleSize);
-//    outputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
-//    outputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
-
-}
-
-void BugMediaSLESAudioRenderer::initSwrContext() {
-    swrContext = swr_alloc();
-    av_opt_set_int(swrContext, "in_channel_layout", inChannelLayout, 0);
-    av_opt_set_int(swrContext, "out_channel_layout", CHANNEL_LAYOUT, 0);
-    av_opt_set_int(swrContext, "in_sample_rate", inSampleRate, 0);
-    av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(inSampleRate), 0);
-    av_opt_set_sample_fmt(swrContext, "in_sample_fmt", inSampleFormat, 0);
-    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", getSampleFmt(), 0);
-    swr_init(swrContext);
-}
 
 BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
     // 使线程退出等待状态
@@ -80,10 +49,6 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
     pthread_cond_destroy(&condPlay);
     pthread_mutex_destroy(&mutex);
 
-    if (outputBuffer[0] != nullptr) {
-        free(outputBuffer[0]);
-        outputBuffer[0] = nullptr;
-    }
 
     //停止播放器
     if (player) {
@@ -111,8 +76,10 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
     }
     //释放队列数据
     for (int i = 0; i < playQueue.size(); ++i) {
-        PcmData *pcm = playQueue.front();
-        delete pcm;
+        //PcmData *pcm = playQueue.front();
+        BugMediaAudioFrame *frame = playQueue.front();
+        delete frame->data;
+        delete frame;
         playQueue.pop();
     }
 
@@ -129,10 +96,17 @@ void BugMediaSLESAudioRenderer::render() {
 
 // 如果有错返回true，跳出循环
 bool BugMediaSLESAudioRenderer::renderOnce() {
+#ifdef DEBUGAPP
+    LOGD("开始渲染一帧");
+#endif
 
     sem_wait(&canFillQueue);
     // 用于正常退出等待状态，需要在析构函数里再释放一个信号，同时把currentState设置为STOP
     if (currentState == STOP) {
+#ifdef DEBUGAPP
+        LOGD("Stop 退出");
+#endif
+
         return true;
     }
     //
@@ -140,19 +114,36 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
     // 所以用回调函数，其他线程执行初始化完成后再初始化本对象
     //
     if (getAudioFrame == nullptr) {
+#ifdef DEBUGAPP
+        LOGD("回调函数");
+#endif
+
         return true;
     }
 
     auto *frame = getAudioFrame(callbackContext);
 
     if (frame == nullptr) {
+
+#ifdef DEBUGAPP
+        LOGD("未取到帧");
+#endif
+
         currentState = STOP;
         return true;
     }
     if (frame->isEnd) {
+#ifdef DEBUGAPP
+        LOGD("最后一帧");
+#endif
+
         currentState = STOP;
         return true;
     }
+
+#ifdef DEBUGAPP
+    LOGD("计算延时");
+#endif
 
     int64_t pass = getCurMsTime() - startTimeMs;
     delay = frame->pts - pass;
@@ -161,37 +152,17 @@ bool BugMediaSLESAudioRenderer::renderOnce() {
         av_usleep(delay);
     }
 
-    // 转换音频，统一格式，便于播放
-    int ret = swr_convert(swrContext, outputBuffer, resampleSize,
-                          (const uint8_t **) (frame->data), frame->sampleCount);
-    if (ret > 0) {
-        auto *data = (uint8_t *) malloc(resampleSize);
-        memcpy(data, outputBuffer[0], resampleSize);
-        auto *pcmData = new PcmData(data, resampleSize);
-        playQueue.push(pcmData);
-        sem_post(&canTakeData);
-    } else {
-        sem_post(&canFillQueue);
-    }
+    playQueue.push(frame);
+    sem_post(&canTakeData);
 
-    delete frame;
+
+#ifdef DEBUGAPP
+    LOGD("渲染一帧结束");
+#endif
 
     return false;
 }
 
-//
-// 待完善
-//
-AVSampleFormat BugMediaSLESAudioRenderer::getSampleFmt() {
-    return AV_SAMPLE_FMT_S16;
-}
-
-//
-// 待完善
-//
-int BugMediaSLESAudioRenderer::getSampleRate(int inSampleRate) {
-    return SAMPLE_RATE;
-}
 
 void *BugMediaSLESAudioRenderer::renderRoutine(void *ctx) {
     auto render = (BugMediaSLESAudioRenderer *) ctx;
@@ -213,21 +184,44 @@ void BugMediaSLESAudioRenderer::doRender() {
         return;
     }
 
+#ifdef DEBUGAPP
+    LOGD("引擎、混音器、播放器创建完毕");
+#endif
+
     while (true) {
+
+#ifdef DEBUGAPP
+        LOGD("进入循环");
+#endif
 
         waitPlay();
 
+#ifdef DEBUGAPP
+        LOGD("等待完成");
+#endif
+
         if (currentState == PLAYING) {
+
+#ifdef DEBUGAPP
+            LOGD("进入[播放状态]");
+#endif
+
             if (startTimeMs == -1) {
                 // 初次执行，记录时间点，后面的播放都依赖于这个起始时间点。
                 // pts是基于这个时间点的消逝时间，即偏移
                 startTimeMs = getCurMsTime();
             }
 
+#ifdef DEBUGAPP
+            LOGD("起始时间:%lld", startTimeMs);
+#endif
+
             if (renderOnce()) {
                 break;
             }
-
+#ifdef DEBUGAPP
+            LOGD("一帧结束时间:%lld", getCurMsTime());
+#endif
 
             resumePlay();
 
@@ -250,6 +244,12 @@ void BugMediaSLESAudioRenderer::doRender() {
             break;
         }
     }
+
+#ifdef DEBUGAPP
+    LOGD("渲染结束，没有更多的数据要处理");
+#endif
+
+
 }
 
 bool BugMediaSLESAudioRenderer::createEngine() {
@@ -340,7 +340,7 @@ bool BugMediaSLESAudioRenderer::createPlayer() {
 
 bool BugMediaSLESAudioRenderer::resultErr(SLresult r, const char *errMsg) {
     if (r != SL_RESULT_SUCCESS) {
-        LOGE("%s,%s", errMsg,av_err2str(r));
+        LOGE("%s,%s", errMsg, av_err2str(r));
         return true;
     }
     return false;
@@ -376,14 +376,13 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
 //    }
 
 
-    PcmData *pcmData = playQueue.front();
-    if (nullptr != pcmData && player) {
-        SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, pcmData->pcm, (SLuint32) pcmData->size);
+    BugMediaAudioFrame *frame = playQueue.front();
+    if (nullptr != frame && player) {
+        SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->resampleSize);
         if (result == SL_RESULT_SUCCESS) {
             // 成功填入缓冲则移除数据，否则下次填充的还是这个数据
-            pcmData->used = true;
-            delete pcmData->pcm;
-            delete pcmData;
+            delete frame->data;
+            delete frame;
             playQueue.pop();
 
             sem_post(&canFillQueue);
@@ -392,12 +391,14 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
 }
 
 void BugMediaSLESAudioRenderer::waitPlay() {
+
     pthread_mutex_lock(&mutex);
     pthread_cond_wait(&condPlay, &mutex);
     pthread_mutex_unlock(&mutex);
 }
 
 void BugMediaSLESAudioRenderer::resumePlay() {
+
     pthread_mutex_lock(&mutex);
     pthread_cond_signal(&condPlay);
     pthread_mutex_unlock(&mutex);

@@ -69,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
 //                Log.d("bugmedia","绘图器创建完成");
 
                 _surface = surfaceHolder.getSurface();
+if(_surface==null){
+    Log.d("bugmedia","surface is null");
+}else{
+    Log.d("bugmedia", "surfaceCreated: surface is not null");
+}
+
 
                 // 涉及到读写权限了，需要请求权限，AndroidManifest加权限后这里还需要请求授权，6.0以下的不需要
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -170,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         String dir = Environment.getExternalStorageDirectory().getPath();
         String path = dir + "/testfile.mp4";
         player1 = new BugPlayer(path, _surface);
+        
     }
 
 

@@ -19,7 +19,7 @@ BugMediaFFmpegVideoDecoder::BugMediaFFmpegVideoDecoder(AVFormatContext *formatCo
     this->bufferSize = bufferSize;
     sem_init(&this->canFillData, 0, this->bufferSize);
     sem_init(&this->canTakeData, 0, 0);
-    this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
+
 }
 
 BugMediaFFmpegVideoDecoder::~BugMediaFFmpegVideoDecoder() {
@@ -156,6 +156,11 @@ BugMediaVideoFrame *BugMediaFFmpegVideoDecoder::getFrame() {
     }
 
     return frame;
+}
+
+void BugMediaFFmpegVideoDecoder::startDecode() {
+    openDecoder();
+    this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
 }
 
 
