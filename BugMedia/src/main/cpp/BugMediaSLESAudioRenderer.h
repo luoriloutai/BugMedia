@@ -35,19 +35,13 @@ class BugMediaSLESAudioRenderer {
     // 开始执行操作时的时间（毫秒）
     int64_t startTimeMs = -1;
 
-    int64_t pst{};
-
     int64_t delay{};
 
     pthread_t renderThread{};
 
-    sem_t canFillQueue{};
+    int64_t prePts{};
 
-    sem_t canTakeData{};
-
-    pthread_mutex_t mutex{};
-
-    pthread_cond_t condPlay{};
+    sem_t playSem{};
 
     bool quit = false;
 
@@ -100,9 +94,6 @@ class BugMediaSLESAudioRenderer {
     // 给缓冲区填充数据
     void doBufferQueue();
 
-    void waitPlay();
-
-    void resumePlay();
 
 public:
 

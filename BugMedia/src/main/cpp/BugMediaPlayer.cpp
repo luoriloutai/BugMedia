@@ -114,13 +114,26 @@ void BugMediaPlayer::init() {
         }
     }
 
-    currentVideoDecoder = videoDecoders[0];
-    currentAudioDecoder = audioDecoders[0];
+    if (!videoDecoders.empty()){
+        currentVideoDecoder = videoDecoders[0];
+    }
+
+    if (!audioDecoders.empty()){
+        currentAudioDecoder = audioDecoders[0];
+    }
+
+    if (currentVideoDecoder== nullptr&&currentAudioDecoder== nullptr){
+        LOGE("没有找到媒体信息");
+        return;
+    }
+
 
     if (currentAudioDecoder != nullptr) {
 #ifdef DEBUGAPP
 LOGD("音频解码器数量:%d,",audioDecoders.size());
         currentAudioDecoder->startDecode();
+        audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameData, this,maxBufferSize);
+        audioRenderer->render();
 #else
 
         currentAudioDecoder->startDecode();
@@ -201,6 +214,7 @@ BugMediaVideoFrame *BugMediaPlayer::getVideoFrame() {
 }
 
 BugMediaAudioFrame *BugMediaPlayer::getAudioFrameData(void *ctx) {
+
     auto loader = (BugMediaPlayer *) ctx;
     return loader->getAudioFrame();
 }

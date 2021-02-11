@@ -3,21 +3,30 @@
 //
 
 #include "BugMediaSLESAudioRenderer.h"
+#include "BugMediaPlayer.h"
 
 #define DEBUGAPP
 
 void BugMediaSLESAudioRenderer::play() {
-    currentState = PLAYING;
-    resumePlay();
+    if (currentState != PLAYING) {
+        currentState = PLAYING;
+        sem_post(&playSem);
+
+    }
+
 }
 
 void BugMediaSLESAudioRenderer::pause() {
-    currentState = PAUSE;
+    if (currentState == PLAYING) {
+        currentState = PAUSE;
+    }
+
 }
 
 void BugMediaSLESAudioRenderer::stop() {
     currentState = STOP;
-    resumePlay();
+    //sem_post(&playSem);
+
 }
 
 BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callback,
@@ -27,9 +36,7 @@ BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callb
     callbackContext = ctx;
     getAudioFrame = callback;
 
-    sem_init(&canFillQueue, 0, queueSize);
-    sem_init(&canTakeData, 0, 0);
-
+    sem_init(&playSem, 0, 0);
 
 }
 
@@ -38,16 +45,7 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
     // 使线程退出等待状态
     // 在获取到信号后判断状态退出，使线程不会一直等待
     currentState = STOP;
-    sem_post(&canFillQueue);
-    sem_post(&canTakeData);
-
-    quit = true;
-    pthread_mutex_lock(&mutex);
-    pthread_cond_signal(&condPlay);
-    pthread_mutex_unlock(&mutex);
-
-    pthread_cond_destroy(&condPlay);
-    pthread_mutex_destroy(&mutex);
+    sem_post(&playSem);
 
 
     //停止播放器
@@ -74,17 +72,9 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
         engineObj = nullptr;
         engine = nullptr;
     }
-    //释放队列数据
-    for (int i = 0; i < playQueue.size(); ++i) {
-        //PcmData *pcm = playQueue.front();
-        BugMediaAudioFrame *frame = playQueue.front();
-        delete frame->data;
-        delete frame;
-        playQueue.pop();
-    }
 
-    sem_destroy(&canFillQueue);
-    sem_destroy(&canTakeData);
+    sem_destroy(&playSem);
+
     pthread_join(renderThread, nullptr);
 
 }
@@ -92,75 +82,6 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
 void BugMediaSLESAudioRenderer::render() {
     pthread_create(&renderThread, nullptr, renderRoutine, this);
 
-}
-
-// 如果有错返回true，跳出循环
-bool BugMediaSLESAudioRenderer::renderOnce() {
-#ifdef DEBUGAPP
-    LOGD("开始渲染一帧");
-#endif
-
-    sem_wait(&canFillQueue);
-    // 用于正常退出等待状态，需要在析构函数里再释放一个信号，同时把currentState设置为STOP
-    if (currentState == STOP) {
-#ifdef DEBUGAPP
-        LOGD("Stop 退出");
-#endif
-
-        return true;
-    }
-    //
-    // 获取帧，通过回调函数。因为不知道其他线程在什么时候初始化完毕
-    // 所以用回调函数，其他线程执行初始化完成后再初始化本对象
-    //
-    if (getAudioFrame == nullptr) {
-#ifdef DEBUGAPP
-        LOGD("回调函数");
-#endif
-
-        return true;
-    }
-
-    auto *frame = getAudioFrame(callbackContext);
-
-    if (frame == nullptr) {
-
-#ifdef DEBUGAPP
-        LOGD("未取到帧");
-#endif
-
-        currentState = STOP;
-        return true;
-    }
-    if (frame->isEnd) {
-#ifdef DEBUGAPP
-        LOGD("最后一帧");
-#endif
-
-        currentState = STOP;
-        return true;
-    }
-
-#ifdef DEBUGAPP
-    LOGD("计算延时");
-#endif
-
-    int64_t pass = getCurMsTime() - startTimeMs;
-    delay = frame->pts - pass;
-    // pts比当前时间大，说明要等待时间到
-    if (delay > 0) {
-        av_usleep(delay);
-    }
-
-    playQueue.push(frame);
-    sem_post(&canTakeData);
-
-
-#ifdef DEBUGAPP
-    LOGD("渲染一帧结束");
-#endif
-
-    return false;
 }
 
 
@@ -188,65 +109,55 @@ void BugMediaSLESAudioRenderer::doRender() {
     LOGD("引擎、混音器、播放器创建完毕");
 #endif
 
-    while (true) {
+    sem_wait(&playSem);
+
+    (*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
+    // 执行播放的是这个回调函数，控制流程也在这里面
+    bufferQueueCallback(simpleBufferQueue, this);
+
+
+//    while (true) {
+//
+//        sem_wait(&playSem);
+//
+//
+//#ifdef DEBUGAPP
+//        LOGD("是否播放：%s",currentState==PLAYING?"是":"否");
+//        LOGD("是否暂停：%s",currentState==PAUSE?"是":"否");
+//        LOGD("是否停止：%s",currentState==STOP?"是":"否");
+//#endif
+//
+//        if (currentState == STOP) {
+//            return;
+//        }
+//
+//        if (currentState == PLAYING) {
+//
+//            (*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
+//            bufferQueueCallback(simpleBufferQueue, this);
+//
+//        }
+//        else if (currentState == PAUSE) {
+//
+//
+//            // 将播放起始时间点向前移即可
+//            //startTimeMs = startTimeMs + pst;
+//            //startTimeMs = getCurMsTime()-pst;
+//
+//            //sem_wait(&playSem);
+//
+//
+//            if (quit) {
+//                return;
+//            }
+//
+//        } else if (currentState == STOP) {
+//            break;
+//        }
+//    }
 
 #ifdef DEBUGAPP
-        LOGD("进入循环");
-#endif
-
-        waitPlay();
-
-#ifdef DEBUGAPP
-        LOGD("等待完成");
-#endif
-
-        if (currentState == PLAYING) {
-
-#ifdef DEBUGAPP
-            LOGD("进入[播放状态]");
-#endif
-
-            if (startTimeMs == -1) {
-                // 初次执行，记录时间点，后面的播放都依赖于这个起始时间点。
-                // pts是基于这个时间点的消逝时间，即偏移
-                startTimeMs = getCurMsTime();
-            }
-
-#ifdef DEBUGAPP
-            LOGD("起始时间:%lld", startTimeMs);
-#endif
-
-            if (renderOnce()) {
-                break;
-            }
-#ifdef DEBUGAPP
-            LOGD("一帧结束时间:%lld", getCurMsTime());
-#endif
-
-            resumePlay();
-
-        } else if (currentState == PAUSE) {
-            // 将播放起始时间点向前移即可
-            startTimeMs = startTimeMs + pst;
-            //startTimeMs = getCurMsTime()-pst;
-
-            waitPlay();
-
-            // 暂停后少了一个信号，下一次循环开头的waitPlay()将阻塞，
-            // 不能播放,这里给它一个信号，让它继续执行
-            resumePlay();
-
-            if (quit) {
-                return;
-            }
-
-        } else if (currentState == STOP) {
-            break;
-        }
-    }
-
-#ifdef DEBUGAPP
-    LOGD("渲染结束，没有更多的数据要处理");
+    LOGD("渲染结束");
 #endif
 
 
@@ -347,59 +258,89 @@ bool BugMediaSLESAudioRenderer::resultErr(SLresult r, const char *errMsg) {
 }
 
 void BugMediaSLESAudioRenderer::bufferQueueCallback(SLAndroidSimpleBufferQueueItf bufferQueueItf, void *ctx) {
-    auto self = (BugMediaSLESAudioRenderer *) ctx;
-    self->doBufferQueue();
+
+    auto renderer = (BugMediaSLESAudioRenderer *) ctx;
+    renderer->doBufferQueue();
 }
 
-// 向播放器缓冲填充数据，使用自己定义的队列里的数据
+// 向播放器缓冲填充数据
 void BugMediaSLESAudioRenderer::doBufferQueue() {
-    if (player == nullptr) return;
-
-    sem_wait(&canTakeData);
-
-    // 用于退出线程等待，但需要在析构函数里再释放
-    // 一个信号，同时把currentState设置为STOP，
-    // 使得如果当前线程卡在上面一步时能顺利退出
-    if (currentState == STOP) {
+    if (player == nullptr) {
+        LOGE("播放器未初始化");
         return;
     }
 
-    // 如果数据被复制到缓冲区则不需要这个步骤
-//    while (!playQueue.empty()) {
-//        PcmData *pcm = playQueue.front();
-//        if (pcm->used) {
-//            playQueue.pop();
-//            delete pcm;
-//        } else {
-//            break;
-//        }
-//    }
+    if (currentState == STOP) {
+        (*simpleBufferQueue)->Clear(simpleBufferQueue);
 
-
-    BugMediaAudioFrame *frame = playQueue.front();
-    if (nullptr != frame && player) {
-        SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->resampleSize);
-        if (result == SL_RESULT_SUCCESS) {
-            // 成功填入缓冲则移除数据，否则下次填充的还是这个数据
-            delete frame->data;
-            delete frame;
-            playQueue.pop();
-
-            sem_post(&canFillQueue);
-        }
+        return;
     }
+
+
+    if (startTimeMs == -1) {
+        // 初次执行，记录时间点，后面的播放都依赖于这个起始时间点。
+        // pts是基于这个时间点的消逝时间，即偏移
+        startTimeMs = getCurMsTime();
+    }
+
+    auto *frame = getAudioFrame(callbackContext);
+
+    if (frame == nullptr) {
+        currentState = STOP;
+        (*simpleBufferQueue)->Clear(simpleBufferQueue);
+
+        return;
+    }
+    if (frame->isEnd) {
+#ifdef DEBUGAPP
+        LOGD("最后一帧");
+#endif
+        currentState = STOP;
+        (*simpleBufferQueue)->Clear(simpleBufferQueue);
+
+        return;
+    }
+
+    if (currentState == PAUSE) {
+        startTimeMs = getCurMsTime()-frame->pts;
+
+        sem_wait(&playSem);
+    }
+
+#ifdef DEBUGAPP
+    LOGD("计算延时");
+#endif
+
+    int64_t pass = getCurMsTime() - startTimeMs;
+    delay = frame->pts - pass;
+
+
+#ifdef DEBUGAPP
+    LOGD("延时时间：%lld", delay);
+#endif
+
+    // pts比当前时间大，说明要等待时间到
+    if (delay > 0) {
+        av_usleep(delay * 1000);
+    }
+
+
+    SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->resampleSize);
+    if (result == SL_RESULT_SUCCESS) {
+        //sem_post(&playSem);
+        delete frame->data;
+        delete frame;
+
+#ifdef DEBUGAPP
+        LOGD("推入缓冲成功");
+
+#endif
+
+    } else {
+        LOGE("缓冲数据时出错：%s", av_err2str(result));
+    }
+
+
 }
 
-void BugMediaSLESAudioRenderer::waitPlay() {
 
-    pthread_mutex_lock(&mutex);
-    pthread_cond_wait(&condPlay, &mutex);
-    pthread_mutex_unlock(&mutex);
-}
-
-void BugMediaSLESAudioRenderer::resumePlay() {
-
-    pthread_mutex_lock(&mutex);
-    pthread_cond_signal(&condPlay);
-    pthread_mutex_unlock(&mutex);
-}

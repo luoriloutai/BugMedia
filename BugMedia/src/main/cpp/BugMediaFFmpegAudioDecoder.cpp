@@ -140,7 +140,7 @@ static int couter=0;
                 LOGD("第%d帧解码完毕",++couter);
                 LOGD("帧大小：%d",sizeof(data));
                 LOGD("队列大小：%d", frameQueue.size());
-                //return;
+
 #endif
 
 

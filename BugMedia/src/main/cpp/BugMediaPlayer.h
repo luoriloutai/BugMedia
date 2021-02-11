@@ -46,6 +46,7 @@ class BugMediaPlayer {
     BugMediaGLESVideoRenderer *videoRenderer{};
     int duration{};
 
+    static const int DEFAULT_BUFFER_SIZE=10;
 
     static void *initThreadFunc(void *pVoid);
 
@@ -60,7 +61,7 @@ class BugMediaPlayer {
 public:
 
 
-    BugMediaPlayer(const char *url, int bufferSize = 50);
+    BugMediaPlayer(const char *url, int bufferSize = DEFAULT_BUFFER_SIZE);
 
     ~BugMediaPlayer();
 
