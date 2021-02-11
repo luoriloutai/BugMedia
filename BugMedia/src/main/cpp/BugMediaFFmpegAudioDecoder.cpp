@@ -117,7 +117,7 @@ void BugMediaFFmpegAudioDecoder::decode() {
 
             // 音频重采样转换
             int sampleCount = swr_convert(swrContext, outputBuffer, resampleSize,
-                                   (const uint8_t **) (avFrame->data), avFrame->nb_samples);
+                                          (const uint8_t **) (avFrame->data), avFrame->nb_samples);
 #ifdef DEBUGAPP
 
             LOGD("音频帧转换，每通道样本数：%d,%s", sampleCount, av_err2str(sampleCount));
@@ -135,16 +135,16 @@ void BugMediaFFmpegAudioDecoder::decode() {
                 sem_post(&this->canTakeData);
 
 #ifdef DEBUGAPP
-static int couter=0;
-                LOGD("第%d帧解码完毕",++couter);
-                LOGD("帧大小：%d",sizeof(data));
+                static int couter = 0;
+                LOGD("第%d帧解码完毕", ++couter);
+                LOGD("帧大小：%d", sizeof(data));
                 LOGD("队列大小：%d", frameQueue.size());
 
 #endif
 
 
             }
-        }else{
+        } else {
             // 这一次做的事情没有成功，返还信号
             sem_post(&canFillData);
         }
