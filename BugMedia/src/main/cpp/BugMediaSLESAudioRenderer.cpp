@@ -30,10 +30,10 @@ void BugMediaSLESAudioRenderer::stop() {
 }
 
 BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback getAudioFrameCallback,
-                                                     void *ctx, int bufferSize) {
+                                                     void *callbackContext, int bufferSize) {
 
     queueSize = bufferSize;
-    callbackContext = ctx;
+    this->callbackContext = callbackContext;
     getAudioFrame = getAudioFrameCallback;
 
     sem_init(&playSem, 0, 0);

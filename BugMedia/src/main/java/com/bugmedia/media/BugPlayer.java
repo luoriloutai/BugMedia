@@ -5,7 +5,21 @@ import android.view.Surface;
 public class BugPlayer {
 
     public BugPlayer(String url, Surface surface) {
-        BugMediaBridge.createPlayer(url, surface);
+        BugMediaBridge.createPlayer(url, surface,0,0,false);
+    }
+
+    public BugPlayer(String url,Surface surface,int width,int height){
+        BugMediaBridge.createPlayer(url,surface,width,height,false);
+    }
+
+    public BugPlayer(String url,Surface surface,int width,int height,boolean createPBufferSurface){
+        BugMediaBridge.createPlayer(url,surface,width,height,createPBufferSurface);
+    }
+
+
+
+    public void load(){
+        BugMediaBridge.load(0);
     }
 
     public void play() {

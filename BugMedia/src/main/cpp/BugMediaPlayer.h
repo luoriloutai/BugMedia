@@ -25,11 +25,13 @@ class BugMediaPlayer {
     BugMediaVideoFrame *getVideoFrame();
 public:
     ~BugMediaPlayer();
-    BugMediaPlayer(const char *url,JNIEnv *env,jobject surface,EGLint width=0, EGLint height=0);
+    BugMediaPlayer(const char *url, JNIEnv *env, jobject surface, EGLint width, EGLint height,
+                   bool createPBufferSurface);
     void load();
     void play();
     void pause();
     void stop();
+    void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 
 
 };

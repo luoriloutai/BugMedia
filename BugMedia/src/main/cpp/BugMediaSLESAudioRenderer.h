@@ -101,7 +101,7 @@ public:
 
     typedef BugMediaAudioFrame *(*GetAudioFrameCallback)(void *ctx);
 
-    BugMediaSLESAudioRenderer(GetAudioFrameCallback getAudioFrameCallback, void *ctx, int bufferSize = 10);
+    BugMediaSLESAudioRenderer(GetAudioFrameCallback getAudioFrameCallback, void *callbackContext, int bufferSize = 10);
 
     ~BugMediaSLESAudioRenderer();
 

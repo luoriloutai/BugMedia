@@ -64,10 +64,13 @@ void BugMediaGLESVideoRenderer::onRender() {
     release();
 }
 
-BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(GetVideoFrameCallback getVideoFrameCallback, JNIEnv *env, jobject surface,
-                                                     EGLint width,
-                                                     EGLint height) {
+BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(GetVideoFrameCallback getVideoFrameCallback, void *callbackContext,
+                                                     JNIEnv *env,
+                                                     jobject surface, EGLint width, EGLint height,
+                                                     bool createPBufferSurface) {
     currentState = UNSTART;
+    this->callbackContext = callbackContext;
+    this->getVideoFrame = getVideoFrameCallback;
 }
 
 BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
@@ -174,14 +177,14 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     //
     // 获取帧
     //
-    if (getVideoFrame== nullptr){
+    if (getVideoFrame == nullptr) {
         return true;
     }
     auto *frame = getVideoFrame(this);
-    if (frame== nullptr){
+    if (frame == nullptr) {
         return true;
     }
-    if (getAudioPts!= nullptr){
+    if (getAudioPts != nullptr) {
         audioPts = getAudioPts(this);
     }
 
