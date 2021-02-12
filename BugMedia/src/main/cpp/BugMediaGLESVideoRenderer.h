@@ -32,7 +32,7 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
 
     // 开始执行操作时的时间（毫秒）
     int64_t startTimeMs = -1;
-    int64_t videoPst{};
+    int64_t videoPts{};
     int64_t delay{};
     GLuint texId{}; // 纹理id
     JNIEnv *env{};

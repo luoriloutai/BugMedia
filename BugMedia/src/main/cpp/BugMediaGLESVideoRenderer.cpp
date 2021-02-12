@@ -51,8 +51,9 @@ void BugMediaGLESVideoRenderer::onRender() {
             }
 
         } else if (currentState == PAUSE) {
-            startTimeMs = startTimeMs + videoPst;
-            //startTimeMs = getCurMsTime()-videoPst;
+            //startTimeMs = startTimeMs + videoPts;
+            startTimeMs = getCurMsTime() - videoPts;
+            sem_wait(&playSem);
 
         } else if (currentState == STOP) {
             break;
@@ -204,18 +205,23 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     if (getVideoFrame == nullptr) {
         return true;
     }
-    auto *frame = getVideoFrame(this);
+    auto *frame = getVideoFrame(callbackContext);
     if (frame == nullptr) {
         return true;
-    }
-    if (getAudioPts != nullptr) {
-        audioPts = getAudioPts(this);
     }
 
     if (frame->isEnd) {
         currentState = STOP;
         return true;
     }
+
+    videoPts = frame->pts;
+
+    if (getAudioPts != nullptr) {
+        audioPts = getAudioPts(callbackContext);
+    }
+
+
 
 
     set2DTexture0ToShader("texSampler", texId, *frame->data, frame->width, frame->height);
