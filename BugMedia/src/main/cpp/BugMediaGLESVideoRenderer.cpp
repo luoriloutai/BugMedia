@@ -64,7 +64,9 @@ void BugMediaGLESVideoRenderer::onRender() {
     release();
 }
 
-BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer() {
+BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(GetVideoFrameCallback getVideoFrameCallback, JNIEnv *env, jobject surface,
+                                                     EGLint width,
+                                                     EGLint height) {
     currentState = UNSTART;
 }
 

@@ -70,14 +70,8 @@ class BugMediaSLESAudioRenderer {
     // 这个接口用于向播放器缓冲区输入数据
     SLAndroidSimpleBufferQueueItf simpleBufferQueue{};
 
-    //queue<PcmData *> playQueue{};
-
-    queue<BugMediaAudioFrame *> playQueue{};
 
     void *callbackContext{};
-
-    //渲染并返回是否结束条件
-    bool renderOnce();
 
     void doRender();
 
@@ -107,7 +101,7 @@ public:
 
     typedef BugMediaAudioFrame *(*GetAudioFrameCallback)(void *ctx);
 
-    BugMediaSLESAudioRenderer(GetAudioFrameCallback callback, void *ctx, int bufferSize = 50);
+    BugMediaSLESAudioRenderer(GetAudioFrameCallback getAudioFrameCallback, void *ctx, int bufferSize = 10);
 
     ~BugMediaSLESAudioRenderer();
 

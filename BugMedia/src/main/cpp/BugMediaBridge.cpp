@@ -23,7 +23,7 @@
 #include "BugMediaGLESVideoRenderer.h"
 #include <mutex>
 #include <map>
-#include "BugMediaPlayer.h"
+#include "BugMediaVideoLoader.h"
 
 using namespace std;
 
@@ -110,7 +110,7 @@ void resizeView(int32_t x, int32_t y, int32_t width, int32_t height, int32_t ren
 // ==================
 
 
-BugMediaPlayer *player{};
+BugMediaVideoLoader *player{};
 
 //^^^^^^^^^^^ jni ^^^^^^^^^^^^
 
@@ -208,8 +208,10 @@ Java_com_bugmedia_media_BugMediaBridge_stop(JNIEnv *env, jclass clazz, jint rend
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, jstring url, jobject surface) {
-    player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr));
-    player->load();
-    //player->setWindowSurface(env, surface);
+//    BugMediaSLESAudioRenderer *audioRenderer = new BugMediaSLESAudioRenderer();
+//    BugMediaGLESVideoRenderer *videoRenderer = new BugMediaGLESVideoRenderer();
+//    player = new BugMediaVideoLoader(env->GetStringUTFChars(url, nullptr),audioRenderer, videoRenderer);
+//    player->load();
+
 
 }

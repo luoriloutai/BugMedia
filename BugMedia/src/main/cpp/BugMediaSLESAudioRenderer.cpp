@@ -3,7 +3,7 @@
 //
 
 #include "BugMediaSLESAudioRenderer.h"
-#include "BugMediaPlayer.h"
+#include "BugMediaVideoLoader.h"
 
 #define DEBUGAPP
 
@@ -29,12 +29,12 @@ void BugMediaSLESAudioRenderer::stop() {
 
 }
 
-BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callback,
+BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback getAudioFrameCallback,
                                                      void *ctx, int bufferSize) {
 
     queueSize = bufferSize;
     callbackContext = ctx;
-    getAudioFrame = callback;
+    getAudioFrame = getAudioFrameCallback;
 
     sem_init(&playSem, 0, 0);
 

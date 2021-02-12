@@ -1,102 +1,36 @@
 //
-// Created by Gshine on 2021/2/4.
+// Created by Gshine on 2021/2/12.
 //
 
 #ifndef SLOWER_BUGMEDIAPLAYER_H
 #define SLOWER_BUGMEDIAPLAYER_H
+#include <jni.h>
+#include "BugMediaSLESAudioRenderer.h"
+#include "BugMediaGLESVideoRenderer.h"
+#include "BugMediaVideoLoader.h"
 
-extern "C" {
-#include "include/ffmpeg/libavcodec/avcodec.h"
-#include "include/ffmpeg/libavformat/avformat.h"
-#include "include/ffmpeg/libswscale/swscale.h"
-#include "include/ffmpeg/libswresample/swresample.h"
-#include "include/ffmpeg/libavutil/pixdesc.h"
-#include "include/ffmpeg/libavutil/frame.h"
-#include "include/ffmpeg/libavutil/time.h"
+extern "C"{
+#include <EGL/eglplatform.h>
 }
 
 
-#include <pthread.h>
-#include <semaphore.h>
-#include <vector>
-#include "BugMediaSLESAudioRenderer.h"
-#include "BugMediaFFmpegAudioDecoder.h"
-#include "BugMediaFFmpegVideoDecoder.h"
-#include "BugMediaGLESVideoRenderer.h"
-
-using namespace std;
-
-
 class BugMediaPlayer {
-    int maxBufferSize;
-    const char *url = nullptr;
-    AVFormatContext *formatContext = nullptr;
-    pthread_t initThread{};
-    bool isRelease = false;
-    bool isAudioEnd = false;
-    bool isVideoEnd = false;
-    vector<BugMediaFFmpegAudioDecoder *> audioDecoders{};
-    vector<BugMediaFFmpegVideoDecoder *> videoDecoders{};
-    int audioTrackCount{};
-    int videoTrackCount{};
-    BugMediaFFmpegAudioDecoder *currentAudioDecoder{};
-    BugMediaFFmpegVideoDecoder *currentVideoDecoder{};
-    int64_t audioPts{};
     BugMediaSLESAudioRenderer *audioRenderer{};
     BugMediaGLESVideoRenderer *videoRenderer{};
-    int duration{};
+    BugMediaVideoLoader *loader{};
 
-    static const int DEFAULT_BUFFER_SIZE=10;
-
-    static void *initThreadFunc(void *pVoid);
-
-    // 定义该函数是目的是为了在线程中直接使用类内的方法和变量，
-    // 而不需要用传过去的本类的指针去访问，简化写法而已。
-    void init();
-
-    static BugMediaAudioFrame *getAudioFrameData(void *ctx);
-
-    void release();
-
-public:
-
-
-    BugMediaPlayer(const char *url, int bufferSize = DEFAULT_BUFFER_SIZE);
-
-    ~BugMediaPlayer();
-
+    static BugMediaAudioFrame * getAudioFrameCallback(void *ctx);
     BugMediaAudioFrame *getAudioFrame();
-
+    static BugMediaVideoFrame *getVideoFrameCallback(void *ctx);
     BugMediaVideoFrame *getVideoFrame();
-
-
-    int64_t getAudioPts() const;
-
-    int getAudioTrackCount() const;
-
-    int getVideoTrackCount() const;
-
-    void switchAudioChannel(int ch);
-
-    void switchVideoChannel(int ch);
-
-    void setBufferSize(int size);
-
+public:
+    ~BugMediaPlayer();
+    BugMediaPlayer(const char *url,JNIEnv *env,jobject surface,EGLint width=0, EGLint height=0);
     void load();
-
     void play();
-
     void pause();
-
     void stop();
 
-    void destroy();
-
-    void setWindowSurface(JNIEnv *env, jobject surface);
-
-    void setPBufferSurface(EGLint width, EGLint height);
-
-    void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 
 };
 

@@ -34,9 +34,6 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
     GLuint texId{}; // 纹理id
 
 public:
-    BugMediaGLESVideoRenderer();
-
-    ~BugMediaGLESVideoRenderer();
 
     void play();
 
@@ -46,12 +43,16 @@ public:
 
     typedef BugMediaVideoFrame *(*GetVideoFrameCallback)(void *ctx);
 
-    GetVideoFrameCallback getVideoFrame{};
-
     typedef int64_t (*GetAudioPtsCallback)(void * ctx);
 
     GetAudioPtsCallback getAudioPts{};
 
+    BugMediaGLESVideoRenderer(GetVideoFrameCallback getVideoFrameCallback, JNIEnv *env, jobject surface, EGLint width,
+                              EGLint height);
+
+    ~BugMediaGLESVideoRenderer();
+private:
+    GetVideoFrameCallback getVideoFrame{};
 };
 
 
