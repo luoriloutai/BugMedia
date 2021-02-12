@@ -158,9 +158,11 @@ void BugMediaPlayer::init() {
         currentVideoDecoder->startDecode();
         videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameData, getAudioPtsData, this,
                                                       env, surface, width, height, createPBufferSurface);
+        videoRenderer->render();
 #else
         currentVideoDecoder->startDecode();
-        videoRenderer = new BugMediaGLESVideoRenderer();
+        videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameData, getAudioPtsData, this,
+                                                      env, surface, width, height, createPBufferSurface);
         videoRenderer->render();
 #endif
     }

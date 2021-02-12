@@ -86,17 +86,26 @@ BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
 }
 
 void BugMediaGLESVideoRenderer::play() {
-
+if (rendering){
     currentState = PLAYING;
 }
 
+}
+
 void BugMediaGLESVideoRenderer::pause() {
-    currentState = PAUSE;
+    if (rendering){
+        currentState = PAUSE;
+    }
+
+
 
 }
 
 void BugMediaGLESVideoRenderer::stop() {
-    currentState = STOP;
+    if (rendering){
+        currentState = STOP;
+    }
+
 }
 
 // 相对固定的东西放在这里

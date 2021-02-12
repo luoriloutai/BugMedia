@@ -177,6 +177,7 @@ if(_surface==null){
         String path = dir + "/testfile.mp4";
         //String path = dir + "/bingo.aac";
         player1 = new BugPlayer(path, _surface);
+        player1.load();
         
     }
 

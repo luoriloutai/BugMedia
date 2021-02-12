@@ -217,6 +217,6 @@ Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_BugMediaBridge_load(JNIEnv *env, jclass clazz) {
+Java_com_bugmedia_media_BugMediaBridge_load(JNIEnv *env, jclass clazz,jint rendererId) {
     player->load();
 }

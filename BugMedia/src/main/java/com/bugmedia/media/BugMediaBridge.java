@@ -20,7 +20,7 @@ public class BugMediaBridge {
 
     public static native void stop(int rendererId);
 
-    public static native void load();
+    public static native void load(int rendererId);
 
     public static native void resizeView(int x,int y,int width,int height,int rendererId);
 

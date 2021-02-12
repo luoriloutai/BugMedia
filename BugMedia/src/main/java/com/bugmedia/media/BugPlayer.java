@@ -35,6 +35,10 @@ public class BugPlayer {
         BugMediaBridge.destroy(0);
     }
 
+    public void load(){
+        BugMediaBridge.load(0);
+    }
+
     public void setPBufferWindow(int width, int height, int rendererId) {
         BugMediaBridge.setPBufferSurface(width, height, 0);
     }
