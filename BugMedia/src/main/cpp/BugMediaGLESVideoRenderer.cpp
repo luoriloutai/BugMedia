@@ -2,9 +2,11 @@
 // Created by Gshine on 2021/1/31.
 //
 
+
 #include "BugMediaGLESVideoRenderer.h"
-#include "glm/ext.hpp"
 #include "openGL/BugMediaRendererCommon.h"
+
+
 
 #define DEBUGAPP
 
@@ -38,7 +40,7 @@ void BugMediaGLESVideoRenderer::onRender() {
     //
     // 不断读取数据进行渲染
     while (true) {
-
+        sem_wait(&playSem);
         if (currentState == PLAYING) {
             if (startTimeMs == -1) {
                 startTimeMs = getCurMsTime();
@@ -77,32 +79,37 @@ BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(GetVideoFrameCallback getVi
     this->width = width;
     this->height = height;
     this->createPBufferSurface = createPBufferSurface;
+    sem_init(&playSem, 0, 0);
 }
 
 
 BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
-
+    if (currentState == PAUSE) {
+        currentState = STOP;
+        sem_post(&playSem);
+    }
+    sem_destroy(&playSem);
 
 }
 
 void BugMediaGLESVideoRenderer::play() {
-if (rendering){
-    currentState = PLAYING;
-}
+    if (rendering&&currentState!=PLAYING) {
+        currentState = PLAYING;
+        sem_post(&playSem);
+    }
 
 }
 
 void BugMediaGLESVideoRenderer::pause() {
-    if (rendering){
+    if (rendering&&currentState!=PAUSE) {
         currentState = PAUSE;
     }
-
 
 
 }
 
 void BugMediaGLESVideoRenderer::stop() {
-    if (rendering){
+    if (rendering) {
         currentState = STOP;
     }
 
@@ -238,12 +245,25 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     //
     // 控制渲染时机
     //
+    int64_t pass = getCurMsTime() - startTimeMs;
+    delay = frame->pts - pass;
+    //delay = getCurMsTime()-frame->pts-startTimeMs-passtimeMs;
+
+    // pts比当前时间大，说明要等待时间到
+    if (delay > 0) {
+#ifdef DEBUGAPP
+        LOGD("延时时长：%lld", delay);
+#endif
+        av_usleep(delay * 1000);  // 微秒
+    }
 
 
     //
     // 绘制
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
+
+    sem_post(&playSem);
 
     // 绘制完毕后释放帧资源
     delete frame;

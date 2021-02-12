@@ -5,10 +5,15 @@
 #ifndef SLOWER_BUGMEDIAGLESVIDEORENDERER_H
 #define SLOWER_BUGMEDIAGLESVIDEORENDERER_H
 
+extern "C"{
+#include "include/ffmpeg/libavutil/time.h"
+}
 
+#include "glm/ext.hpp"
 #include "openGL/BugMediaBaseRenderer.h"
 #include "BugMediaCommon.h"
 #include "BugMediaVideoFrame.h"
+#include <semaphore.h>
 
 
 class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
@@ -36,6 +41,7 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
     EGLint height{};
     bool createPBufferSurface = false;
     bool rendering = false;
+    sem_t playSem{};
 
 public:
     typedef BugMediaVideoFrame *(*GetVideoFrameCallback)(void *ctx);
