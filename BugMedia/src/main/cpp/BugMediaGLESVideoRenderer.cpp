@@ -64,9 +64,21 @@ void BugMediaGLESVideoRenderer::onRender() {
     release();
 }
 
-BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer() {
+BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(GetVideoFrameCallback getVideoFrameCallback,
+                                                     GetAudioPtsCallback getAudioPtsCallback, void *callbackContext,
+                                                     JNIEnv *env, jobject surface, EGLint width, EGLint height,
+                                                     bool createPBufferSurface) {
     currentState = UNSTART;
+    this->getVideoFrame = getVideoFrameCallback;
+    this->getAudioPts = getAudioPtsCallback;
+    this->callbackContext = callbackContext;
+    this->env = env;
+    this->surface = surface;
+    this->width = width;
+    this->height = height;
+    this->createPBufferSurface = createPBufferSurface;
 }
+
 
 BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
 
@@ -74,6 +86,7 @@ BugMediaGLESVideoRenderer::~BugMediaGLESVideoRenderer() {
 }
 
 void BugMediaGLESVideoRenderer::play() {
+
     currentState = PLAYING;
 }
 
@@ -172,14 +185,14 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     //
     // 获取帧
     //
-    if (getVideoFrame== nullptr){
+    if (getVideoFrame == nullptr) {
         return true;
     }
     auto *frame = getVideoFrame(this);
-    if (frame== nullptr){
+    if (frame == nullptr) {
         return true;
     }
-    if (getAudioPts!= nullptr){
+    if (getAudioPts != nullptr) {
         audioPts = getAudioPts(this);
     }
 
@@ -228,6 +241,13 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
 
     return false;
 }
+
+void BugMediaGLESVideoRenderer::render() {
+    BugMediaGraphics::render();
+    rendering = true;
+}
+
+
 
 
 

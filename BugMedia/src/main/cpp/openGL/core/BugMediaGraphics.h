@@ -41,7 +41,7 @@ public:
 
     virtual ~BugMediaGraphics(); // 防止多态性导致的子类析构函数不执行。有虚方法的类的析构函数一般应定义为虚析构函数
 
-    void render();
+    virtual void render();
 
     void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 

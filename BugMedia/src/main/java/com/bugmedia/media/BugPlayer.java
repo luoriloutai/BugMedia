@@ -5,7 +5,18 @@ import android.view.Surface;
 public class BugPlayer {
 
     public BugPlayer(String url, Surface surface) {
-        BugMediaBridge.createPlayer(url, surface);
+        this(url, surface, 0, 0, 10, false);
+
+    }
+
+    public BugPlayer(String url, Surface surface, int decoderBufferSize) {
+        this(url, surface, 0, 0, decoderBufferSize, false);
+
+    }
+
+    public BugPlayer(String url, Surface surface, int width, int height, int decoderBufferSize,
+                     boolean createPBufferSurface) {
+        BugMediaBridge.createPlayer(url, surface, width, height, decoderBufferSize, createPBufferSurface);
     }
 
     public void play() {

@@ -45,8 +45,13 @@ class BugMediaPlayer {
     BugMediaSLESAudioRenderer *audioRenderer{};
     BugMediaGLESVideoRenderer *videoRenderer{};
     int duration{};
+    JNIEnv *env{};
+    jobject surface{};
+    EGLint width{};
+    EGLint height{};
+    bool createPBufferSurface{};
 
-    static const int DEFAULT_BUFFER_SIZE=10;
+
 
     static void *initThreadFunc(void *pVoid);
 
@@ -55,13 +60,20 @@ class BugMediaPlayer {
     void init();
 
     static BugMediaAudioFrame *getAudioFrameData(void *ctx);
+    static BugMediaVideoFrame *getVideoFrameData(void *ctx);
+    static int64_t getAudioPtsData(void *ctx);
 
     void release();
 
+    bool loaded=false;
+
 public:
+    static const int DEFAULT_BUFFER_SIZE = 10;
 
+    BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
+                   jobject surface, EGLint width, EGLint height, bool createPBufferSurface);
 
-    BugMediaPlayer(const char *url, int bufferSize = DEFAULT_BUFFER_SIZE);
+    BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env,jobject surface);
 
     ~BugMediaPlayer();
 

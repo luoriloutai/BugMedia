@@ -8,7 +8,7 @@
 #define DEBUGAPP
 
 void BugMediaSLESAudioRenderer::play() {
-    if (currentState != PLAYING) {
+    if (currentState != PLAYING && rendering) {
         currentState = PLAYING;
         sem_post(&playSem);
 
@@ -17,22 +17,24 @@ void BugMediaSLESAudioRenderer::play() {
 }
 
 void BugMediaSLESAudioRenderer::pause() {
-    if (currentState == PLAYING) {
+    if (currentState == PLAYING && rendering) {
         currentState = PAUSE;
     }
 
 }
 
 void BugMediaSLESAudioRenderer::stop() {
-    currentState = STOP;
-    //sem_post(&playSem);
+    if (rendering){
+        currentState = STOP;
+        //sem_post(&playSem);
+    }
+
 
 }
 
 BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callback,
-                                                     void *ctx, int bufferSize) {
+                                                     void *ctx) {
 
-    queueSize = bufferSize;
     callbackContext = ctx;
     getAudioFrame = callback;
 
@@ -44,7 +46,7 @@ BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callb
 BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
     // 使线程退出等待状态
     // 在获取到信号后判断状态退出，使线程不会一直等待
-    if (currentState==PAUSE){
+    if (currentState == PAUSE) {
         currentState = STOP;
         sem_post(&playSem);
     }
@@ -109,7 +111,7 @@ void BugMediaSLESAudioRenderer::doRender() {
 #ifdef DEBUGAPP
     LOGD("引擎、混音器、播放器创建完毕");
 #endif
-
+    rendering = true;
     sem_wait(&playSem);
 
     (*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
@@ -268,7 +270,7 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
         sem_wait(&playSem);
     }
 
-    if (currentState==STOP){
+    if (currentState == STOP) {
         (*simpleBufferQueue)->Clear(simpleBufferQueue);
         return;
     }

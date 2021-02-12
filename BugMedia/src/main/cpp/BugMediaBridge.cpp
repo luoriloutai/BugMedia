@@ -207,9 +207,16 @@ Java_com_bugmedia_media_BugMediaBridge_stop(JNIEnv *env, jclass clazz, jint rend
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, jstring url, jobject surface) {
-    player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr));
-    player->load();
-    //player->setWindowSurface(env, surface);
+Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, jstring url, jobject surface,
+                                                    jint width, jint height,jint decoderBufferSize, jboolean createPBufferSurface) {
+    player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr),
+                                decoderBufferSize, env,
+                                surface, width, height, createPBufferSurface);
 
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bugmedia_media_BugMediaBridge_load(JNIEnv *env, jclass clazz) {
+    player->load();
 }

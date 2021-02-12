@@ -45,8 +45,6 @@ class BugMediaSLESAudioRenderer {
 
     bool quit = false;
 
-    int queueSize{};
-
     static void *renderRoutine(void *ctx);
 
     const SLuint32 QUEUE_BUFFER_COUNT = 2;
@@ -76,9 +74,6 @@ class BugMediaSLESAudioRenderer {
 
     void *callbackContext{};
 
-    //渲染并返回是否结束条件
-    bool renderOnce();
-
     void doRender();
 
     bool createEngine();
@@ -94,6 +89,7 @@ class BugMediaSLESAudioRenderer {
     // 给缓冲区填充数据
     void doBufferQueue();
 
+    bool rendering=false;
 
 public:
 
@@ -107,7 +103,7 @@ public:
 
     typedef BugMediaAudioFrame *(*GetAudioFrameCallback)(void *ctx);
 
-    BugMediaSLESAudioRenderer(GetAudioFrameCallback callback, void *ctx, int bufferSize = 50);
+    BugMediaSLESAudioRenderer(GetAudioFrameCallback callback, void *ctx);
 
     ~BugMediaSLESAudioRenderer();
 

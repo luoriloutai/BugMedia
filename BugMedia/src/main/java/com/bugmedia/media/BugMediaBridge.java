@@ -20,12 +20,16 @@ public class BugMediaBridge {
 
     public static native void stop(int rendererId);
 
+    public static native void load();
+
     public static native void resizeView(int x,int y,int width,int height,int rendererId);
 
     public static native int createPictureRenderer(byte[] data,int width,int height);
 
     public static native void startRenderer(int rendererId);
 
-    public static native void createPlayer(String url,Surface surface);
+    public static native void createPlayer(String url,Surface surface,int width,int height,int decoderBufferSize,boolean createPBufferSurface);
+
+
 
 }

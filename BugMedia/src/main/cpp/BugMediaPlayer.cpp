@@ -10,9 +10,19 @@
 
 #define DEBUGAPP
 
-BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize) {
-    maxBufferSize = bufferSize;
+BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
+                               jobject surface, EGLint width, EGLint height, bool createPBufferSurface) {
+    maxBufferSize = decoderBufferSize;
     this->url = url;
+    this->env = env;
+    this->surface = surface;
+    this->width = width;
+    this->height = height;
+    this->createPBufferSurface = createPBufferSurface;
+}
+
+BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface)
+        : BugMediaPlayer(url, bufferSize, env, surface, 0, 0, false) {
 
 }
 
@@ -39,7 +49,7 @@ void BugMediaPlayer::release() {
         }
 
         delete audioRenderer;
-        audioRenderer= nullptr;
+        audioRenderer = nullptr;
         delete videoRenderer;
         videoRenderer = nullptr;
 
@@ -77,11 +87,11 @@ void BugMediaPlayer::init() {
         return;
     }
 
-    duration = formatContext->duration*av_q2d(AV_TIME_BASE_Q);
+    duration = formatContext->duration * av_q2d(AV_TIME_BASE_Q);
 
 
 #ifdef DEBUGAPP
-    LOGD("总时长：%lld，转换后：%ds,比特率：%lld",formatContext->duration,duration,formatContext->bit_rate);
+    LOGD("总时长：%lld，转换后：%ds,比特率：%lld", formatContext->duration, duration, formatContext->bit_rate);
 #endif
 
     for (int i = 0; i < formatContext->nb_streams; ++i) {
@@ -114,15 +124,15 @@ void BugMediaPlayer::init() {
         }
     }
 
-    if (!videoDecoders.empty()){
+    if (!videoDecoders.empty()) {
         currentVideoDecoder = videoDecoders[0];
     }
 
-    if (!audioDecoders.empty()){
+    if (!audioDecoders.empty()) {
         currentAudioDecoder = audioDecoders[0];
     }
 
-    if (currentVideoDecoder== nullptr&&currentAudioDecoder== nullptr){
+    if (currentVideoDecoder == nullptr && currentAudioDecoder == nullptr) {
         LOGE("没有找到媒体信息");
         return;
     }
@@ -130,9 +140,9 @@ void BugMediaPlayer::init() {
 
     if (currentAudioDecoder != nullptr) {
 #ifdef DEBUGAPP
-LOGD("音频解码器数量:%d,",audioDecoders.size());
+        LOGD("音频解码器数量:%d,", audioDecoders.size());
         currentAudioDecoder->startDecode();
-        audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameData, this,maxBufferSize);
+        audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameData, this);
         audioRenderer->render();
 #else
 
@@ -144,8 +154,10 @@ LOGD("音频解码器数量:%d,",audioDecoders.size());
 
     if (currentVideoDecoder != nullptr) {
 #ifdef DEBUGAPP
-        LOGD("视频解码器数量:%d",videoDecoders.size());
+        LOGD("视频解码器数量:%d", videoDecoders.size());
         currentVideoDecoder->startDecode();
+        videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameData, getAudioPtsData, this,
+                                                      env, surface, width, height, createPBufferSurface);
 #else
         currentVideoDecoder->startDecode();
         videoRenderer = new BugMediaGLESVideoRenderer();
@@ -153,6 +165,7 @@ LOGD("音频解码器数量:%d,",audioDecoders.size());
 #endif
     }
 
+    loaded = true;
 
 }
 
@@ -162,8 +175,6 @@ void BugMediaPlayer::setBufferSize(int size) {
 }
 
 void BugMediaPlayer::load() {
-    // 文件探测可能会花很长时间，
-    // 所以启动一个线程执行
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
@@ -220,19 +231,40 @@ BugMediaAudioFrame *BugMediaPlayer::getAudioFrameData(void *ctx) {
     return loader->getAudioFrame();
 }
 
+BugMediaVideoFrame *BugMediaPlayer::getVideoFrameData(void *ctx) {
+    auto loader = (BugMediaPlayer *) ctx;
+    return loader->getVideoFrame();
+}
+
+int64_t BugMediaPlayer::getAudioPtsData(void *ctx) {
+    auto loader = (BugMediaPlayer *) ctx;
+    return loader->getAudioPts();
+}
+
 void BugMediaPlayer::play() {
-    audioRenderer->play();
-    //videoRenderer->play();
+    if (loaded){
+        audioRenderer->play();
+        //videoRenderer->play();
+    }
+
 }
 
 void BugMediaPlayer::pause() {
-    audioRenderer->pause();
-    //videoRenderer->pause();
+    if (loaded){
+        audioRenderer->pause();
+        //videoRenderer->pause();
+    }
+
+
 }
 
 void BugMediaPlayer::stop() {
-    audioRenderer->stop();
-    //videoRenderer->stop();
+    if(loaded)
+    {
+        audioRenderer->pause();
+        //videoRenderer->pause();
+    }
+
 }
 
 void BugMediaPlayer::destroy() {
@@ -250,6 +282,12 @@ void BugMediaPlayer::setPBufferSurface(EGLint width, EGLint height) {
 void BugMediaPlayer::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
     videoRenderer->resizeView(x, y, width, height);
 }
+
+
+
+
+
+
 
 
 
