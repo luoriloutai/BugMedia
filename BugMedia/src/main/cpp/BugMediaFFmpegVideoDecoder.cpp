@@ -24,7 +24,7 @@ BugMediaFFmpegVideoDecoder::BugMediaFFmpegVideoDecoder(AVFormatContext *formatCo
 
     // 输出缓冲
     int nums = av_image_get_buffer_size(OUT_FORMAT, avCodecContext->width, avCodecContext->height, 1);
-    outputBuffer = (uint8_t *) av_malloc(nums * sizeof(uint8_t));
+    outputBuffer = (uint8_t *) av_malloc(nums*sizeof(uint8_t));
     bufferFrame = av_frame_alloc();
     av_image_fill_arrays(bufferFrame->data, bufferFrame->linesize, outputBuffer, OUT_FORMAT, avCodecContext->width,
                         avCodecContext->height, 1);
@@ -140,8 +140,9 @@ void BugMediaFFmpegVideoDecoder::decode() {
                       bufferFrame->linesize);
 
 #ifdef DEBUGAPP
-            LOGD("转换后数据为空不：%s",bufferFrame->data[0]== nullptr?"是":"否");
+
             LOGD("图像高度为:%d",imgHeiht);
+
 #endif
 
             if (imgHeiht > 0) {
@@ -156,9 +157,12 @@ void BugMediaFFmpegVideoDecoder::decode() {
                 vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
 
 
-                // 以下两字段用缓冲帧里的数据
-                vFrame->data = bufferFrame->data[0];
-                vFrame->lineSize = bufferFrame->linesize[0];
+                // 以下两字段用缓冲里的数据
+                int bufSize = av_image_get_buffer_size(OUT_FORMAT, avFrame->width, avFrame->height, 1);
+                uint8_t *rgb= (uint8_t *) av_malloc(bufSize*sizeof(uint8_t));
+                memcpy(rgb,bufferFrame->data[0],bufSize);
+                vFrame->data = rgb;
+                vFrame->lineSize =bufferFrame->linesize[0];
 
                 vFrame->isInterlaced = avFrame->interlaced_frame == 1;
                 vFrame->position = avFrame->pkt_pos;
@@ -173,7 +177,7 @@ void BugMediaFFmpegVideoDecoder::decode() {
                 static int couter = 0;
                 LOGD("第%d帧视频解码完毕", ++couter);
                 LOGD("队列大小：%d", frameQueue.size());
-                LOGD("数据大小：%d", sizeof(vFrame->data));
+
 
 #endif
 
