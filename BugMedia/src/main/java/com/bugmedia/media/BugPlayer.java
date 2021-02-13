@@ -35,6 +35,10 @@ public class BugPlayer {
         BugMediaBridge.destroy(0);
     }
 
+    public void resizeView(int x, int y, int width, int height){
+        BugMediaBridge.resizeView(x,y,width,height,0);
+    }
+
     public void load(){
         BugMediaBridge.load(0);
     }

@@ -7,6 +7,14 @@ public class BugMediaBridge {
         System.loadLibrary("bugmedia");
     }
 
+    private Surface surface;
+    public BugMediaBridge(Surface surface){
+        this.surface = surface;
+    }
+
+    public Surface getSurface(){
+        return this.surface;
+    }
 
     public static native void setWindowSurface(Surface surface,int rendererId);
 
@@ -25,6 +33,8 @@ public class BugMediaBridge {
     public static native void resizeView(int x,int y,int width,int height,int rendererId);
 
     public static native int createPictureRenderer(byte[] data,int width,int height);
+
+    public static native int createPictureRenderer1(byte[] data,int width,int height,Surface surface);
 
     public static native void startRenderer(int rendererId);
 

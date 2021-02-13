@@ -12,7 +12,6 @@ extern "C" {
 #include "include/ffmpeg/libavutil/mem.h"
 #include "include/ffmpeg/libswresample/swresample.h"
 #include "include/ffmpeg/libavutil/time.h"
-#include "include/ffmpeg/libswresample/swresample.h"
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 }
@@ -39,11 +38,7 @@ class BugMediaSLESAudioRenderer {
 
     pthread_t renderThread{};
 
-    int64_t prePts{};
-
     sem_t playSem{};
-
-    bool quit = false;
 
     static void *renderRoutine(void *ctx);
 
@@ -68,10 +63,6 @@ class BugMediaSLESAudioRenderer {
     // 这个接口用于向播放器缓冲区输入数据
     SLAndroidSimpleBufferQueueItf simpleBufferQueue{};
 
-    //queue<PcmData *> playQueue{};
-
-    queue<BugMediaAudioFrame *> playQueue{};
-
     void *callbackContext{};
 
     void doRender();
@@ -90,6 +81,7 @@ class BugMediaSLESAudioRenderer {
     void doBufferQueue();
 
     bool rendering=false;
+
 
 public:
 

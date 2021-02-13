@@ -197,9 +197,23 @@ BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLi
     pixelData = data;
     this->width = width;
     this->height = height;
+
 }
+
+
 
 BugMediaPictureRenderer::~BugMediaPictureRenderer() {
     delete[] pixelData;
+
+}
+
+BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLint height, JNIEnv *env,jobject surface) {
+
+
+    pixelData = data;
+    this->width = width;
+    this->height = height;
+
+    setWindowSurface(env,surface);
 
 }

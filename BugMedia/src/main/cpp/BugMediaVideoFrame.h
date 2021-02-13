@@ -5,7 +5,7 @@
 #ifndef SLOWER_BUGMEDIAVIDEOFRAME_H
 #define SLOWER_BUGMEDIAVIDEOFRAME_H
 
-extern "C"{
+extern "C" {
 #include "include/ffmpeg/libavutil/frame.h"
 };
 
@@ -15,13 +15,14 @@ struct BugMediaVideoFrame {
     bool isInterlaced{};
     int width{};
     int height{};
-    uint8_t **data{};
+    uint8_t *data{};
+    int lineSize{};
 
     // 以毫秒为单位的时间戳
     int64_t pts{};
-    bool isEnd= false;
+    bool isEnd = false;
     int format{};
-    float_t  position{};
+    float_t position{};
 
 };
 

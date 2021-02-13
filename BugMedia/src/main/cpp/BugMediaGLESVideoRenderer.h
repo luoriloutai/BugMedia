@@ -5,9 +5,10 @@
 #ifndef SLOWER_BUGMEDIAGLESVIDEORENDERER_H
 #define SLOWER_BUGMEDIAGLESVIDEORENDERER_H
 
-extern "C"{
+extern "C" {
 #include "include/ffmpeg/libavutil/time.h"
 }
+
 
 #include "glm/ext.hpp"
 #include "openGL/BugMediaBaseRenderer.h"
@@ -32,6 +33,7 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
 
     // 开始执行操作时的时间（毫秒）
     int64_t startTimeMs = -1;
+
     int64_t videoPts{};
     int64_t delay{};
     GLuint texId{}; // 纹理id
@@ -42,6 +44,10 @@ class BugMediaGLESVideoRenderer : virtual public BugMediaBaseRenderer {
     bool createPBufferSurface = false;
     bool rendering = false;
     sem_t playSem{};
+    JavaVM *javaVm{};
+
+
+
 
 public:
     typedef BugMediaVideoFrame *(*GetVideoFrameCallback)(void *ctx);

@@ -45,12 +45,13 @@ class BugMediaPlayer {
     BugMediaSLESAudioRenderer *audioRenderer{};
     BugMediaGLESVideoRenderer *videoRenderer{};
     int duration{};
-    JNIEnv *env{};
+    JNIEnv *env{}; // 需要在线程内获取
     jobject surface{};
     EGLint width{};
     EGLint height{};
     bool createPBufferSurface{};
-
+    bool loaded=false;
+    JavaVM *javaVm{};
 
 
     static void *initThreadFunc(void *pVoid);
@@ -65,7 +66,7 @@ class BugMediaPlayer {
 
     void release();
 
-    bool loaded=false;
+
 
 public:
     static const int DEFAULT_BUFFER_SIZE = 10;
@@ -104,9 +105,6 @@ public:
 
     void destroy();
 
-    void setWindowSurface(JNIEnv *env, jobject surface);
-
-    void setPBufferSurface(EGLint width, EGLint height);
 
     void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 

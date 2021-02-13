@@ -81,6 +81,9 @@ BugMediaGLESVideoRenderer::BugMediaGLESVideoRenderer(GetVideoFrameCallback getVi
     this->height = height;
     this->createPBufferSurface = createPBufferSurface;
     sem_init(&playSem, 0, 0);
+
+    setWindowSurface(env,surface);
+
 }
 
 
@@ -223,8 +226,7 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
 
 
 
-
-    set2DTexture0ToShader("texSampler", texId, *frame->data, frame->width, frame->height);
+    set2DTexture0ToShader("texSampler", texId, frame->data, frame->width, frame->height);
     //更新一个unform之前你必须先使用程序（调用glUseProgram)
     // 每次更新设置后都应调用
     useProgram();
@@ -269,9 +271,14 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
 
+#ifdef DEBUGAPP
+    LOGD("进行到我想到的地方");
+#endif
+
     sem_post(&playSem);
 
     // 绘制完毕后释放帧资源
+    delete frame->data;
     delete frame;
 
     return false;

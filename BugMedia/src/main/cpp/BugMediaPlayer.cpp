@@ -12,13 +12,24 @@
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
                                jobject surface, EGLint width, EGLint height, bool createPBufferSurface) {
+
+    // 由于JNIEnv是与线程关联的，不同线程之间不能互相访问
+    // 而程序内创建渲染器是在另一个线程中进行的
+    // 所以用到JNIEnv作为参数时不能直接用
+    // 可以获取JavaVM，它是线程共享的
+    // 用它可以为线程分配一个JNIEnv
+    env->GetJavaVM(&javaVm);
+
+    // 全局引用一个java对象，在其他线程也可以用
+    this->surface = env->NewGlobalRef(surface);
+
     maxBufferSize = decoderBufferSize;
     this->url = url;
-    this->env = env;
-    this->surface = surface;
     this->width = width;
     this->height = height;
     this->createPBufferSurface = createPBufferSurface;
+
+
 }
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface)
@@ -55,6 +66,7 @@ void BugMediaPlayer::release() {
 
         pthread_join(initThread, nullptr);
 
+        env->DeleteGlobalRef(surface);
     }
 
 }
@@ -156,6 +168,9 @@ void BugMediaPlayer::init() {
 #ifdef DEBUGAPP
         LOGD("视频解码器数量:%d", videoDecoders.size());
         currentVideoDecoder->startDecode();
+
+        javaVm->AttachCurrentThread(&env, nullptr);
+
         videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameData, getAudioPtsData, this,
                                                       env, surface, width, height, createPBufferSurface);
         videoRenderer->render();
@@ -185,12 +200,12 @@ void BugMediaPlayer::load() {
 
 void BugMediaPlayer::switchAudioChannel(int ch) {
     currentAudioDecoder = audioDecoders[ch];
-    //currentAudioDecoder->openDecoder();
+
 }
 
 void BugMediaPlayer::switchVideoChannel(int ch) {
     currentVideoDecoder = videoDecoders[ch];
-    //currentVideoDecoder->openDecoder();
+
 }
 
 
@@ -246,7 +261,7 @@ int64_t BugMediaPlayer::getAudioPtsData(void *ctx) {
 void BugMediaPlayer::play() {
     if (loaded){
         audioRenderer->play();
-        //videoRenderer->play();
+        videoRenderer->play();
     }
 
 }
@@ -254,7 +269,7 @@ void BugMediaPlayer::play() {
 void BugMediaPlayer::pause() {
     if (loaded){
         audioRenderer->pause();
-        //videoRenderer->pause();
+        videoRenderer->pause();
     }
 
 
@@ -264,7 +279,7 @@ void BugMediaPlayer::stop() {
     if(loaded)
     {
         audioRenderer->pause();
-        //videoRenderer->pause();
+        videoRenderer->pause();
     }
 
 }
@@ -273,16 +288,13 @@ void BugMediaPlayer::destroy() {
     release();
 }
 
-void BugMediaPlayer::setWindowSurface(JNIEnv *env, jobject surface) {
-    videoRenderer->setWindowSurface(env, surface);
-}
 
-void BugMediaPlayer::setPBufferSurface(EGLint width, EGLint height) {
-    videoRenderer->setPBufferSurface(width, height);
-}
 
 void BugMediaPlayer::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
-    videoRenderer->resizeView(x, y, width, height);
+    if (loaded){
+        videoRenderer->resizeView(x, y, width, height);
+    }
+
 }
 
 

@@ -11,6 +11,10 @@
 #include <semaphore.h>
 #include <queue>
 
+extern "C"{
+#include "include/ffmpeg/libswscale/swscale.h"
+};
+
 using namespace std;
 
 class BugMediaFFmpegVideoDecoder : virtual public BugMediaFFmpegBaseDecoder {
@@ -32,6 +36,20 @@ private:
     // 由于在该方法内访问对象成员需要用本对象的指针，写起来麻烦，于是又定义了
     // decode()方法，这样只需要在这个函数里将ctx转成本类对象指针后调用一次decode()
     static void *decodeRoutine(void *ctx);
+
+    // 用于从YUV转换成RGB
+    SwsContext *swsContext{};
+
+    // 输出格式
+    const AVPixelFormat OUT_FORMAT = AV_PIX_FMT_RGBA;
+
+    // 输出缓冲
+    uint8_t *outputBuffer{};
+
+    // 输出帧转换用缓冲
+    AVFrame *bufferFrame{};
+
+
 
 public:
 

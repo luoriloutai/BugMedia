@@ -111,13 +111,11 @@ void BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
 
 // 只有windowSurface可以显示
 void BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) {
-
     surfaceType = WINDOW_SURFACE;
     // 这里只创建window，供创建绘制Surface使用。Surface要在绘制线程里创建，
     // context当中包含了绘制所需的数据，所谓的绑定到线程不过就是让线程知道从哪取数据，从context中取，
     // 在Surface里绘制,EGLSurface必须要在线程里创建，创建之后可用于绑定至线程
     window = ANativeWindow_fromSurface(env, jSurface);
-
 }
 
 void BugMediaGraphicsEGL::release() {

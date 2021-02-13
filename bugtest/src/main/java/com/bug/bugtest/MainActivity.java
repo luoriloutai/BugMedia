@@ -65,16 +65,10 @@ public class MainActivity extends AppCompatActivity {
 //                int len = picBytes.length;
 //
 //                pictureRenderer1 = new PictureRenderer(picBytes,width,height,surfaceHolder.getSurface());
-//                pictureRenderer1.startRenderer();;
+//                //pictureRenderer1.startRenderer();;
 //                Log.d("bugmedia","绘图器创建完成");
 
                 _surface = surfaceHolder.getSurface();
-if(_surface==null){
-    Log.d("bugmedia","surface is null");
-}else{
-    Log.d("bugmedia", "surfaceCreated: surface is not null");
-}
-
 
                 // 涉及到读写权限了，需要请求权限，AndroidManifest加权限后这里还需要请求授权，6.0以下的不需要
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -90,6 +84,7 @@ if(_surface==null){
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
                 //pictureRenderer1.resizeView(0, 0, i1, i2);
+                player1.resizeView(0,0,i1,i2);
             }
 
             @Override
