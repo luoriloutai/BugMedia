@@ -47,6 +47,11 @@ void BugMediaGLESVideoRenderer::onRender() {
             }
 
             if (renderOnce()) {
+
+#ifdef DEBUGAPP
+                LOGD("视频播放跳出");
+#endif
+
                 break;
             }
 
@@ -214,6 +219,11 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     }
 
     if (frame->isEnd) {
+
+#ifdef DEBUGAPP
+        LOGD("最后一帧视频");
+#endif
+
         currentState = STOP;
         return true;
     }
@@ -262,7 +272,7 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
 #ifdef DEBUGAPP
         LOGD("延时时长：%lld", delay);
 #endif
-        av_usleep(delay * 1000);  // 微秒
+        av_usleep(delay * 1000);  // 微秒,delay是毫秒
     }
 
 
@@ -270,10 +280,6 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     // 绘制
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
     swapBuffers();
-
-#ifdef DEBUGAPP
-    LOGD("进行到我想到的地方");
-#endif
 
     sem_post(&playSem);
 

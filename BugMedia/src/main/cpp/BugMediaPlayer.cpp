@@ -153,9 +153,9 @@ void BugMediaPlayer::init() {
     if (currentAudioDecoder != nullptr) {
 #ifdef DEBUGAPP
         LOGD("音频解码器数量:%d,", audioDecoders.size());
-        currentAudioDecoder->startDecode();
-        audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameData, this);
-        audioRenderer->render();
+//        currentAudioDecoder->startDecode();
+//        audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameData, this);
+//        audioRenderer->render();
 #else
 
         currentAudioDecoder->startDecode();

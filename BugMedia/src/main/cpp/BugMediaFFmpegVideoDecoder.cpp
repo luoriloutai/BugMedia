@@ -129,9 +129,9 @@ void BugMediaFFmpegVideoDecoder::decode() {
         if (ret == 0) {
 
 #ifdef DEBUGAPP
-            LOGD("成功接收到帧");
-            LOGD("帧大小：%d X %d",avFrame->width,avFrame->height);
-            LOGD("数据大小：%d",sizeof(avFrame->data));
+            static int fcount=0;
+            LOGD("接收到%d帧",++fcount);
+
 #endif
 
 
@@ -139,11 +139,6 @@ void BugMediaFFmpegVideoDecoder::decode() {
             int imgHeiht = sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avFrame->height, bufferFrame->data,
                       bufferFrame->linesize);
 
-#ifdef DEBUGAPP
-
-            LOGD("图像高度为:%d",imgHeiht);
-
-#endif
 
             if (imgHeiht > 0) {
                 auto *vFrame = new BugMediaVideoFrame();
@@ -176,7 +171,7 @@ void BugMediaFFmpegVideoDecoder::decode() {
 #ifdef DEBUGAPP
                 static int couter = 0;
                 LOGD("第%d帧视频解码完毕", ++couter);
-                LOGD("队列大小：%d", frameQueue.size());
+                LOGD("视频帧队列大小：%d", frameQueue.size());
 
 
 #endif
@@ -184,6 +179,11 @@ void BugMediaFFmpegVideoDecoder::decode() {
             } else {
                 // 未写入缓冲，退还信号
                 sem_post(&canFillData);
+
+#ifdef DEBUGAPP
+                static int count=0;
+                LOGD("未成功转换%d帧",++count);
+#endif
 
             }
 

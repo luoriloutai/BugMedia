@@ -256,7 +256,7 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
     }
     if (frame->isEnd) {
 #ifdef DEBUGAPP
-        LOGD("最后一帧");
+        LOGD("最后一帧音频");
 #endif
         currentState = STOP;
         (*simpleBufferQueue)->Clear(simpleBufferQueue);
