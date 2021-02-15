@@ -194,24 +194,24 @@ void BugMediaFFmpegDecoder::startDecode() {
 //    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(avCodecContext->sample_rate),
 //                                         avCodecContext->sample_rate, AV_ROUND_UP);
 //    // 重采样后一帧数据的大小
-////    resampleSize = (size_t) av_samples_get_buffer_size(
+////    dataSize = (size_t) av_samples_get_buffer_size(
 ////            nullptr, CHANNEL_COUNTS,
 ////            resampleCount, getSampleFmt(), 1);
 //
-//    resampleSize = (size_t) av_samples_get_buffer_size(
+//    dataSize = (size_t) av_samples_get_buffer_size(
 //            nullptr, avCodecContext->channels,
 //            resampleCount, AV_SAMPLE_FMT_S16, 1);
 //
 //    // 不行,使用输入的采样格式
-////    resampleSize = (size_t) av_samples_get_buffer_size(
+////    dataSize = (size_t) av_samples_get_buffer_size(
 ////            nullptr, CHANNEL_COUNTS,
 ////            resampleCount, avCodecContext->sample_fmt, 1);
 //
-//    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize);
+//    audioOutputBuffer[0] = (uint8_t *) malloc(dataSize);
 //
 //
-////    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
-////    audioOutputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
+////    audioOutputBuffer[0] = (uint8_t *) malloc(dataSize / 2);
+////    audioOutputBuffer[1] = (uint8_t *) malloc(dataSize / 2);
 //
 //}
 
@@ -343,7 +343,7 @@ void BugMediaFFmpegDecoder::convertAudioFrame() {
         aFrame->position = avFrame->pkt_pos;
         aFrame->sampleRate = avFrame->sample_rate;
         aFrame->sampleCount = avFrame->nb_samples;
-        aFrame->resampleSize = dataSize;
+        aFrame->dataSize = dataSize;
 
         // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
         // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,

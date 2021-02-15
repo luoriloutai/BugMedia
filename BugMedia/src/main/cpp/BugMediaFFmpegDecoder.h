@@ -77,7 +77,7 @@ class BugMediaFFmpegDecoder {
     // 音频编码格式：浮点型数据（32位）
     const AVSampleFormat ENCODE_FORMAT = AV_SAMPLE_FMT_FLTP;
 
-    const AVSampleFormat OUT_SAMPLE_FORMAT = AV_SAMPLE_FMT_S16;
+    const AVSampleFormat OUT_SAMPLE_FORMAT = AV_SAMPLE_FMT_S32;
 
     // 音频采样率
     const int SAMPLE_RATE = 44100;
