@@ -6,7 +6,7 @@
 #ifndef SLOWER_BUGMEDIAFFMPEGAUDIODECODER_H
 #define SLOWER_BUGMEDIAFFMPEGAUDIODECODER_H
 
-#include "BugMediaFFmpegBaseDecoder.h"
+#include "BugMediaFFmpegDecoder.h"
 #include "BugMediaAudioFrame.h"
 #include <pthread.h>
 #include <semaphore.h>
@@ -22,7 +22,7 @@ extern "C"{
 using namespace std;
 
 
-class BugMediaFFmpegAudioDecoder : virtual public BugMediaFFmpegBaseDecoder {
+class BugMediaFFmpegAudioDecoder : virtual public BugMediaFFmpegDecoder {
     queue<BugMediaAudioFrame *> frameQueue{};
     int bufferSize{};
     pthread_t decodeThread{};

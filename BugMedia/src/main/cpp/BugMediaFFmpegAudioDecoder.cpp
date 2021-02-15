@@ -13,7 +13,7 @@ extern "C" {
 
 
 BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize) :
-        BugMediaFFmpegBaseDecoder(formatContext, trackIdx) {
+        BugMediaFFmpegDecoder(formatContext, trackIdx) {
     this->bufferSize = bufferSize;
 
 #ifdef DEBUGAPP
@@ -256,7 +256,7 @@ AVSampleFormat BugMediaFFmpegAudioDecoder::getSampleFmt() {
     return AV_SAMPLE_FMT_S16;
 }
 
-BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(const char *url, int bufferSize):BugMediaFFmpegBaseDecoder(url,bufferSize,AVMEDIA_TYPE_AUDIO) {
+BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(const char *url, int bufferSize): BugMediaFFmpegDecoder(url, bufferSize, AVMEDIA_TYPE_AUDIO) {
     this->bufferSize = bufferSize;
 
 #ifdef DEBUGAPP

@@ -5,7 +5,7 @@
 #ifndef SLOWER_BUGMEDIAFFMPEGVIDEODECODER_H
 #define SLOWER_BUGMEDIAFFMPEGVIDEODECODER_H
 
-#include "BugMediaFFmpegBaseDecoder.h"
+#include "BugMediaFFmpegDecoder.h"
 #include "BugMediaVideoFrame.h"
 #include <pthread.h>
 #include <semaphore.h>
@@ -17,7 +17,7 @@ extern "C"{
 
 using namespace std;
 
-class BugMediaFFmpegVideoDecoder : virtual public BugMediaFFmpegBaseDecoder {
+class BugMediaFFmpegVideoDecoder : virtual public BugMediaFFmpegDecoder {
 private:
 
     queue<BugMediaVideoFrame *> frameQueue{};

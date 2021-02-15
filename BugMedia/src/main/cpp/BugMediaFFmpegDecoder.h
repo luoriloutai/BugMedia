@@ -1,12 +1,17 @@
 //
 // Created by Gshine on 2021/2/4.
 //
+// Updated by Gshine on 2021/2/15
+//
 // 一次只解一个流，多个流需要创建多个该类的实例，
-// 向构造函数传入相应的媒体类型创建相应的解码器
+// 向构造函数传入相应的媒体类型创建相应的解码器。
+// 创建多个实例的目的是为了各流解码操作互不干扰，
+// 各自将数据放入各自的队列，装填和取出数据的等
+// 待状态也不会互相干扰。
 //
 
-#ifndef SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
-#define SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
+#ifndef SLOWER_BUGMEDIAFFMPEGDECODER_H
+#define SLOWER_BUGMEDIAFFMPEGDECODER_H
 
 
 extern "C" {
@@ -32,7 +37,7 @@ extern "C" {
 
 using namespace std;
 
-class BugMediaFFmpegBaseDecoder {
+class BugMediaFFmpegDecoder {
     pthread_t startThread{};
     int bufferSize{};
     const char *url{};
@@ -151,11 +156,11 @@ protected:
 public:
     int64_t getStreamDuration() const;
 
-    virtual ~ BugMediaFFmpegBaseDecoder();
+    virtual ~ BugMediaFFmpegDecoder();
 
-    BugMediaFFmpegBaseDecoder(AVFormatContext *formatContext, int trackIdx);
+    BugMediaFFmpegDecoder(AVFormatContext *formatContext, int trackIdx);
 
-    BugMediaFFmpegBaseDecoder(const char *url, int bufferSize, AVMediaType mediaType);
+    BugMediaFFmpegDecoder(const char *url, int bufferSize, AVMediaType mediaType);
 
     void startDecode();
 
@@ -169,4 +174,4 @@ public:
 };
 
 
-#endif //SLOWER_BUGMEDIAFFMPEGBASEDECODER_H
+#endif //SLOWER_BUGMEDIAFFMPEGDECODER_H

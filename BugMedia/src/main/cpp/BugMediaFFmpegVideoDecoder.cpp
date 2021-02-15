@@ -11,7 +11,7 @@ extern "C" {
 #define DEBUGAPP
 
 BugMediaFFmpegVideoDecoder::BugMediaFFmpegVideoDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize)
-        : BugMediaFFmpegBaseDecoder(formatContext, trackIdx) {
+        : BugMediaFFmpegDecoder(formatContext, trackIdx) {
     this->bufferSize = bufferSize;
     sem_init(&this->canFillData, 0, this->bufferSize);
     sem_init(&this->canTakeData, 0, 0);

@@ -2,12 +2,12 @@
 // Created by Gshine on 2021/2/4.
 //
 
-#include "BugMediaFFmpegBaseDecoder.h"
+#include "BugMediaFFmpegDecoder.h"
 
 
 // #define DEBUGAPP
 
-BugMediaFFmpegBaseDecoder::~BugMediaFFmpegBaseDecoder() {
+BugMediaFFmpegDecoder::~BugMediaFFmpegDecoder() {
 
     if (avPacket != nullptr) {
         av_packet_free(&avPacket);
@@ -78,18 +78,18 @@ BugMediaFFmpegBaseDecoder::~BugMediaFFmpegBaseDecoder() {
 }
 
 
-int64_t BugMediaFFmpegBaseDecoder::getStreamDuration() const {
+int64_t BugMediaFFmpegDecoder::getStreamDuration() const {
     return streamDuration;
 }
 
-BugMediaFFmpegBaseDecoder::BugMediaFFmpegBaseDecoder(AVFormatContext *formatContext, int trackIdx) {
+BugMediaFFmpegDecoder::BugMediaFFmpegDecoder(AVFormatContext *formatContext, int trackIdx) {
     avFormatContext = formatContext;
     trackIndex = trackIdx;
     openDecoder();
 
 }
 
-void BugMediaFFmpegBaseDecoder::openDecoder() {
+void BugMediaFFmpegDecoder::openDecoder() {
 
     AVStream *stream = avFormatContext->streams[currentStreamIndex];
 
@@ -124,7 +124,7 @@ void BugMediaFFmpegBaseDecoder::openDecoder() {
 
 }
 
-BugMediaFFmpegBaseDecoder::BugMediaFFmpegBaseDecoder(const char *url, int bufferSize, AVMediaType mediaType) {
+BugMediaFFmpegDecoder::BugMediaFFmpegDecoder(const char *url, int bufferSize, AVMediaType mediaType) {
     this->mediaType = mediaType;
     this->bufferSize = bufferSize;
     this->url = url;
@@ -135,7 +135,7 @@ BugMediaFFmpegBaseDecoder::BugMediaFFmpegBaseDecoder(const char *url, int buffer
 
 }
 
-void BugMediaFFmpegBaseDecoder::findIndices() {
+void BugMediaFFmpegDecoder::findIndices() {
     for (int i = 0; i < avFormatContext->nb_streams; ++i) {
         if (avFormatContext->streams[i]->codecpar->codec_type == mediaType) {
             streamIndices.push_back(i);
@@ -145,13 +145,13 @@ void BugMediaFFmpegBaseDecoder::findIndices() {
     currentStreamIndex = streamIndices[0];
 }
 
-void *BugMediaFFmpegBaseDecoder::startRoutine(void *pVoid) {
-    auto self = (BugMediaFFmpegBaseDecoder *) pVoid;
+void *BugMediaFFmpegDecoder::startRoutine(void *pVoid) {
+    auto self = (BugMediaFFmpegDecoder *) pVoid;
     self->start();
     return nullptr;
 }
 
-void BugMediaFFmpegBaseDecoder::start() {
+void BugMediaFFmpegDecoder::start() {
     avFormatContext = avformat_alloc_context();
 
     int ret = avformat_open_input(&avFormatContext, url, nullptr, nullptr);
@@ -186,19 +186,19 @@ void BugMediaFFmpegBaseDecoder::start() {
     decode();
 }
 
-void BugMediaFFmpegBaseDecoder::startDecode() {
+void BugMediaFFmpegDecoder::startDecode() {
     pthread_create(&startThread, nullptr, startRoutine, this);
 }
 
-int BugMediaFFmpegBaseDecoder::getSampleRate(int inSampleRate) {
+int BugMediaFFmpegDecoder::getSampleRate(int inSampleRate) {
     return SAMPLE_RATE;
 }
 
-AVSampleFormat BugMediaFFmpegBaseDecoder::getSampleFmt() {
+AVSampleFormat BugMediaFFmpegDecoder::getSampleFmt() {
     return AV_SAMPLE_FMT_S16;
 }
 
-void BugMediaFFmpegBaseDecoder::initAudioOutputBuffer() {
+void BugMediaFFmpegDecoder::initAudioOutputBuffer() {
     // 根据输入的采样数和采样率计算出重采样的个数
     // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
     resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(avCodecContext->sample_rate),
@@ -214,7 +214,7 @@ void BugMediaFFmpegBaseDecoder::initAudioOutputBuffer() {
 
 }
 
-void BugMediaFFmpegBaseDecoder::initSwrContext() {
+void BugMediaFFmpegDecoder::initSwrContext() {
     swrContext = swr_alloc();
     av_opt_set_int(swrContext, "in_channel_layout", avCodecContext->channel_layout, 0);
     av_opt_set_int(swrContext, "out_channel_layout", CHANNEL_LAYOUT, 0);
@@ -225,7 +225,7 @@ void BugMediaFFmpegBaseDecoder::initSwrContext() {
     swr_init(swrContext);
 }
 
-void BugMediaFFmpegBaseDecoder::decode() {
+void BugMediaFFmpegDecoder::decode() {
     int ret;
 
     while (true) {
@@ -294,21 +294,21 @@ void BugMediaFFmpegBaseDecoder::decode() {
     }  // while
 }
 
-void BugMediaFFmpegBaseDecoder::sendAudioEndFrame() {
+void BugMediaFFmpegDecoder::sendAudioEndFrame() {
     auto aFrame = new BugMediaAudioFrame();
     aFrame->isEnd = true;
     frameQueue.push(aFrame);
     sem_post(&this->canTakeData);
 }
 
-void BugMediaFFmpegBaseDecoder::sendVideoEndFrame() {
+void BugMediaFFmpegDecoder::sendVideoEndFrame() {
     auto *vFrame = new BugMediaVideoFrame();
     vFrame->isEnd = true;
     frameQueue.push(vFrame);
     sem_post(&this->canTakeData);
 }
 
-void BugMediaFFmpegBaseDecoder::sendEndFrame() {
+void BugMediaFFmpegDecoder::sendEndFrame() {
     if (mediaType == AVMEDIA_TYPE_VIDEO) {
         sendVideoEndFrame();
     } else if (mediaType == AVMEDIA_TYPE_AUDIO) {
@@ -316,7 +316,7 @@ void BugMediaFFmpegBaseDecoder::sendEndFrame() {
     }
 }
 
-void BugMediaFFmpegBaseDecoder::convertAudioFrame() {
+void BugMediaFFmpegDecoder::convertAudioFrame() {
     auto *aFrame = new BugMediaAudioFrame();
     aFrame->channels = avFrame->channels;
     aFrame->format = avFrame->format;
@@ -367,7 +367,7 @@ void BugMediaFFmpegBaseDecoder::convertAudioFrame() {
     }
 }
 
-void BugMediaFFmpegBaseDecoder::convertVideoFrame() {
+void BugMediaFFmpegDecoder::convertVideoFrame() {
     // 转换YUV为RGBA，存储到缓冲帧
     int imgHeiht = sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avFrame->height, bufferFrame->data,
                              bufferFrame->linesize);
@@ -421,7 +421,7 @@ void BugMediaFFmpegBaseDecoder::convertVideoFrame() {
     }
 }
 
-void BugMediaFFmpegBaseDecoder::convertFrame() {
+void BugMediaFFmpegDecoder::convertFrame() {
     if (mediaType == AVMEDIA_TYPE_AUDIO) {
         convertAudioFrame();
     } else if (mediaType == AVMEDIA_TYPE_VIDEO) {
@@ -429,7 +429,7 @@ void BugMediaFFmpegBaseDecoder::convertFrame() {
     }
 }
 
-void BugMediaFFmpegBaseDecoder::initSwsContext() {
+void BugMediaFFmpegDecoder::initSwsContext() {
     // 视频输出转换，输入与输出宽高相同
 
     swsContext = sws_getContext(avCodecContext->width, avCodecContext->height, avCodecContext->pix_fmt,
@@ -438,7 +438,7 @@ void BugMediaFFmpegBaseDecoder::initSwsContext() {
                                 nullptr, nullptr);
 }
 
-void BugMediaFFmpegBaseDecoder::initVideoOutputBuffer() {
+void BugMediaFFmpegDecoder::initVideoOutputBuffer() {
     // 音频输出缓冲
 
     int nums = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avCodecContext->width, avCodecContext->height, 1);
@@ -448,12 +448,12 @@ void BugMediaFFmpegBaseDecoder::initVideoOutputBuffer() {
                          avCodecContext->height, 1);
 }
 
-int64_t BugMediaFFmpegBaseDecoder::getDuration() const {
+int64_t BugMediaFFmpegDecoder::getDuration() const {
     return duration;
 }
 
 
-BugMediaAudioFrame *BugMediaFFmpegBaseDecoder::getAudioFrame() {
+BugMediaAudioFrame *BugMediaFFmpegDecoder::getAudioFrame() {
     sem_wait(&this->canTakeData);
     if (quit) {
         // 用于退出等待，当没有数据时处于等待状态，
@@ -470,7 +470,7 @@ BugMediaAudioFrame *BugMediaFFmpegBaseDecoder::getAudioFrame() {
     return frame;
 }
 
-BugMediaVideoFrame *BugMediaFFmpegBaseDecoder::getVideoFrame() {
+BugMediaVideoFrame *BugMediaFFmpegDecoder::getVideoFrame() {
     sem_wait(&this->canTakeData);
     if (quit) {
         // 用于退出等待，当没有数据时处于等待状态，
