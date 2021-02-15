@@ -170,7 +170,6 @@ void BugMediaFFmpegDecoder::start() {
     // 初始化音频转换需要的组件
     if (mediaType == AVMEDIA_TYPE_AUDIO) {
         initSwrContext();
-        initAudioOutputBuffer();
     }
 
     // 初始化视频转换需要的组件
@@ -188,33 +187,33 @@ void BugMediaFFmpegDecoder::startDecode() {
     pthread_create(&startThread, nullptr, startRoutine, this);
 }
 
-int BugMediaFFmpegDecoder::getSampleRate(int inSampleRate) {
-    return SAMPLE_RATE;
-}
 
-AVSampleFormat BugMediaFFmpegDecoder::getSampleFmt() {
-    return AV_SAMPLE_FMT_S16;
-}
-
-void BugMediaFFmpegDecoder::initAudioOutputBuffer() {
-    // 根据输入的采样数和采样率计算出重采样的个数
-    // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
-    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(avCodecContext->sample_rate),
-                                         avCodecContext->sample_rate, AV_ROUND_UP);
-    // 重采样后一帧数据的大小
-    resampleSize = (size_t) av_samples_get_buffer_size(
-            nullptr, CHANNEL_COUNTS,
-            resampleCount, getSampleFmt(), 1);
-
+//void BugMediaFFmpegDecoder::initAudioOutputBuffer() {
+//    // 根据输入的采样数和采样率计算出重采样的个数
+//    // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
+//    resampleCount = (int) av_rescale_rnd(SAMPLES_COUNT, getSampleRate(avCodecContext->sample_rate),
+//                                         avCodecContext->sample_rate, AV_ROUND_UP);
+//    // 重采样后一帧数据的大小
+////    resampleSize = (size_t) av_samples_get_buffer_size(
+////            nullptr, CHANNEL_COUNTS,
+////            resampleCount, getSampleFmt(), 1);
+//
 //    resampleSize = (size_t) av_samples_get_buffer_size(
-//            nullptr, CHANNEL_COUNTS,
-//            resampleCount, avCodecContext->sample_fmt, 1);
-
-    //audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize);
-//    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
-//    audioOutputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
-
-}
+//            nullptr, avCodecContext->channels,
+//            resampleCount, AV_SAMPLE_FMT_S16, 1);
+//
+//    // 不行,使用输入的采样格式
+////    resampleSize = (size_t) av_samples_get_buffer_size(
+////            nullptr, CHANNEL_COUNTS,
+////            resampleCount, avCodecContext->sample_fmt, 1);
+//
+//    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize);
+//
+//
+////    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
+////    audioOutputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
+//
+//}
 
 void BugMediaFFmpegDecoder::initSwrContext() {
 
@@ -223,10 +222,9 @@ void BugMediaFFmpegDecoder::initSwrContext() {
     av_opt_set_int(swrContext, "in_channel_layout", avCodecContext->channel_layout, 0);
     av_opt_set_int(swrContext, "out_channel_layout", avCodecContext->channel_layout, 0);
     av_opt_set_int(swrContext, "in_sample_rate", avCodecContext->sample_rate, 0);
-   // av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(avCodecContext->sample_rate), 0);
     av_opt_set_int(swrContext, "out_sample_rate", avCodecContext->sample_rate, 0);
     av_opt_set_sample_fmt(swrContext, "in_sample_fmt", avCodecContext->sample_fmt, 0);
-    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", getSampleFmt(), 0);
+    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", OUT_SAMPLE_FORMAT, 0);
 
     swr_init(swrContext);
 
@@ -325,18 +323,17 @@ void BugMediaFFmpegDecoder::sendEndFrame() {
 
 void BugMediaFFmpegDecoder::convertAudioFrame() {
 
+    // 获取输出缓冲大小
+    // 输出采格格式要与swr设置的一样
     int dataSize = av_samples_get_buffer_size(
             avFrame->linesize, avCodecContext->channels,
-            avFrame->nb_samples, avCodecContext->sample_fmt, 1);
+            avFrame->nb_samples, OUT_SAMPLE_FORMAT, 1);
 
-    audioOutputBuffer[0] = new uint8_t[dataSize];
+    // 输出缓冲
+    uint8_t *outData = new uint8_t[dataSize]();
 
     // 音频重采样转换
-    //
-    // 这个函数的输出缓冲即第二个参数要留心，不能随便写一个指向指
-    // 针的指针，需要传一个指针数组，它会把转换后的数据填充到数组
-    // 第一个元素所指向的地址中
-    int sampleCount = swr_convert(swrContext,audioOutputBuffer, avFrame->nb_samples,
+    int sampleCount = swr_convert(swrContext, &outData, dataSize,
                                   (const uint8_t **) (avFrame->data), avFrame->nb_samples);
 
     if (sampleCount > 0) {
@@ -346,6 +343,7 @@ void BugMediaFFmpegDecoder::convertAudioFrame() {
         aFrame->position = avFrame->pkt_pos;
         aFrame->sampleRate = avFrame->sample_rate;
         aFrame->sampleCount = avFrame->nb_samples;
+        aFrame->resampleSize = dataSize;
 
         // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
         // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
@@ -354,12 +352,8 @@ void BugMediaFFmpegDecoder::convertAudioFrame() {
         // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
         aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[currentStreamIndex]->time_base) * 1000;
 
-        // 将缓冲中的数据复制到新开辟的空间，并入队
-        auto data = new uint8_t [dataSize];
-        memcpy(data, audioOutputBuffer[0], dataSize);
-        aFrame->data = data;
+        aFrame->data = outData;
         frameQueue.push(aFrame);
-        delete[] audioOutputBuffer[0];
         sem_post(&this->canTakeData);
 
 #ifdef DEBUGAPP
@@ -396,7 +390,7 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
 
         // 以下两字段用缓冲里的数据
         int bufSize = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avFrame->width, avFrame->height, 1);
-        uint8_t * rgb=new uint8_t [bufSize];
+        uint8_t *rgb = new uint8_t[bufSize];
         memcpy(rgb, bufferFrame->data[0], bufSize);
         vFrame->data = rgb;
         vFrame->lineSize = bufferFrame->linesize[0];
@@ -408,7 +402,7 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
         vFrame->height = avFrame->height;
 
         frameQueue.push(vFrame);
-        delete [] bufferFrame->data[0];
+        delete[] bufferFrame->data[0];
         av_frame_unref(bufferFrame);
         sem_post(&this->canTakeData);
 

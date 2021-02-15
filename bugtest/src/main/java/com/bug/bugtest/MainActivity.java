@@ -170,8 +170,8 @@ public class MainActivity extends AppCompatActivity {
     void createPlayer() {
         String dir = Environment.getExternalStorageDirectory().getPath();
         //String path = dir + "/testfile.mp4";
-        //String path = dir + "/bingo.aac";
-        String path = dir + "/shang.mp3";
+        String path = dir + "/bingo.aac";
+        //String path = dir + "/shang.mp3";
         player1 = new BugPlayer(path, _surface);
         player1.load();
         

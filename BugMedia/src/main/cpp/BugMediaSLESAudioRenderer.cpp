@@ -169,7 +169,7 @@ bool BugMediaSLESAudioRenderer::createPlayer() {
             SL_DATAFORMAT_PCM,
             (SLuint32) 2,//声道数
             SL_SAMPLINGRATE_44_1,//采样率44100hz
-            SL_PCMSAMPLEFORMAT_FIXED_16,//采样格式，位数 16位
+            SL_PCMSAMPLEFORMAT_FIXED_16,//采样格式，位数 16位,要与解码器设置一致
             SL_PCMSAMPLEFORMAT_FIXED_16,//与采样位数一致就行
             SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,// 声道（源）位置，设置为左前和右前
             SL_BYTEORDER_LITTLEENDIAN//结束标志
@@ -275,7 +275,7 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
     }
 
 
-    SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->sampleCount);
+    SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->resampleSize);
     if (result == SL_RESULT_SUCCESS) {
         //sem_post(&playSem);
 

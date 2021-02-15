@@ -44,7 +44,7 @@ class BugMediaFFmpegDecoder {
     queue<void *> frameQueue{};
     sem_t canFillData{};
     sem_t canTakeData{};
-    bool quit= false;
+    bool quit = false;
     int64_t streamDuration = 0;
     AVCodec *avCodec = nullptr;
     AVCodecContext *avCodecContext = nullptr;
@@ -75,28 +75,27 @@ class BugMediaFFmpegDecoder {
     size_t resampleSize = 0;
 
     // 音频编码格式：浮点型数据（32位）
-    static const AVSampleFormat ENCODE_FORMAT = AV_SAMPLE_FMT_FLTP;
+    const AVSampleFormat ENCODE_FORMAT = AV_SAMPLE_FMT_FLTP;
+
+    const AVSampleFormat OUT_SAMPLE_FORMAT = AV_SAMPLE_FMT_S16;
 
     // 音频采样率
-    static const int SAMPLE_RATE = 44100;
+    const int SAMPLE_RATE = 44100;
 
     // 音频声道数
-    static const int CHANNEL_COUNTS = 2;
+    const int CHANNEL_COUNTS = 2;
 
     // 音频声道格式:立体声（双声道）
-    static const uint64_t CHANNEL_LAYOUT = AV_CH_LAYOUT_STEREO;
+    const uint64_t CHANNEL_LAYOUT = AV_CH_LAYOUT_STEREO;
 
     // 音频比特率
-    static const int BIT_RATE = 64000;
+    const int BIT_RATE = 64000;
 
     // ACC音频一帧采样数
-    static const int SAMPLES_COUNT = 1024;
+    const int SAMPLES_COUNT = 1024;
 
-    int getSampleRate(int inSampleRate);
 
-    AVSampleFormat getSampleFmt();
-
-    void initAudioOutputBuffer();
+//    void initAudioOutputBuffer();
 
     void initSwrContext();
 
@@ -158,13 +157,13 @@ public:
 
     void startDecode();
 
-    int64_t getDuration() const ;
+    int64_t getDuration() const;
 
     // 当前解码器为音频解码器时调用
-    BugMediaAudioFrame* getAudioFrame();
+    BugMediaAudioFrame *getAudioFrame();
 
     // 当前解码器为视频解码器时调用
-    BugMediaVideoFrame* getVideoFrame();
+    BugMediaVideoFrame *getVideoFrame();
 
 
 };
