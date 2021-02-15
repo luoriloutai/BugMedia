@@ -46,10 +46,10 @@ void BugMediaGraphics::render() {
     //    //
     //    // C++11的thread，使用内部匿名线程（lambda表达式），同样不能在线程内初始化EGL，作废
     //    thread tDrawThread([this]{
-    //        pEGL->init();
+    //        pEGL->loadStart();
     //        pEGL->makeCurrent();
     //
-    //        pGLES->init();
+    //        pGLES->loadStart();
     //        pGLES->activeProgram();
     //        // 虚方法
     //        prepareDraw();
@@ -108,9 +108,9 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 //////
 //// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
 //void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
-//    graphics->pEGL->init();
+//    graphics->pEGL->loadStart();
 //    graphics->pEGL->makeCurrent();
-//    graphics->pGLES->init();
+//    graphics->pGLES->loadStart();
 //    graphics->pGLES->activeProgram();
 //    // 虚方法，不频繁变化的配置
 //    graphics->prepareDraw();

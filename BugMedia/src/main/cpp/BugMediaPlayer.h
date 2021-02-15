@@ -23,6 +23,8 @@ extern "C" {
 #include "BugMediaFFmpegAudioDecoder.h"
 #include "BugMediaFFmpegVideoDecoder.h"
 #include "BugMediaGLESVideoRenderer.h"
+#include <queue>
+
 
 using namespace std;
 
@@ -31,7 +33,11 @@ class BugMediaPlayer {
     int maxBufferSize;
     const char *url = nullptr;
     AVFormatContext *formatContext = nullptr;
-    pthread_t initThread{};
+    AVCodecContext *avCodecContext = nullptr;
+    AVPacket *avPacket = nullptr;
+    AVFrame *avFrame = nullptr;
+    AVFormatContext *avFormatContext{};
+    pthread_t loadThread{};
     bool isRelease = false;
     bool isAudioEnd = false;
     bool isVideoEnd = false;
@@ -50,22 +56,25 @@ class BugMediaPlayer {
     EGLint width{};
     EGLint height{};
     bool createPBufferSurface{};
-    bool loaded=false;
+    bool loaded = false;
     JavaVM *javaVm{};
 
-
-    static void *initThreadFunc(void *pVoid);
+    static void *loadThreadFunc(void *pVoid);
 
     // 定义该函数是目的是为了在线程中直接使用类内的方法和变量，
     // 而不需要用传过去的本类的指针去访问，简化写法而已。
-    void init();
+    void loadStart();
 
     static BugMediaAudioFrame *getAudioFrameData(void *ctx);
+
     static BugMediaVideoFrame *getVideoFrameData(void *ctx);
+
     static int64_t getAudioPtsData(void *ctx);
 
     void release();
-
+    static void * sortThreadRoutine(void *pVoid);
+    // 分拣帧，放到相应的队列
+    void sortFrame();
 
 
 public:
@@ -74,7 +83,7 @@ public:
     BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
                    jobject surface, EGLint width, EGLint height, bool createPBufferSurface);
 
-    BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env,jobject surface);
+    BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface);
 
     ~BugMediaPlayer();
 

@@ -29,7 +29,6 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     this->height = height;
     this->createPBufferSurface = createPBufferSurface;
 
-
 }
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface)
@@ -52,6 +51,17 @@ void BugMediaPlayer::release() {
             avformat_free_context(formatContext);
         }
 
+        if (avPacket != nullptr) {
+            av_packet_free(&avPacket);
+        }
+        if (avFrame != nullptr) {
+            av_frame_free(&avFrame);
+        }
+        if (avCodecContext != nullptr) {
+            avcodec_close(avCodecContext);
+            avcodec_free_context(&avCodecContext);
+        }
+
         for (auto &audioDecoder : audioDecoders) {
             delete audioDecoder;
         }
@@ -64,7 +74,7 @@ void BugMediaPlayer::release() {
         delete videoRenderer;
         videoRenderer = nullptr;
 
-        pthread_join(initThread, nullptr);
+        pthread_join(loadThread, nullptr);
 
         env->DeleteGlobalRef(surface);
     }
@@ -72,16 +82,16 @@ void BugMediaPlayer::release() {
 }
 
 // 线程执行函数
-void *BugMediaPlayer::initThreadFunc(void *pVoid) {
+void *BugMediaPlayer::loadThreadFunc(void *pVoid) {
     auto *loader = (BugMediaPlayer *) pVoid;
     // 使用另一个方法，简化代码写法，不然每个变量访问
     // 都得类似于:loader->xxxx
-    loader->init();
+    loader->loadStart();
     return nullptr;
 }
 
-// 正经执行初始化操作的函数
-void BugMediaPlayer::init() {
+// 正经执行操作的函数
+void BugMediaPlayer::loadStart() {
 
     formatContext = avformat_alloc_context();
 
@@ -98,6 +108,7 @@ void BugMediaPlayer::init() {
         release();
         return;
     }
+
 
     duration = formatContext->duration * av_q2d(AV_TIME_BASE_Q);
 
@@ -195,7 +206,7 @@ void BugMediaPlayer::load() {
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_create(&initThread, &attr, initThreadFunc, this);
+    pthread_create(&loadThread, &attr, loadThreadFunc, this);
 }
 
 void BugMediaPlayer::switchAudioChannel(int ch) {
@@ -259,7 +270,7 @@ int64_t BugMediaPlayer::getAudioPtsData(void *ctx) {
 }
 
 void BugMediaPlayer::play() {
-    if (loaded){
+    if (loaded) {
         audioRenderer->play();
         videoRenderer->play();
     }
@@ -267,7 +278,7 @@ void BugMediaPlayer::play() {
 }
 
 void BugMediaPlayer::pause() {
-    if (loaded){
+    if (loaded) {
         audioRenderer->pause();
         videoRenderer->pause();
     }
@@ -276,8 +287,7 @@ void BugMediaPlayer::pause() {
 }
 
 void BugMediaPlayer::stop() {
-    if(loaded)
-    {
+    if (loaded) {
         audioRenderer->pause();
         videoRenderer->pause();
     }
@@ -289,12 +299,32 @@ void BugMediaPlayer::destroy() {
 }
 
 
-
 void BugMediaPlayer::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
-    if (loaded){
+    if (loaded) {
         videoRenderer->resizeView(x, y, width, height);
     }
 
+}
+
+void *BugMediaPlayer::sortThreadRoutine(void *pVoid) {
+    auto self = (BugMediaPlayer *) pVoid;
+    self->sortFrame();
+    return nullptr;
+}
+
+void BugMediaPlayer::sortFrame() {
+//    while (true) {
+//        if (streamEnd){
+//            break;
+//        }
+//        sem_wait(&canTake);
+//        BugMediaCacheFrame cacheFrame = cacheFrameQueue.front();
+//        if (cacheFrame.type==AVMEDIA_TYPE_VIDEO){
+//
+//        } else if (cacheFrame.type==AVMEDIA_TYPE_AUDIO){
+//
+//        }
+//    }
 }
 
 

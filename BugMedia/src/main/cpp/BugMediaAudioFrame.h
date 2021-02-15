@@ -22,6 +22,8 @@ struct BugMediaAudioFrame {
     int channels{};
     int sampleCount{};
     size_t resampleSize{};
+
+    ~BugMediaAudioFrame();
 };
 
 

@@ -14,6 +14,7 @@
 
 extern "C"{
 #include <SLES/OpenSLES.h>
+#include "include/ffmpeg/libavutil/avutil.h"
 };
 
 
@@ -66,18 +67,21 @@ class BugMediaFFmpegAudioDecoder : virtual public BugMediaFFmpegBaseDecoder {
 
     AVSampleFormat getSampleFmt();
 
-    void initOutputBuffer();
+    void initAudioOutputBuffer();
+    void initSwrContext();
 
 public:
     BugMediaAudioFrame *getFrame();
 
-    BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 50);
+    BugMediaFFmpegAudioDecoder(AVFormatContext *formatContext, int trackIdx, int bufferSize = 10);
+
+    BugMediaFFmpegAudioDecoder(const char *url, int bufferSize = 10);
 
     ~BugMediaFFmpegAudioDecoder();
 
-    void startDecode();
+    //void startDecode();
 
-    void initSwrContext();
+
 
 };
 

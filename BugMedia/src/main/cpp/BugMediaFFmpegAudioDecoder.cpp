@@ -22,7 +22,7 @@ BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(AVFormatContext *formatCo
 #endif
 
     initSwrContext();
-    initOutputBuffer();
+    initAudioOutputBuffer();
     sem_init(&this->canFillData, 0, this->bufferSize);
     sem_init(&this->canTakeData, 0, 0);
 
@@ -210,10 +210,10 @@ BugMediaAudioFrame *BugMediaFFmpegAudioDecoder::getFrame() {
     return frame;
 }
 
-void BugMediaFFmpegAudioDecoder::startDecode() {
-
-    this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
-}
+//void BugMediaFFmpegAudioDecoder::startDecode() {
+//
+//    this->decodeThread = pthread_create(&decodeThread, nullptr, decodeRoutine, this);
+//}
 
 void BugMediaFFmpegAudioDecoder::initSwrContext() {
 
@@ -227,7 +227,7 @@ void BugMediaFFmpegAudioDecoder::initSwrContext() {
     swr_init(swrContext);
 }
 
-void BugMediaFFmpegAudioDecoder::initOutputBuffer() {
+void BugMediaFFmpegAudioDecoder::initAudioOutputBuffer() {
 
     // 根据输入的采样数和采样率计算出重采样的个数
     // 目标采样个数 = 原采样个数 *（目标采样率 / 原采样率）
@@ -239,8 +239,8 @@ void BugMediaFFmpegAudioDecoder::initOutputBuffer() {
             resampleCount, getSampleFmt(), 1);
 
     outputBuffer[0] = (uint8_t *) malloc(resampleSize);
-//    outputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
-//    outputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
+//    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
+//    audioOutputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
 
 #ifdef DEBUGAPP
     LOGD("重采样数：%d，重采样大小：%d", resampleCount, resampleSize);
@@ -254,4 +254,18 @@ int BugMediaFFmpegAudioDecoder::getSampleRate(int inSampleRate) {
 
 AVSampleFormat BugMediaFFmpegAudioDecoder::getSampleFmt() {
     return AV_SAMPLE_FMT_S16;
+}
+
+BugMediaFFmpegAudioDecoder::BugMediaFFmpegAudioDecoder(const char *url, int bufferSize):BugMediaFFmpegBaseDecoder(url,bufferSize,AVMEDIA_TYPE_AUDIO) {
+    this->bufferSize = bufferSize;
+
+#ifdef DEBUGAPP
+    LOGD("音频采样率：%d", avCodecContext->sample_rate);
+    LOGD("音频采样格式：%d", avCodecContext->sample_fmt);
+#endif
+
+    initSwrContext();
+    initAudioOutputBuffer();
+    sem_init(&this->canFillData, 0, this->bufferSize);
+    sem_init(&this->canTakeData, 0, 0);
 }

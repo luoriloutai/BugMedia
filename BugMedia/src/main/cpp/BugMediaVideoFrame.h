@@ -24,6 +24,8 @@ struct BugMediaVideoFrame {
     int format{};
     float_t position{};
 
+    ~BugMediaVideoFrame();
+
 };
 
 
