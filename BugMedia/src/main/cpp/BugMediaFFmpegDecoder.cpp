@@ -224,7 +224,7 @@ void BugMediaFFmpegDecoder::initSwrContext() {
     av_opt_set_int(swrContext, "in_sample_rate", avCodecContext->sample_rate, 0);
     av_opt_set_int(swrContext, "out_sample_rate", avCodecContext->sample_rate, 0);
     av_opt_set_sample_fmt(swrContext, "in_sample_fmt", avCodecContext->sample_fmt, 0);
-    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", OUT_SAMPLE_FORMAT, 0);
+    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", AUDIO_OUT_SAMPLE_FORMAT, 0);
 
     swr_init(swrContext);
 
@@ -327,7 +327,7 @@ void BugMediaFFmpegDecoder::convertAudioFrame() {
     // 输出采格格式要与swr设置的一样
     int dataSize = av_samples_get_buffer_size(
             avFrame->linesize, avCodecContext->channels,
-            avFrame->nb_samples, OUT_SAMPLE_FORMAT, 1);
+            avFrame->nb_samples, AUDIO_OUT_SAMPLE_FORMAT, 1);
 
     // 输出缓冲
     uint8_t *outData = new uint8_t[dataSize]();
