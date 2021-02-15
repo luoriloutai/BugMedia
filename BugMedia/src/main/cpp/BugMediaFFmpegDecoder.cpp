@@ -409,6 +409,7 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
 
         frameQueue.push(vFrame);
         delete [] bufferFrame->data[0];
+        av_frame_unref(bufferFrame);
         sem_post(&this->canTakeData);
 
 #ifdef DEBUGAPP
