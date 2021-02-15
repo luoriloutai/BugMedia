@@ -8,7 +8,7 @@
 #define DEBUGAPP
 
 void BugMediaSLESAudioRenderer::play() {
-    if (currentState != PLAYING && rendering) {
+    if (currentState != PLAYING && rendering&&currentState!=STOP) {
         currentState = PLAYING;
         sem_post(&playSem);
 
@@ -24,9 +24,8 @@ void BugMediaSLESAudioRenderer::pause() {
 }
 
 void BugMediaSLESAudioRenderer::stop() {
-    if (rendering){
+    if (rendering) {
         currentState = STOP;
-        //sem_post(&playSem);
     }
 
 
@@ -44,8 +43,7 @@ BugMediaSLESAudioRenderer::BugMediaSLESAudioRenderer(GetAudioFrameCallback callb
 
 
 BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
-    // 使线程退出等待状态
-    // 在获取到信号后判断状态退出，使线程不会一直等待
+
     if (currentState == PAUSE) {
         currentState = STOP;
         sem_post(&playSem);
@@ -83,6 +81,7 @@ BugMediaSLESAudioRenderer::~BugMediaSLESAudioRenderer() {
 }
 
 void BugMediaSLESAudioRenderer::render() {
+
     pthread_create(&renderThread, nullptr, renderRoutine, this);
 
 }
@@ -117,11 +116,6 @@ void BugMediaSLESAudioRenderer::doRender() {
     (*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
     // 执行播放的是这个回调函数，控制流程也在这里面
     bufferQueueCallback(simpleBufferQueue, this);
-
-
-#ifdef DEBUGAPP
-    LOGD("渲染结束");
-#endif
 
 
 }
@@ -228,17 +222,15 @@ void BugMediaSLESAudioRenderer::bufferQueueCallback(SLAndroidSimpleBufferQueueIt
 
 // 向播放器缓冲填充数据。该方法SLES会自动回调，不需要控制延时
 void BugMediaSLESAudioRenderer::doBufferQueue() {
-    if (player == nullptr) {
-        LOGE("播放器未初始化");
+    if (simpleBufferQueue == nullptr) {
+        LOGE("播入接口未初始化");
         return;
     }
 
-    if (currentState == STOP) {
+    if (currentState==STOP){
         (*simpleBufferQueue)->Clear(simpleBufferQueue);
-
         return;
     }
-
 
     if (startTimeMs == -1) {
         // 初次执行，记录时间点，后面的播放都依赖于这个起始时间点。
@@ -248,53 +240,45 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
 
     auto *frame = getAudioFrame(callbackContext);
 
-    if (frame == nullptr) {
+    if (frame == nullptr || frame->isEnd) {
         currentState = STOP;
         (*simpleBufferQueue)->Clear(simpleBufferQueue);
 
         return;
     }
-    if (frame->isEnd) {
-#ifdef DEBUGAPP
-        LOGD("最后一帧音频");
-#endif
-        currentState = STOP;
-        (*simpleBufferQueue)->Clear(simpleBufferQueue);
 
-        return;
-    }
 
     if (currentState == PAUSE) {
-        //startTimeMs = getCurMsTime()-frame->pts;
-        //startTimeMs = getCurMsTime();
+        startTimeMs = getCurMsTime()-frame->pts;
+
         sem_wait(&playSem);
+        if (currentState==STOP){
+            (*simpleBufferQueue)->Clear(simpleBufferQueue);
+            return;
+        }
     }
 
-    if (currentState == STOP) {
-        (*simpleBufferQueue)->Clear(simpleBufferQueue);
-        return;
+
+
+    int64_t pass = getCurMsTime() - startTimeMs;
+    delay = frame->pts - pass;
+    //delay = getCurMsTime()-frame->pts-startTimeMs-passtimeMs;
+
+
+
+    // pts比当前时间大，说明要等待时间到
+    if (delay > 0) {
+#ifdef DEBUGAPP
+        LOGD("延时时长：%lld", delay);
+#endif
+        av_usleep(delay * 1000);
     }
 
 
-//    int64_t pass = getCurMsTime() - startTimeMs;
-//    delay = frame->pts - pass;
-//    //delay = getCurMsTime()-frame->pts-startTimeMs-passtimeMs;
-//
-//
-//
-//    // pts比当前时间大，说明要等待时间到
-//    if (delay > 0) {
-//#ifdef DEBUGAPP
-//        LOGD("延时时长：%lld", delay);
-//#endif
-//        av_usleep(delay * 1000);
-//    }
-
-
-    SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->resampleSize);
+    SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->sampleCount);
     if (result == SL_RESULT_SUCCESS) {
         //sem_post(&playSem);
-        delete frame->data;
+
         delete frame;
 
 #ifdef DEBUGAPP

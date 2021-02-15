@@ -5,6 +5,6 @@
 #include "BugMediaVideoFrame.h"
 
 BugMediaVideoFrame::~BugMediaVideoFrame() {
-    delete data;
+    delete[] data;
 
 }

@@ -6,12 +6,6 @@
 #define SLOWER_BUGMEDIAPLAYER_H
 
 extern "C" {
-#include "include/ffmpeg/libavcodec/avcodec.h"
-#include "include/ffmpeg/libavformat/avformat.h"
-#include "include/ffmpeg/libswscale/swscale.h"
-#include "include/ffmpeg/libswresample/swresample.h"
-#include "include/ffmpeg/libavutil/pixdesc.h"
-#include "include/ffmpeg/libavutil/frame.h"
 #include "include/ffmpeg/libavutil/time.h"
 }
 
@@ -20,9 +14,8 @@ extern "C" {
 #include <semaphore.h>
 #include <vector>
 #include "BugMediaSLESAudioRenderer.h"
-#include "BugMediaFFmpegAudioDecoder.h"
-#include "BugMediaFFmpegVideoDecoder.h"
 #include "BugMediaGLESVideoRenderer.h"
+#include "BugMediaFFmpegDecoder.h"
 #include <queue>
 
 
@@ -32,21 +25,11 @@ using namespace std;
 class BugMediaPlayer {
     int maxBufferSize;
     const char *url = nullptr;
-    AVFormatContext *formatContext = nullptr;
-    AVCodecContext *avCodecContext = nullptr;
-    AVPacket *avPacket = nullptr;
-    AVFrame *avFrame = nullptr;
-    AVFormatContext *avFormatContext{};
-    pthread_t loadThread{};
     bool isRelease = false;
     bool isAudioEnd = false;
     bool isVideoEnd = false;
-    vector<BugMediaFFmpegAudioDecoder *> audioDecoders{};
-    vector<BugMediaFFmpegVideoDecoder *> videoDecoders{};
-    int audioTrackCount{};
-    int videoTrackCount{};
-    BugMediaFFmpegAudioDecoder *currentAudioDecoder{};
-    BugMediaFFmpegVideoDecoder *currentVideoDecoder{};
+    BugMediaFFmpegDecoder *audioDecoder{};
+    BugMediaFFmpegDecoder *videoDecoder{};
     int64_t audioPts{};
     BugMediaSLESAudioRenderer *audioRenderer{};
     BugMediaGLESVideoRenderer *videoRenderer{};
@@ -59,22 +42,15 @@ class BugMediaPlayer {
     bool loaded = false;
     JavaVM *javaVm{};
 
-    static void *loadThreadFunc(void *pVoid);
 
-    // 定义该函数是目的是为了在线程中直接使用类内的方法和变量，
-    // 而不需要用传过去的本类的指针去访问，简化写法而已。
-    void loadStart();
+    static BugMediaAudioFrame *getAudioFrameCallback(void *ctx);
 
-    static BugMediaAudioFrame *getAudioFrameData(void *ctx);
+    static BugMediaVideoFrame *getVideoFrameCallback(void *ctx);
 
-    static BugMediaVideoFrame *getVideoFrameData(void *ctx);
-
-    static int64_t getAudioPtsData(void *ctx);
+    static int64_t getAudioPtsCallback(void *ctx);
 
     void release();
-    static void * sortThreadRoutine(void *pVoid);
-    // 分拣帧，放到相应的队列
-    void sortFrame();
+
 
 
 public:
@@ -94,9 +70,6 @@ public:
 
     int64_t getAudioPts() const;
 
-    int getAudioTrackCount() const;
-
-    int getVideoTrackCount() const;
 
     void switchAudioChannel(int ch);
 

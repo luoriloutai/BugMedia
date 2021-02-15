@@ -5,5 +5,5 @@
 #include "BugMediaAudioFrame.h"
 
 BugMediaAudioFrame::~BugMediaAudioFrame() {
-    delete data;
+    delete[] data;
 }

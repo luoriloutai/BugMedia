@@ -5,7 +5,7 @@
 #include "BugMediaFFmpegDecoder.h"
 
 
-// #define DEBUGAPP
+#define DEBUGAPP
 
 BugMediaFFmpegDecoder::~BugMediaFFmpegDecoder() {
 
@@ -38,17 +38,17 @@ BugMediaFFmpegDecoder::~BugMediaFFmpegDecoder() {
     sem_post(&canTakeData);
     sem_post(&canFillData);
 
-    if (mediaType==AVMEDIA_TYPE_AUDIO){
+    if (mediaType == AVMEDIA_TYPE_AUDIO) {
         while (!frameQueue.empty()) {
-            auto *frame = (BugMediaAudioFrame*)frameQueue.front();
+            auto *frame = (BugMediaAudioFrame *) frameQueue.front();
             delete frame;
             frameQueue.pop();
         }
     }
 
-    if (mediaType==AVMEDIA_TYPE_VIDEO){
+    if (mediaType == AVMEDIA_TYPE_VIDEO) {
         while (!frameQueue.empty()) {
-            auto *frame = (BugMediaVideoFrame*)frameQueue.front();
+            auto *frame = (BugMediaVideoFrame *) frameQueue.front();
             delete frame;
             frameQueue.pop();
         }
@@ -60,7 +60,7 @@ BugMediaFFmpegDecoder::~BugMediaFFmpegDecoder() {
         audioOutputBuffer[0] = nullptr;
     }
 
-    if (videoOutputBuffer!= nullptr){
+    if (videoOutputBuffer != nullptr) {
         free(videoOutputBuffer);
         videoOutputBuffer = nullptr;
     }
@@ -82,12 +82,6 @@ int64_t BugMediaFFmpegDecoder::getStreamDuration() const {
     return streamDuration;
 }
 
-BugMediaFFmpegDecoder::BugMediaFFmpegDecoder(AVFormatContext *formatContext, int trackIdx) {
-    avFormatContext = formatContext;
-    trackIndex = trackIdx;
-    openDecoder();
-
-}
 
 void BugMediaFFmpegDecoder::openDecoder() {
 
@@ -97,7 +91,7 @@ void BugMediaFFmpegDecoder::openDecoder() {
     streamDuration = stream->duration * av_q2d(stream->time_base);
 
 #ifdef DEBUGAPP
-    LOGD("流长度：%lld,换算后长度：%d",stream->duration,streamDuration);
+    LOGD("流长度：%lld,换算后长度：%d", stream->duration, streamDuration);
 #endif
 
     codecType = stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO ? "audio" : "video";
@@ -113,11 +107,6 @@ void BugMediaFFmpegDecoder::openDecoder() {
         return;
     }
 
-#ifdef DEBUGAPP
-
-    LOGD("sample_rate: %d,trackIndex: %d,codecType:%s,sample_format:%d",
-            avCodecContext->sample_rate,trackIndex,codecType,avCodecContext->sample_fmt);
-#endif
 
     avPacket = av_packet_alloc();
     avFrame = av_frame_alloc();
@@ -168,6 +157,10 @@ void BugMediaFFmpegDecoder::start() {
         return;
     }
 
+#ifdef DEBUGAPP
+    LOGD("类型：%s", mediaType == AVMEDIA_TYPE_AUDIO ? "音频" : "视频");
+#endif
+
 
     duration = avFormatContext->duration * av_q2d(AV_TIME_BASE_Q);
 
@@ -175,12 +168,17 @@ void BugMediaFFmpegDecoder::start() {
     openDecoder();
 
     // 初始化音频转换需要的组件
-    initSwrContext();
-    initAudioOutputBuffer();
+    if (mediaType == AVMEDIA_TYPE_AUDIO) {
+        initSwrContext();
+        initAudioOutputBuffer();
+    }
 
     // 初始化视频转换需要的组件
-    initSwsContext();
-    initVideoOutputBuffer();
+    if (mediaType == AVMEDIA_TYPE_VIDEO) {
+        initSwsContext();
+        initVideoOutputBuffer();
+    }
+
 
     // 解码。读取一定数量的帧放入队列作为缓冲
     decode();
@@ -208,21 +206,30 @@ void BugMediaFFmpegDecoder::initAudioOutputBuffer() {
             nullptr, CHANNEL_COUNTS,
             resampleCount, getSampleFmt(), 1);
 
-    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize);
+//    resampleSize = (size_t) av_samples_get_buffer_size(
+//            nullptr, CHANNEL_COUNTS,
+//            resampleCount, avCodecContext->sample_fmt, 1);
+
+    //audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize);
 //    audioOutputBuffer[0] = (uint8_t *) malloc(resampleSize / 2);
 //    audioOutputBuffer[1] = (uint8_t *) malloc(resampleSize / 2);
 
 }
 
 void BugMediaFFmpegDecoder::initSwrContext() {
+
     swrContext = swr_alloc();
+
     av_opt_set_int(swrContext, "in_channel_layout", avCodecContext->channel_layout, 0);
-    av_opt_set_int(swrContext, "out_channel_layout", CHANNEL_LAYOUT, 0);
+    av_opt_set_int(swrContext, "out_channel_layout", avCodecContext->channel_layout, 0);
     av_opt_set_int(swrContext, "in_sample_rate", avCodecContext->sample_rate, 0);
-    av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(avCodecContext->sample_rate), 0);
+   // av_opt_set_int(swrContext, "out_sample_rate", getSampleRate(avCodecContext->sample_rate), 0);
+    av_opt_set_int(swrContext, "out_sample_rate", avCodecContext->sample_rate, 0);
     av_opt_set_sample_fmt(swrContext, "in_sample_fmt", avCodecContext->sample_fmt, 0);
     av_opt_set_sample_fmt(swrContext, "out_sample_fmt", getSampleFmt(), 0);
+
     swr_init(swrContext);
+
 }
 
 void BugMediaFFmpegDecoder::decode() {
@@ -317,52 +324,54 @@ void BugMediaFFmpegDecoder::sendEndFrame() {
 }
 
 void BugMediaFFmpegDecoder::convertAudioFrame() {
-    auto *aFrame = new BugMediaAudioFrame();
-    aFrame->channels = avFrame->channels;
-    aFrame->format = avFrame->format;
-    aFrame->position = avFrame->pkt_pos;
-    aFrame->sampleRate = avFrame->sample_rate;
-    aFrame->sampleCount = avFrame->nb_samples;
 
+    int dataSize = av_samples_get_buffer_size(
+            avFrame->linesize, avCodecContext->channels,
+            avFrame->nb_samples, avCodecContext->sample_fmt, 1);
 
-
-    // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
-    // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
-    // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
-    // 分母得出的数。
-    // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-    aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
-
-    aFrame->resampleSize = resampleSize;
+    audioOutputBuffer[0] = new uint8_t[dataSize];
 
     // 音频重采样转换
-    int sampleCount = swr_convert(swrContext, audioOutputBuffer, resampleSize,
+    //
+    // 这个函数的输出缓冲即第二个参数要留心，不能随便写一个指向指
+    // 针的指针，需要传一个指针数组，它会把转换后的数据填充到数组
+    // 第一个元素所指向的地址中
+    int sampleCount = swr_convert(swrContext,audioOutputBuffer, avFrame->nb_samples,
                                   (const uint8_t **) (avFrame->data), avFrame->nb_samples);
-#ifdef DEBUGAPP
-
-    LOGD("音频帧转换，每通道样本数：%d,%s", sampleCount, av_err2str(sampleCount));
-
-
-#endif
 
     if (sampleCount > 0) {
+        auto *aFrame = new BugMediaAudioFrame();
+        aFrame->channels = avFrame->channels;
+        aFrame->format = avFrame->format;
+        aFrame->position = avFrame->pkt_pos;
+        aFrame->sampleRate = avFrame->sample_rate;
+        aFrame->sampleCount = avFrame->nb_samples;
+
+        // avFrame->pts是以stream.time_base为单位的时间戳，单位为秒
+        // time_base不是一个数，是一个AVRational结构，可用av_q2d()转换成double,
+        // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
+        // 分母得出的数。
+        // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
+        aFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[currentStreamIndex]->time_base) * 1000;
 
         // 将缓冲中的数据复制到新开辟的空间，并入队
-        auto *data = (uint8_t *) malloc(resampleSize);
-        memcpy(data, audioOutputBuffer[0], resampleSize);
+        auto data = new uint8_t [dataSize];
+        memcpy(data, audioOutputBuffer[0], dataSize);
         aFrame->data = data;
         frameQueue.push(aFrame);
+        delete[] audioOutputBuffer[0];
         sem_post(&this->canTakeData);
 
 #ifdef DEBUGAPP
         static int couter = 0;
-                LOGD("第%d帧音频解码完毕", ++couter);
-                LOGD("队列大小：%d", frameQueue.size());
+        LOGD("第%d帧音频解码完毕", ++couter);
+        LOGD("队列大小：%d", frameQueue.size());
 
 #endif
 
 
     } else {
+
         sem_post(&canFillData);
     }
 }
@@ -382,15 +391,15 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
         // 这个结构本质上是一个分子和一个分母表示的分数，av_q2d()就是用分子除以
         // 分母得出的数。
         // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
-        vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[trackIndex]->time_base) * 1000;
+        vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[currentStreamIndex]->time_base) * 1000;
 
 
         // 以下两字段用缓冲里的数据
         int bufSize = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avFrame->width, avFrame->height, 1);
-        uint8_t *rgb= (uint8_t *) av_malloc(bufSize*sizeof(uint8_t));
-        memcpy(rgb,bufferFrame->data[0],bufSize);
+        uint8_t * rgb=new uint8_t [bufSize];
+        memcpy(rgb, bufferFrame->data[0], bufSize);
         vFrame->data = rgb;
-        vFrame->lineSize =bufferFrame->linesize[0];
+        vFrame->lineSize = bufferFrame->linesize[0];
 
         vFrame->isInterlaced = avFrame->interlaced_frame == 1;
         vFrame->position = avFrame->pkt_pos;
@@ -399,12 +408,13 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
         vFrame->height = avFrame->height;
 
         frameQueue.push(vFrame);
+        delete [] bufferFrame->data[0];
         sem_post(&this->canTakeData);
 
 #ifdef DEBUGAPP
         static int couter = 0;
-                LOGD("第%d帧视频解码完毕", ++couter);
-                LOGD("视频帧队列大小：%d", frameQueue.size());
+        LOGD("第%d帧视频解码完毕", ++couter);
+        LOGD("视频帧队列大小：%d", frameQueue.size());
 
 
 #endif
@@ -412,12 +422,6 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
     } else {
         // 未写入缓冲，退还信号
         sem_post(&canFillData);
-
-#ifdef DEBUGAPP
-        static int count=0;
-                LOGD("未成功转换%d帧",++count);
-#endif
-
     }
 }
 
@@ -444,7 +448,8 @@ void BugMediaFFmpegDecoder::initVideoOutputBuffer() {
     int nums = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avCodecContext->width, avCodecContext->height, 1);
     videoOutputBuffer = (uint8_t *) av_malloc(nums * sizeof(uint8_t));
     bufferFrame = av_frame_alloc();
-    av_image_fill_arrays(bufferFrame->data, bufferFrame->linesize, videoOutputBuffer, VIDEO_OUT_FORMAT, avCodecContext->width,
+    av_image_fill_arrays(bufferFrame->data, bufferFrame->linesize, videoOutputBuffer, VIDEO_OUT_FORMAT,
+                         avCodecContext->width,
                          avCodecContext->height, 1);
 }
 
@@ -454,6 +459,10 @@ int64_t BugMediaFFmpegDecoder::getDuration() const {
 
 
 BugMediaAudioFrame *BugMediaFFmpegDecoder::getAudioFrame() {
+    if (mediaType == AVMEDIA_TYPE_VIDEO) {
+        return nullptr;
+    }
+
     sem_wait(&this->canTakeData);
     if (quit) {
         // 用于退出等待，当没有数据时处于等待状态，
@@ -461,9 +470,9 @@ BugMediaAudioFrame *BugMediaFFmpegDecoder::getAudioFrame() {
         // 等待状态就退出了
         return nullptr;
     }
-    auto *frame = (BugMediaAudioFrame*)frameQueue.front();
+    auto *frame = (BugMediaAudioFrame *) frameQueue.front();
     frameQueue.pop();
-    if(!frame->isEnd){
+    if (!frame->isEnd) {
         sem_post(&this->canFillData);
     }
 
@@ -471,6 +480,10 @@ BugMediaAudioFrame *BugMediaFFmpegDecoder::getAudioFrame() {
 }
 
 BugMediaVideoFrame *BugMediaFFmpegDecoder::getVideoFrame() {
+    if (mediaType == AVMEDIA_TYPE_AUDIO) {
+        return nullptr;
+    }
+
     sem_wait(&this->canTakeData);
     if (quit) {
         // 用于退出等待，当没有数据时处于等待状态，
@@ -478,9 +491,9 @@ BugMediaVideoFrame *BugMediaFFmpegDecoder::getVideoFrame() {
         // 等待状态就退出了
         return nullptr;
     }
-    auto *frame = (BugMediaVideoFrame*)frameQueue.front();
+    auto *frame = (BugMediaVideoFrame *) frameQueue.front();
     frameQueue.pop();
-    if(!frame->isEnd){
+    if (!frame->isEnd) {
         sem_post(&this->canFillData);
     }
 

@@ -80,7 +80,7 @@ class BugMediaSLESAudioRenderer {
     // 给缓冲区填充数据
     void doBufferQueue();
 
-    bool rendering=false;
+    bool rendering = false;
 
 
 public:

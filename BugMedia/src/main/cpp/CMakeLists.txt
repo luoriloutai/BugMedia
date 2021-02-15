@@ -108,9 +108,7 @@ add_library( # Sets the name of the library.
         openGL/BugMediaRendererCommon.cpp
         BugMediaGLESVideoRenderer.cpp
         BugMediaPlayer.cpp
-        BugMediaFFmpegAudioDecoder.cpp
         BugMediaAudioFrame.cpp
-        BugMediaFFmpegVideoDecoder.cpp
         BugMediaVideoFrame.cpp
         BugMediaCommon.cpp
         BugMediaFFmpegDecoder.cpp

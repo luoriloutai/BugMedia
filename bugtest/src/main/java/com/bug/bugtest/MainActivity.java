@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
                 //pictureRenderer1.resizeView(0, 0, i1, i2);
-                player1.resizeView(0,0,i1,i2);
+                //player1.resizeView(0,0,i1,i2);
             }
 
             @Override
@@ -169,8 +169,9 @@ public class MainActivity extends AppCompatActivity {
 
     void createPlayer() {
         String dir = Environment.getExternalStorageDirectory().getPath();
-        String path = dir + "/testfile.mp4";
+        //String path = dir + "/testfile.mp4";
         //String path = dir + "/bingo.aac";
+        String path = dir + "/shang.mp3";
         player1 = new BugPlayer(path, _surface);
         player1.load();
         

@@ -45,6 +45,17 @@ class BugMediaFFmpegDecoder {
     sem_t canFillData{};
     sem_t canTakeData{};
     bool quit= false;
+    int64_t streamDuration = 0;
+    AVCodec *avCodec = nullptr;
+    AVCodecContext *avCodecContext = nullptr;
+    AVPacket *avPacket = nullptr;
+    AVFrame *avFrame = nullptr;
+    AVFormatContext *avFormatContext{};
+    const char *codecType{};
+    int64_t duration{};
+    AVMediaType mediaType{};
+    vector<int> streamIndices{};
+    int currentStreamIndex = -1;
 
     /*
      * 音频相关
@@ -135,21 +146,6 @@ class BugMediaFFmpegDecoder {
 
     void convertFrame();
 
-protected:
-    int64_t streamDuration = 0;
-    AVCodec *avCodec = nullptr;
-    AVCodecContext *avCodecContext = nullptr;
-    AVPacket *avPacket = nullptr;
-    AVFrame *avFrame = nullptr;
-    AVFormatContext *avFormatContext{};
-    int trackIndex = -1;
-    const char *codecType{};
-    int64_t duration{};
-    AVMediaType mediaType{};
-    vector<int> streamIndices{};
-    int currentStreamIndex = -1;
-
-
     void findIndices();
 
 
@@ -158,16 +154,16 @@ public:
 
     virtual ~ BugMediaFFmpegDecoder();
 
-    BugMediaFFmpegDecoder(AVFormatContext *formatContext, int trackIdx);
-
     BugMediaFFmpegDecoder(const char *url, int bufferSize, AVMediaType mediaType);
 
     void startDecode();
 
     int64_t getDuration() const ;
 
+    // 当前解码器为音频解码器时调用
     BugMediaAudioFrame* getAudioFrame();
 
+    // 当前解码器为视频解码器时调用
     BugMediaVideoFrame* getVideoFrame();
 
 
