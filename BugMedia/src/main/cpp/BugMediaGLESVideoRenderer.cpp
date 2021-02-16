@@ -284,7 +284,6 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
     sem_post(&playSem);
 
     // 绘制完毕后释放帧资源
-    delete frame->data;
     delete frame;
 
     return false;

@@ -85,6 +85,10 @@ int64_t BugMediaFFmpegDecoder::getStreamDuration() const {
 
 void BugMediaFFmpegDecoder::openDecoder() {
 
+    if (currentStreamIndex==-1){
+        return;
+    }
+
     AVStream *stream = avFormatContext->streams[currentStreamIndex];
 
     // 流长与总时长不一样
@@ -131,6 +135,10 @@ void BugMediaFFmpegDecoder::findIndices() {
         }
     }
 
+    if (streamIndices.empty()){
+        return;
+    }
+
     currentStreamIndex = streamIndices[0];
 }
 
@@ -165,6 +173,12 @@ void BugMediaFFmpegDecoder::start() {
     duration = avFormatContext->duration * av_q2d(AV_TIME_BASE_Q);
 
     findIndices();
+
+    // 没有当前流，不开启解码过程
+    if (currentStreamIndex==-1){
+        return;
+    }
+
     openDecoder();
 
     // 初始化音频转换需要的组件
@@ -402,7 +416,6 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
         vFrame->height = avFrame->height;
 
         frameQueue.push(vFrame);
-        delete[] bufferFrame->data[0];
         av_frame_unref(bufferFrame);
         sem_post(&this->canTakeData);
 

@@ -32,8 +32,8 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     videoDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_VIDEO);
 
     audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameCallback, this);
-//    videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameCallback, getAudioPtsCallback, this,
-//                                                  env, surface, width, height, createPBufferSurface);
+    videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameCallback, getAudioPtsCallback, this,
+                                                  env, surface, width, height, createPBufferSurface);
 
 }
 
@@ -75,12 +75,12 @@ void BugMediaPlayer::setBufferSize(int size) {
 void BugMediaPlayer::load() {
 
     audioDecoder->startDecode();
-    //videoDecoder->startDecode();
+    videoDecoder->startDecode();
 
     loaded = true;
 
     audioRenderer->render();
-    //videoRenderer->render();
+    videoRenderer->render();
 
 }
 
@@ -141,7 +141,7 @@ int64_t BugMediaPlayer::getAudioPtsCallback(void *ctx) {
 void BugMediaPlayer::play() {
     if (loaded) {
         audioRenderer->play();
-        //videoRenderer->play();
+        videoRenderer->play();
     }
 
 }
@@ -149,7 +149,7 @@ void BugMediaPlayer::play() {
 void BugMediaPlayer::pause() {
     if (loaded) {
         audioRenderer->pause();
-        //videoRenderer->pause();
+        videoRenderer->pause();
     }
 
 
@@ -158,7 +158,7 @@ void BugMediaPlayer::pause() {
 void BugMediaPlayer::stop() {
     if (loaded) {
         audioRenderer->pause();
-        //videoRenderer->pause();
+        videoRenderer->pause();
     }
 
 }
