@@ -234,12 +234,15 @@ bool BugMediaGLESVideoRenderer::renderOnce() {
         audioPts = getAudioPts(callbackContext);
     }
 
-
-
-    set2DTexture0ToShader("texSampler", texId, frame->data, frame->width, frame->height);
     //更新一个unform之前你必须先使用程序（调用glUseProgram)
     // 每次更新设置后都应调用
     useProgram();
+
+//    if(frame->width % 16 != 0){
+//        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//    }
+    set2DTexture0ToShader("texSampler", texId, frame->data, frame->width, frame->height);
+
 
     //
     // 缩放尺寸使图像不变形且居中

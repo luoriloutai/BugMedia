@@ -389,6 +389,8 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
     int imgHeiht = sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avFrame->height, bufferFrame->data,
                              bufferFrame->linesize);
 
+LOGD("啊呜 - 转换后的图像高度:%d",imgHeiht);
+LOGD("啊呜 - 图像数组总长度：%d",bufferFrame->linesize[0]);
 
     if (imgHeiht > 0) {
         auto *vFrame = new BugMediaVideoFrame();
@@ -416,7 +418,7 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
         vFrame->height = avFrame->height;
 
         frameQueue.push(vFrame);
-        av_frame_unref(bufferFrame);
+
         sem_post(&this->canTakeData);
 
 #ifdef DEBUGAPP
