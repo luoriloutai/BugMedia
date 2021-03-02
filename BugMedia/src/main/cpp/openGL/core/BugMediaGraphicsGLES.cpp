@@ -264,6 +264,8 @@ void BugMediaGraphicsGLES::Program::init(BugMediaGraphicsGLES::Shader *vertexSha
             handler = 0;
             throw "绘制程序初始化失败";
         }
+        glDeleteShader(vertexShader->instance());
+        glDeleteShader(fragmentShader->instance());
 #ifdef DEBUGAPP
         LOGD("链接program成功");
 #endif
