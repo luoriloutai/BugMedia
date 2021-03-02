@@ -77,7 +77,7 @@ class BugMediaFFmpegDecoder {
     // 音频编码格式：浮点型数据（32位）
     const AVSampleFormat ENCODE_FORMAT = AV_SAMPLE_FMT_FLTP;
 
-    const AVSampleFormat AUDIO_OUT_SAMPLE_FORMAT = AV_SAMPLE_FMT_S32;
+    const AVSampleFormat AUDIO_OUT_SAMPLE_FORMAT = AV_SAMPLE_FMT_S16;
 
     // 音频采样率
     const int SAMPLE_RATE = 44100;
@@ -111,6 +111,8 @@ class BugMediaFFmpegDecoder {
 
     // 输出缓冲
     uint8_t *videoOutputBuffer{};
+
+    int imageBufferSize{};
 
     // 视频帧转换的缓冲帧
     AVFrame *bufferFrame{};

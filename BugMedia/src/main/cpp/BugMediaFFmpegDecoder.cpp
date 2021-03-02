@@ -61,7 +61,7 @@ BugMediaFFmpegDecoder::~BugMediaFFmpegDecoder() {
     }
 
     if (videoOutputBuffer != nullptr) {
-        free(videoOutputBuffer);
+        av_free(videoOutputBuffer);
         videoOutputBuffer = nullptr;
     }
 
@@ -344,7 +344,8 @@ void BugMediaFFmpegDecoder::convertAudioFrame() {
             avFrame->nb_samples, AUDIO_OUT_SAMPLE_FORMAT, 1);
 
     // 输出缓冲
-    uint8_t *outData = new uint8_t[dataSize]();
+    //uint8_t *outData = new uint8_t[dataSize](); // 经测试，数组大小为 dataSize/sizeof(uint8_t) 也正常，用下面的代替
+    uint8_t *outData = (uint8_t *)malloc(dataSize);
 
     // 音频重采样转换
     int sampleCount = swr_convert(swrContext, &outData, dataSize,
@@ -386,13 +387,23 @@ void BugMediaFFmpegDecoder::convertAudioFrame() {
 
 void BugMediaFFmpegDecoder::convertVideoFrame() {
     // 转换YUV为RGBA，存储到缓冲帧
-    int imgHeiht = sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avFrame->height, bufferFrame->data,
-                             bufferFrame->linesize);
+    int imgHeight = sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avFrame->height, bufferFrame->data,
+                              bufferFrame->linesize);
+#ifdef DEBUGAPP
+    static int counter=0;
+    counter++;
+    if(counter<=1){
+        LOGD("啊呜 - 转换后的图像高度:%d", imgHeight); // 360,360行，每行1920字节
+        LOGD("啊呜 - data[0]长度：%d",bufferFrame->linesize[0]); // 1920=480*4 width=480 rgba 4字节
+        LOGD("啊呜 - data[1]长度：%d",bufferFrame->linesize[1]);
+        LOGD("啊呜 - data[2]长度：%d",bufferFrame->linesize[2]);
+        LOGD("啊呜 - data[0]是否为空：%s",bufferFrame->data[0]==nullptr?"是":"否"); // rgba 不为空
+        LOGD("啊呜 - data[1]是否为空：%s",bufferFrame->data[1]==nullptr?"是":"否"); // rgba 为空
+    }
 
-LOGD("啊呜 - 转换后的图像高度:%d",imgHeiht);
-LOGD("啊呜 - 图像数组总长度：%d",bufferFrame->linesize[0]);
+#endif
 
-    if (imgHeiht > 0) {
+    if (imgHeight > 0) {
         auto *vFrame = new BugMediaVideoFrame();
         vFrame->isKeyframe = avFrame->key_frame == 1;
 
@@ -403,11 +414,10 @@ LOGD("啊呜 - 图像数组总长度：%d",bufferFrame->linesize[0]);
         // pts*av_q2d(time_base)就是这个值的最终表示，单位为秒
         vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[currentStreamIndex]->time_base) * 1000;
 
-
-        // 以下两字段用缓冲里的数据
-        int bufSize = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avFrame->width, avFrame->height, 1);
-        uint8_t *rgb = new uint8_t[bufSize];
-        memcpy(rgb, bufferFrame->data[0], bufSize);
+        // imageBufferSize:691200 = 360*(480*4)
+        //uint8_t *rgb = new uint8_t[imageBufferSize/sizeof(uint_8)];
+        uint8_t *rgb = (uint8_t*)malloc(imageBufferSize);
+        memcpy(rgb, bufferFrame->data[0], imageBufferSize);
         vFrame->data = rgb;
         vFrame->lineSize = bufferFrame->linesize[0];
 
@@ -453,10 +463,10 @@ void BugMediaFFmpegDecoder::initSwsContext() {
 }
 
 void BugMediaFFmpegDecoder::initVideoOutputBuffer() {
-    // 音频输出缓冲
+    // 视频输出缓冲
 
-    int nums = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avCodecContext->width, avCodecContext->height, 1);
-    videoOutputBuffer = (uint8_t *) av_malloc(nums * sizeof(uint8_t));
+    imageBufferSize = av_image_get_buffer_size(VIDEO_OUT_FORMAT, avCodecContext->width, avCodecContext->height, 1);
+    videoOutputBuffer = (uint8_t *) av_malloc(imageBufferSize);
     bufferFrame = av_frame_alloc();
     av_image_fill_arrays(bufferFrame->data, bufferFrame->linesize, videoOutputBuffer, VIDEO_OUT_FORMAT,
                          avCodecContext->width,
