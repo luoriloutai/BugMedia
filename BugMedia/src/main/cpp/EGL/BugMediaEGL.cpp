@@ -40,10 +40,6 @@ void BugMediaEGL::release() {
         eglDestroySurface(display, PBufferSurface);
         PBufferSurface = EGL_NO_SURFACE;
     }
-    if (window != nullptr) {
-        ANativeWindow_release(window);
-        window = nullptr;
-    }
     if (display != EGL_NO_DISPLAY && context != EGL_NO_CONTEXT) {
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroyContext(display, context);
