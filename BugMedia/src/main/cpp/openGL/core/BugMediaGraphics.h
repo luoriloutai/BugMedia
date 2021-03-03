@@ -33,7 +33,7 @@ class BugMediaGraphics {
 public:
     BugMediaGraphics();
 
-    void setWindowSurface(JNIEnv *env, jobject jSurface);
+    void setWindowSurface(JavaVM *jVM, jobject jSurface);
 
     void setPBufferSurface(EGLint width, EGLint height);
 

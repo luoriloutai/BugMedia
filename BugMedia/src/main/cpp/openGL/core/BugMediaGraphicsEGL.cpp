@@ -110,12 +110,14 @@ void BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
 }
 
 // 只有windowSurface可以显示
-void BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) {
+void BugMediaGraphicsEGL::setWindowSurface(JavaVM *jVM, jobject jSurface) {
     surfaceType = WINDOW_SURFACE;
     // 这里只创建window，供创建绘制Surface使用。Surface要在绘制线程里创建，
     // context当中包含了绘制所需的数据，所谓的绑定到线程不过就是让线程知道从哪取数据，从context中取，
     // 在Surface里绘制,EGLSurface必须要在线程里创建，创建之后可用于绑定至线程
-    window = ANativeWindow_fromSurface(env, jSurface);
+    //window = ANativeWindow_fromSurface(env, jSurface);
+    javaVm = jVM;
+    surface = jSurface;
 }
 
 void BugMediaGraphicsEGL::release() {
@@ -177,6 +179,9 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
 #endif
     //windowSurface
     if (surfaceType == WINDOW_SURFACE) {
+        JNIEnv *env;
+        javaVm->AttachCurrentThread(&env, nullptr);
+        window = ANativeWindow_fromSurface(env,surface);
         EGLint format;
         if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
             LOGE("eglGetConfigAttrib() returned error %d", eglGetError());
@@ -196,7 +201,7 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
         LOGD("context是否为空 %s", context == nullptr ? "是" : "否");
 #endif
         if (!eglMakeCurrent(display, windowSurface, windowSurface, context)) {
-            LOGE("eglMakeCurrent() error:%s\n", eglGetError());
+            LOGE("eglMakeCurrent() error:%d\n", eglGetError());
             return EGL_FALSE;
         }
 

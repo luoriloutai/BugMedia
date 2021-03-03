@@ -214,6 +214,6 @@ BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLi
     this->width = width;
     this->height = height;
 
-    setWindowSurface(env,surface);
+    //setWindowSurface(env,surface);
 
 }

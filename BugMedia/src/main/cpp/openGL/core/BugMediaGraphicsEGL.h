@@ -27,7 +27,7 @@ class BugMediaGraphicsEGL {
 public:
     BugMediaGraphicsEGL();
 
-    void setWindowSurface(JNIEnv *env, jobject jSurface);
+    void setWindowSurface(JavaVM *jVM, jobject jSurface);
 
     void setPBufferSurface(EGLint width, EGLint height);
 
@@ -61,6 +61,8 @@ private:
     surfaceTypeEnum surfaceType;
     EGLint viewWidth;
     EGLint viewHeight;
+    JavaVM *javaVm{};
+    jobject surface{};
 
 };
 

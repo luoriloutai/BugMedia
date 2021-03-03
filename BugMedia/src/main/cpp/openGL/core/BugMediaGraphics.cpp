@@ -22,8 +22,8 @@ BugMediaGraphics::BugMediaGraphics() {
 }
 
 
-void BugMediaGraphics::setWindowSurface(JNIEnv *env, jobject jSurface) {
-    pEGL->setWindowSurface(env, jSurface);
+void BugMediaGraphics::setWindowSurface(JavaVM *jVM, jobject jSurface) {
+    pEGL->setWindowSurface(jVM, jSurface);
 }
 
 void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
@@ -91,10 +91,10 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 
     auto *graphics = (BugMediaGraphics *) pVoid;
 
-    graphics->pEGL->init();
-    graphics->pEGL->makeCurrent();
-    graphics->pGLES->init();
-    graphics->pGLES->activeProgram();
+//    graphics->pEGL->init();
+//    graphics->pEGL->makeCurrent();
+//    graphics->pGLES->init();
+//    graphics->pGLES->activeProgram();
 
     // 虚方法
     graphics->onRender();
