@@ -414,7 +414,7 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
         vFrame->pts = avFrame->pts * av_q2d(avFormatContext->streams[currentStreamIndex]->time_base) * 1000;
 
         // imageBufferSize:691200 = 360*(480*4)
-        //uint8_t *rgb = new uint8_t[imageBufferSize/sizeof(uint_8)];
+
         uint8_t *rgb = (uint8_t *) malloc(imageBufferSize);
         memcpy(rgb, bufferFrame->data[0], imageBufferSize);
         vFrame->data = rgb;
