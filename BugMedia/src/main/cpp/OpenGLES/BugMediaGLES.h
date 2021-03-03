@@ -23,21 +23,6 @@ extern "C"
 #include "../EGL/BugMediaEGL.h"
 
 class BugMediaGLES {
-//    const GLchar *vertexShaderSource = "attribute vec4 position; \n"
-//                                       "attribute vec2 texcoord; \n"
-//                                       "varying vec2 v_texcoord; \n"
-//                                       "void main(void) \n"
-//                                       "{ \n"
-//                                       " gl_Position =  position; \n"
-//                                       " v_texcoord = texcoord; \n"
-//                                       "} \n";
-//    const GLchar *fragmentShaderSource = "precision highp float; \n"
-//                                         "varying highp vec2 v_texcoord; \n"
-//                                         "uniform sampler2D texSampler; \n"
-//                                         "void main() { \n"
-//                                         " gl_FragColor = texture2D(texSampler, v_texcoord); \n"
-//                                         "} \n";
-
 
     GLuint glProgram{};
     pthread_t renderThread{};
