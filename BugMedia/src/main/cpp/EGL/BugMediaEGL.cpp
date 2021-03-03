@@ -140,12 +140,14 @@ BugMediaEGL::BugMediaEGL(ANativeWindow *nativeWindow) {
     window = nativeWindow;
 }
 
+BugMediaEGL::BugMediaEGL() = default;
+
 BugMediaEGL::~BugMediaEGL() {
     release();
 }
 
-EGLBoolean BugMediaEGL::createDefaultWindowSurface(ANativeWindow *nativeWindow) {
-    windowSurface = createWindowSurface(nativeWindow);
+EGLBoolean BugMediaEGL::createDefaultWindowSurface() {
+    windowSurface = createWindowSurface(window);
     if (windowSurface == nullptr) {
         return EGL_FALSE;
     }
@@ -171,5 +173,7 @@ EGLBoolean BugMediaEGL::makeDefaultPBufferSurfaceCurrent() {
 EGLBoolean BugMediaEGL::swapDefaultBuffers() {
     return swapBuffers(windowSurface);
 }
+
+
 
 

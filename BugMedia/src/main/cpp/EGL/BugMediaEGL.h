@@ -26,7 +26,12 @@ class BugMediaEGL {
     EGLSurface PBufferSurface{};
     EGLBoolean isRelease= false;
 public:
+    // 使用自己控制的窗口、WindowSurface
+    BugMediaEGL();
+
+    // 使用默认窗口、默认WindowSurface
     BugMediaEGL(ANativeWindow* nativeWindow);
+
     ~BugMediaEGL();
 
     EGLBoolean init(EGLContext sharedContext);
@@ -35,7 +40,7 @@ public:
 
     // 类内部提供一个WindowSurface
     // 创建默认的WindowSurface
-    EGLBoolean createDefaultWindowSurface(ANativeWindow* nativeWindow);
+    EGLBoolean createDefaultWindowSurface();
 
     // 类内部提供一个PBufferSurface
     // 创建默认的PBufferSurface
