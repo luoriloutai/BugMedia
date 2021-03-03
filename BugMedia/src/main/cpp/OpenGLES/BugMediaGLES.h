@@ -26,7 +26,6 @@ class BugMediaGLES {
 
     GLuint glProgram{};
     pthread_t renderThread{};
-    BugMediaEGL *pEGL{};
     GLsizei width{};
     GLsizei height{};
     GLint x{};
@@ -50,6 +49,9 @@ class BugMediaGLES {
 
     GLboolean init();
 
+protected:
+    BugMediaEGL *pEGL{};
+
 public:
     BugMediaGLES(ANativeWindow* nativeWindow);
 
@@ -60,12 +62,6 @@ public:
     void useProgram() const;
 
     GLuint getProgram() const;
-
-    EGLBoolean swapDefaultBuffers();
-
-    EGLBoolean unmakeCurrent();
-
-    EGLBoolean makeDefaultWindowSurfaceCurrent();
 
     void resizeView(GLint x, GLint y, GLsizei width, GLsizei height);
 

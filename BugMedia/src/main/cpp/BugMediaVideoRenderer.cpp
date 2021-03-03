@@ -45,7 +45,7 @@ const GLchar *BugMediaVideoRenderer::getFragmentShaderSource() {
 }
 
 void BugMediaVideoRenderer::onRender() {
-    makeDefaultWindowSurfaceCurrent();
+    pEGL->makeDefaultWindowSurfaceCurrent();
     useProgram();
     prepare();
 
@@ -167,7 +167,7 @@ GLboolean BugMediaVideoRenderer::renderOnce() {
                  GL_UNSIGNED_BYTE, frame->data);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    swapDefaultBuffers();
+    pEGL->swapDefaultBuffers();
 
     sem_post(&playSem);
 
