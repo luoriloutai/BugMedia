@@ -222,7 +222,7 @@ Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, j
                                                     jboolean createPBufferSurface) {
     player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr),
                                 decoderBufferSize, env,
-                                surface, width, height, createPBufferSurface);
+                                surface, width, height);
 
 }
 

@@ -17,7 +17,8 @@ extern "C" {
 #include "BugMediaGLESVideoRenderer.h"
 #include "BugMediaFFmpegDecoder.h"
 #include <queue>
-
+#include "BugMediaVideoRenderer.h"
+#include <android/native_window_jni.h>
 
 using namespace std;
 
@@ -32,7 +33,8 @@ class BugMediaPlayer {
     BugMediaFFmpegDecoder *videoDecoder{};
     int64_t audioPts{};
     BugMediaSLESAudioRenderer *audioRenderer{};
-    BugMediaGLESVideoRenderer *videoRenderer{};
+    //BugMediaGLESVideoRenderer *videoRenderer{};
+    BugMediaVideoRenderer *videoRenderer{};
     int duration{};
     JNIEnv *env{}; // 需要在线程内获取
     jobject surface{};
@@ -41,6 +43,7 @@ class BugMediaPlayer {
     bool createPBufferSurface{};
     bool loaded = false;
     JavaVM *javaVm{};
+    ANativeWindow *nativeWindow{};
 
 
     static BugMediaAudioFrame *getAudioFrameCallback(void *ctx);
@@ -57,7 +60,7 @@ public:
     static const int DEFAULT_BUFFER_SIZE = 10;
 
     BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
-                   jobject surface, EGLint width, EGLint height, bool createPBufferSurface);
+                   jobject surface, EGLint width, EGLint height);
 
     BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface);
 

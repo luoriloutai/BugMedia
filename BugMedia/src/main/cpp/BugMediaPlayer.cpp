@@ -9,7 +9,7 @@
 #define DEBUGAPP
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
-                               jobject surface, EGLint width, EGLint height, bool createPBufferSurface) {
+                               jobject surface, EGLint width, EGLint height) {
 
     // 由于JNIEnv是与线程关联的，不同线程之间不能互相访问
     // 而程序内创建渲染器是在另一个线程中进行的
@@ -32,13 +32,16 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     videoDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_VIDEO);
 
     audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameCallback, this);
-    videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameCallback, getAudioPtsCallback, this,
-                                                  env, surface, width, height, createPBufferSurface);
+//    videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameCallback, getAudioPtsCallback, this,
+//                                                  env, surface, width, height, createPBufferSurface);
+
+    nativeWindow = ANativeWindow_fromSurface(env, surface);
+    videoRenderer = new BugMediaVideoRenderer(nativeWindow,getVideoFrameCallback, getAudioPtsCallback, this);
 
 }
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface)
-        : BugMediaPlayer(url, bufferSize, env, surface, 0, 0, false) {
+        : BugMediaPlayer(url, bufferSize, env, surface, 0, 0) {
 
 }
 
@@ -62,6 +65,8 @@ void BugMediaPlayer::release() {
         audioRenderer = nullptr;
         delete videoRenderer;
         videoRenderer = nullptr;
+
+        ANativeWindow_release(nativeWindow);
 
         env->DeleteGlobalRef(surface);
     }

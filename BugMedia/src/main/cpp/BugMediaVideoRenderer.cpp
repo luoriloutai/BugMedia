@@ -4,8 +4,14 @@
 
 #include "BugMediaVideoRenderer.h"
 
-BugMediaVideoRenderer::BugMediaVideoRenderer(ANativeWindow *window) : BugMediaGLES(window) {
+#define DEBUGAPP
 
+BugMediaVideoRenderer::BugMediaVideoRenderer(ANativeWindow *window, GetVideoFrameCallback getVideoFrameCallback,
+                                             GetAudioPtsCallback getAudioPtsCallback, void *callbackContext)
+        : BugMediaGLES(window) {
+    this->getVideoFrame = getVideoFrameCallback;
+    this->getAudioPts = getAudioPtsCallback;
+    this->callbackContext = callbackContext;
 }
 
 BugMediaVideoRenderer::~BugMediaVideoRenderer() {
@@ -39,6 +45,8 @@ const GLchar *BugMediaVideoRenderer::getFragmentShaderSource() {
 }
 
 void BugMediaVideoRenderer::onRender() {
+    makeDefaultWindowSurfaceCurrent();
+
     prepare();
 
     while (true) {
@@ -63,15 +71,14 @@ void BugMediaVideoRenderer::onRender() {
     }
 
     //
-    // 释放资源，EGL资源不能跨线程释放，所以析构函数里不能调用释放方法
+    // 释放资源，EGL资源不能跨线程释放，所以析构函数里不能直接调用释放方法
     //
-
-    release();
-}
-
-void BugMediaVideoRenderer::release() {
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, &texture);
 
 }
+
+
 
 void BugMediaVideoRenderer::prepare() {
     // 顶点坐标，以物体中心为原点
@@ -97,11 +104,29 @@ void BugMediaVideoRenderer::prepare() {
                               0.0f, 0.0f,
                               1.0f, 0.0f};
 
+    GLuint positionLoc = glGetAttribLocation(getProgram(), "position");
+    GLuint texcoordLoc = glGetAttribLocation(getProgram(), "texcoord");
+    GLuint texSamplerLoc = glGetUniformLocation(getProgram(), "texSampler");
+
+    glVertexAttribPointer(positionLoc, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(texcoordLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
+    glEnableVertexAttribArray(texcoordLoc);
+
+
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0); // 纹理单元 texture0 默认是激活的,这句代码可以不要
+    glBindTexture(GL_TEXTURE_2D, texture); // 绑定之前需要先激活纹理单元
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // 缩小参数设置
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // 放大参数设置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // 纹理S方向的参数，拉伸、重复等
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // 纹理T方向的参数
+    glUniform1i(texSamplerLoc, 0); // 指明采样器连接到哪个纹理单元，从该纹理单元采样
 
 }
 
 GLboolean BugMediaVideoRenderer::renderOnce() {
-
+//    glViewport(0, 0, 500, 300);
     // 获取帧
 
     if (getVideoFrame == nullptr) {
@@ -137,6 +162,7 @@ GLboolean BugMediaVideoRenderer::renderOnce() {
 #endif
         av_usleep(delay * 1000);  // 微秒,delay是毫秒
     }
+
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame->width, frame->height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, frame->data);

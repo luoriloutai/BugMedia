@@ -22,6 +22,7 @@ class BugMediaVideoRenderer : public virtual BugMediaGLES {
     int64_t videoPts{};
     int64_t audioPts{};
     int64_t delay{};
+    GLuint texture{};
 
     const GLchar *getVertexShaderSource();
 
@@ -34,14 +35,14 @@ class BugMediaVideoRenderer : public virtual BugMediaGLES {
 
     void prepare();
 
-    void release();
 
 public:
     typedef BugMediaVideoFrame *(*GetVideoFrameCallback)(void *ctx);
 
     typedef int64_t (*GetAudioPtsCallback)(void *ctx);
 
-    BugMediaVideoRenderer(ANativeWindow *window);
+    BugMediaVideoRenderer(ANativeWindow *window,GetVideoFrameCallback getVideoFrameCallback,
+                          GetAudioPtsCallback getAudioPtsCallback, void *callbackContext);
 
     ~BugMediaVideoRenderer();
 

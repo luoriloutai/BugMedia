@@ -127,3 +127,17 @@ EGLBoolean BugMediaGLES::swapDefaultBuffers() {
 EGLBoolean BugMediaGLES::unmakeCurrent() {
     return pEGL->unmakeCurrent();
 }
+
+void BugMediaGLES::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
+//    this->x = x;
+//    this->y = y;
+//    this->width = width;
+//    this->height = height;
+//    pEGL->makeDefaultWindowSurfaceCurrent();
+    glViewport(x,y,width,height);
+//    pEGL->unmakeCurrent();
+}
+
+EGLBoolean BugMediaGLES::makeDefaultWindowSurfaceCurrent() {
+    return pEGL->makeDefaultWindowSurfaceCurrent();
+}
