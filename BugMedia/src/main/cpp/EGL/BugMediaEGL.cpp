@@ -3,7 +3,7 @@
 //
 
 #include "BugMediaEGL.h"
-#include "../BugMediaPublicDefine.h"
+#include "../BugMediaCommon.h"
 
 EGLSurface BugMediaEGL::createWindowSurface(ANativeWindow *nativeWindow) {
 
@@ -70,8 +70,8 @@ EGLBoolean BugMediaEGL::swapBuffers(EGLSurface eglSurface) {
     return eglSwapBuffers(display, eglSurface);
 }
 
-void BugMediaEGL::unmakeCurrent() {
-    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+EGLBoolean BugMediaEGL::unmakeCurrent() {
+   return eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
 void BugMediaEGL::destroySurface(EGLSurface eglSurface) {

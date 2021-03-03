@@ -60,7 +60,7 @@ public:
 
     EGLBoolean makeCurrent(EGLSurface eglSurface);
 
-    void unmakeCurrent();
+    EGLBoolean unmakeCurrent();
 
     EGLBoolean swapBuffers(EGLSurface eglSurface);
 

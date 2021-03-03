@@ -3,7 +3,7 @@
 //
 
 #include "BugMediaGLES.h"
-#include "../BugMediaPublicDefine.h"
+#include "../BugMediaCommon.h"
 
 
 BugMediaGLES::BugMediaGLES(ANativeWindow *nativeWindow) {
@@ -117,4 +117,13 @@ void BugMediaGLES::execRender() {
     pEGL->makeDefaultWindowSurfaceCurrent();
     useProgram();
     onRender();
+    pEGL->unmakeCurrent();
+}
+
+EGLBoolean BugMediaGLES::swapDefaultBuffers() {
+    return pEGL->swapDefaultBuffers();
+}
+
+EGLBoolean BugMediaGLES::unmakeCurrent() {
+    return pEGL->unmakeCurrent();
 }

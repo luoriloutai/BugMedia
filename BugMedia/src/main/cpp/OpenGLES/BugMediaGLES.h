@@ -56,6 +56,10 @@ public:
 
     GLuint getProgram() const;
 
+    EGLBoolean swapDefaultBuffers();
+
+    EGLBoolean unmakeCurrent();
+
 };
 
 
