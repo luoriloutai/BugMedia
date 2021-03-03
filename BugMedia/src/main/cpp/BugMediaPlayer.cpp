@@ -26,7 +26,7 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     this->url = url;
     this->width = width;
     this->height = height;
-    this->createPBufferSurface = createPBufferSurface;
+
 
     audioDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_AUDIO);
     videoDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_VIDEO);

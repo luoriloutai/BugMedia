@@ -46,7 +46,7 @@ const GLchar *BugMediaVideoRenderer::getFragmentShaderSource() {
 
 void BugMediaVideoRenderer::onRender() {
     makeDefaultWindowSurfaceCurrent();
-
+    useProgram();
     prepare();
 
     while (true) {
@@ -79,7 +79,6 @@ void BugMediaVideoRenderer::onRender() {
 }
 
 
-
 void BugMediaVideoRenderer::prepare() {
     // 顶点坐标，以物体中心为原点
     GLfloat vertices[] = {-1.0f, -1.0f,
@@ -110,7 +109,7 @@ void BugMediaVideoRenderer::prepare() {
 
     glVertexAttribPointer(positionLoc, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(positionLoc);
-    glVertexAttribPointer(texcoordLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
+    glVertexAttribPointer(texcoordLoc, 2, GL_FLOAT, GL_FALSE, 0, screenCoords);
     glEnableVertexAttribArray(texcoordLoc);
 
 

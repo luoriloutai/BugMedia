@@ -40,7 +40,6 @@ class BugMediaPlayer {
     jobject surface{};
     EGLint width{};
     EGLint height{};
-    bool createPBufferSurface{};
     bool loaded = false;
     JavaVM *javaVm{};
     ANativeWindow *nativeWindow{};
