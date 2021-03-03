@@ -388,19 +388,7 @@ void BugMediaFFmpegDecoder::convertVideoFrame() {
     // 转换YUV为RGBA，存储到缓冲帧
     int imgHeight = sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avFrame->height, bufferFrame->data,
                               bufferFrame->linesize);
-#ifdef DEBUGAPP
-    static int counter = 0;
-    counter++;
-    if (counter <= 1) {
-        LOGD("啊呜 - 转换后的图像高度:%d", imgHeight); // 360,360行，每行1920字节
-        LOGD("啊呜 - data[0]长度：%d", bufferFrame->linesize[0]); // 1920=480*4 width=480 rgba 4字节
-        LOGD("啊呜 - data[1]长度：%d", bufferFrame->linesize[1]);
-        LOGD("啊呜 - data[2]长度：%d", bufferFrame->linesize[2]);
-        LOGD("啊呜 - data[0]是否为空：%s", bufferFrame->data[0] == nullptr ? "是" : "否"); // rgba 不为空
-        LOGD("啊呜 - data[1]是否为空：%s", bufferFrame->data[1] == nullptr ? "是" : "否"); // rgba 为空
-    }
 
-#endif
 
     if (imgHeight > 0) {
         auto *vFrame = new BugMediaVideoFrame();
