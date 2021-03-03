@@ -1,16 +1,13 @@
 //
-// Created by Gshine on 2021/1/26.
+// Created by Gshine on 2021/2/4.
 //
 
-#ifndef SLOWER_BUGMEDIAGRAPHICSCOMMON_H
-#define SLOWER_BUGMEDIAGRAPHICSCOMMON_H
-
-//  #define DEBUGAPP
-
-
+#ifndef SLOWER_BUGMEDIACOMMON_H
+#define SLOWER_BUGMEDIACOMMON_H
 #include <android/log.h>
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
+#include <linux/time.h>
+#include <cstdint>
+#include <sys/time.h>
 
 #ifndef BUGMEDIAlOG
 #define BUGMEDIAlOG
@@ -20,11 +17,15 @@
 #define  LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG,__VA_ARGS__)
 #define  LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG,__VA_ARGS__)
 
+
+
 #endif
 
-enum surfaceTypeEnum {
-    NO_SURFACE, WINDOW_SURFACE, PBUFFER_SURFACE
+
+enum State {
+    UNSTART,STOP, PLAYING, PAUSE
 };
 
+int64_t getCurMsTime();
 
-#endif //SLOWER_BUGMEDIAGRAPHICSCOMMON_H
+#endif //SLOWER_BUGMEDIACOMMON_H

@@ -10,6 +10,8 @@
 using namespace std;
 
 BugMediaGraphics::BugMediaGraphics() {
+    isRelease = false;
+    drawThread = 0;
 
     // 由于绘图对象都要求在同一线程中，
     // 所以设计时构造函数里只初始化与绘图对象无关的对象，
@@ -29,7 +31,7 @@ void BugMediaGraphics::setPBufferSurface(EGLint width, EGLint height) {
 }
 
 
-void BugMediaGraphics::draw() {
+void BugMediaGraphics::render() {
     // 虚方法
     setShaderSource(); // 该方法初始化了Shader中的代码数据，并没有真正创建Shader。初始化在init()里。
     //
@@ -44,10 +46,10 @@ void BugMediaGraphics::draw() {
     //    //
     //    // C++11的thread，使用内部匿名线程（lambda表达式），同样不能在线程内初始化EGL，作废
     //    thread tDrawThread([this]{
-    //        pEGL->init();
+    //        pEGL->loadStart();
     //        pEGL->makeCurrent();
     //
-    //        pGLES->init();
+    //        pGLES->loadStart();
     //        pGLES->activeProgram();
     //        // 虚方法
     //        prepareDraw();
@@ -95,7 +97,7 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
     graphics->pGLES->activeProgram();
 
     // 虚方法
-    graphics->startDraw();
+    graphics->onRender();
 
 #ifdef DEBUGAPP
     LOGD("绘制结束");
@@ -106,9 +108,9 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 //////
 //// 使用C++11的thread时，EGL不能在线程函数里初始化，作废
 //void BugMediaGraphics::drawingThreadFun(BugMediaGraphics *graphics) {
-//    graphics->pEGL->init();
+//    graphics->pEGL->loadStart();
 //    graphics->pEGL->makeCurrent();
-//    graphics->pGLES->init();
+//    graphics->pGLES->loadStart();
 //    graphics->pGLES->activeProgram();
 //    // 虚方法，不频繁变化的配置
 //    graphics->prepareDraw();
@@ -119,7 +121,7 @@ void *BugMediaGraphics::drawBackground(void *pVoid) {
 //}
 
 void BugMediaGraphics::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
-    pEGL->resizeView(x,y,width,height);
+    pEGL->resizeView(x, y, width, height);
 }
 
 void BugMediaGraphics::swapBuffers() {
@@ -145,22 +147,6 @@ GLuint BugMediaGraphics::getProgram() {
     return pGLES->getProgram();
 }
 
-GLuint BugMediaGraphics::set2DTexture0(const GLchar *uniformTexSamplerName, uint8_t *data, GLint width, GLint height) {
-    GLuint textureId = -1;
-    glGenTextures(1, &textureId);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    // 给纹理对象设置数据
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    GLuint samplerId = glGetUniformLocation(pGLES->getProgram(), uniformTexSamplerName);
-    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
-    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
-    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
-    glUniform1i(samplerId, 0);
-
-
-    return textureId;
-}
 
 void BugMediaGraphics::unbind2DTexture0(GLuint *texLocation) {
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -177,6 +163,23 @@ EGLint BugMediaGraphics::getViewWidth() {
 
 EGLint BugMediaGraphics::getViewHeight() {
     return pEGL->getViewHeight();
+}
+
+void BugMediaGraphics::create2DTexture0(GLuint *textureHandler) {
+    glGenTextures(1, textureHandler);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, *textureHandler);
+}
+
+void BugMediaGraphics::set2DTexture0ToShader(const GLchar *uniformTexSamplerName, GLuint textureHandler, uint8_t *data,
+                                             GLint width, GLint height) {
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    GLuint samplerId = glGetUniformLocation(pGLES->getProgram(), uniformTexSamplerName);
+    // 将激活的纹理单元传送到着色器中,相当于给着色器中的sampler赋值。
+    // 第二个参数表示激活的是哪个纹理单元，这取决于前面glActiveTexture()参数，
+    // GL_TEXTURE[n]后面的数字就是第二个参数的值。
+    glUniform1i(samplerId, 0);
 }
 
 

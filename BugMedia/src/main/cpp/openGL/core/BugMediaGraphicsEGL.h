@@ -40,23 +40,27 @@ public:
     ~BugMediaGraphicsEGL();
 
     void init();
+
     EGLBoolean init(EGLContext sharedContext);
-    EGLint getViewWidth();
-    EGLint getViewHeight();
+
+    EGLint getViewWidth() const;
+
+    EGLint getViewHeight() const;
+
     void resizeView(EGLint x, EGLint y, EGLint width, EGLint height);
 
 private:
-    EGLDisplay display = EGL_NO_DISPLAY;
-    EGLConfig config = NULL;
-    EGLContext context = EGL_NO_CONTEXT;
-    EGLSurface windowSurface = EGL_NO_SURFACE;
-    EGLSurface PBufferSurface = EGL_NO_SURFACE;
-    ANativeWindow *window = NULL;
-    EGLBoolean isRelease = EGL_FALSE;
+    EGLDisplay display;
+    EGLConfig config;
+    EGLContext context;
+    EGLSurface windowSurface;
+    EGLSurface PBufferSurface;
+    ANativeWindow *window;
+    EGLBoolean isRelease;
 
-    surfaceTypeEnum surfaceType=NO_SURFACE;
-    EGLint viewWidth = 0;
-    EGLint viewHeight = 0;
+    surfaceTypeEnum surfaceType;
+    EGLint viewWidth;
+    EGLint viewHeight;
 
 };
 

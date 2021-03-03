@@ -19,7 +19,17 @@ extern "C"
 #include <android/native_window_jni.h>
 
 BugMediaGraphicsEGL::BugMediaGraphicsEGL() {
+    display = EGL_NO_DISPLAY;
+    config = nullptr;
+    context = EGL_NO_CONTEXT;
+    windowSurface = EGL_NO_SURFACE;
+    PBufferSurface = EGL_NO_SURFACE;
+    window = nullptr;
+    isRelease = EGL_FALSE;
 
+    surfaceType = NO_SURFACE;
+    viewWidth = 0;
+    viewHeight = 0;
 }
 
 EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
@@ -35,7 +45,7 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
 
     }
 
-    EGLBoolean ok = eglInitialize(display, NULL, NULL);
+    EGLBoolean ok = eglInitialize(display, nullptr, nullptr);
     if (!ok) {
 #ifdef DEBUGAPP
         LOGE("eglInitialize error:%d\n", eglGetError());
@@ -69,7 +79,7 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
     }
 
 
-    if (config == NULL) {
+    if (config == nullptr) {
 #ifdef DEBUGAPP
         LOGE("选择配置失败：%d\n", eglGetError());
 #endif
@@ -80,7 +90,7 @@ EGLBoolean BugMediaGraphicsEGL::init(EGLContext sharedContext) {
             EGL_CONTEXT_CLIENT_VERSION, 2,
             EGL_NONE};
 
-    if (!(context = eglCreateContext(display, config, NULL == sharedContext ? EGL_NO_CONTEXT : sharedContext,
+    if (!(context = eglCreateContext(display, config, nullptr == sharedContext ? EGL_NO_CONTEXT : sharedContext,
                                      contextAttribs))) {
 #ifdef DEBUGAPP
         LOGE("eglCreateContext() returned error %d", eglGetError());
@@ -101,13 +111,11 @@ void BugMediaGraphicsEGL::setPBufferSurface(EGLint width, EGLint height) {
 
 // 只有windowSurface可以显示
 void BugMediaGraphicsEGL::setWindowSurface(JNIEnv *env, jobject jSurface) {
-
     surfaceType = WINDOW_SURFACE;
     // 这里只创建window，供创建绘制Surface使用。Surface要在绘制线程里创建，
     // context当中包含了绘制所需的数据，所谓的绑定到线程不过就是让线程知道从哪取数据，从context中取，
     // 在Surface里绘制,EGLSurface必须要在线程里创建，创建之后可用于绑定至线程
     window = ANativeWindow_fromSurface(env, jSurface);
-
 }
 
 void BugMediaGraphicsEGL::release() {
@@ -125,9 +133,9 @@ void BugMediaGraphicsEGL::release() {
             PBufferSurface = EGL_NO_SURFACE;
         }
         eglDestroyContext(display, context);
-        if (window != NULL) {
+        if (window != nullptr) {
             ANativeWindow_release(window);
-            window = NULL;
+            window = nullptr;
         }
         eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
@@ -157,7 +165,7 @@ EGLBoolean BugMediaGraphicsEGL::swapBuffers() {
 void BugMediaGraphicsEGL::init() {
 
 // 所有环境相关的东西都应该在同一个线程创建
-    if (!init(NULL)) {
+    if (!init(nullptr)) {
         LOGE("初始化环境失败");
     }
 
@@ -175,7 +183,7 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
             return EGL_FALSE;
         }
 #ifdef DEBUGAPP
-        LOGD("makeCurrent()之前的Surface是否为空: %s", windowSurface == NULL ? "是" : "否");
+        LOGD("makeCurrent()之前的Surface是否为空: %s", windowSurface == nullptr ? "是" : "否");
 #endif
         ANativeWindow_setBuffersGeometry(window, 0, 0, format);
         if (!(windowSurface = eglCreateWindowSurface(display, config, window, 0))) {
@@ -183,9 +191,9 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
             return EGL_FALSE;
         }
 #ifdef DEBUGAPP
-        LOGD("执行Surface创建，是否为空:%s", windowSurface == NULL ? "是" : "否");
-        LOGD("display是否为空 %s", display == NULL ? "是" : "否");
-        LOGD("context是否为空 %s", context == NULL ? "是" : "否");
+        LOGD("执行Surface创建，是否为空:%s", windowSurface == nullptr ? "是" : "否");
+        LOGD("display是否为空 %s", display == nullptr ? "是" : "否");
+        LOGD("context是否为空 %s", context == nullptr ? "是" : "否");
 #endif
         if (!eglMakeCurrent(display, windowSurface, windowSurface, context)) {
             LOGE("eglMakeCurrent() error:%s\n", eglGetError());
@@ -214,11 +222,11 @@ EGLBoolean BugMediaGraphicsEGL::makeCurrent() {
     return EGL_TRUE;
 }
 
-EGLint BugMediaGraphicsEGL::getViewWidth() {
+EGLint BugMediaGraphicsEGL::getViewWidth() const {
     return viewWidth;
 }
 
-EGLint BugMediaGraphicsEGL::getViewHeight() {
+EGLint BugMediaGraphicsEGL::getViewHeight() const {
     return viewHeight;
 }
 

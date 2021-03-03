@@ -66,7 +66,7 @@ void BugMediaPictureRenderer::setShaderSource() {
     setShaderSources(vertextShaderSource, fragShaderSource);
 }
 
-void BugMediaPictureRenderer::startDraw() {
+void BugMediaPictureRenderer::onRender() {
 #ifdef DEBUGAPP
     LOGD("图像绘制开始");
 #endif
@@ -129,7 +129,10 @@ void BugMediaPictureRenderer::startDraw() {
     //
 
     // 用图像数据创建2D纹理
-    GLuint texId = set2DTexture0("texSampler", pixelData, width, height);
+    GLuint texId = -1;
+    create2DTexture0(&texId);
+    set2DTexture0ToShader("texSampler", texId, pixelData, width, height);
+
 
 #ifdef DEBUGAPP
     LOGD("纹理创建完毕");
@@ -156,7 +159,7 @@ void BugMediaPictureRenderer::startDraw() {
     //
     EGLint viewWidth = getViewWidth();
     EGLint viewHeight = getViewHeight();
-    scaleCenter(viewWidth,viewHeight,width,height);
+    scaleCenter(viewWidth, viewHeight, width, height);
 
     //
     // 变换，未实现
@@ -194,9 +197,23 @@ BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLi
     pixelData = data;
     this->width = width;
     this->height = height;
+
 }
+
+
 
 BugMediaPictureRenderer::~BugMediaPictureRenderer() {
     delete[] pixelData;
+
+}
+
+BugMediaPictureRenderer::BugMediaPictureRenderer(uint8_t *data, GLint width, GLint height, JNIEnv *env,jobject surface) {
+
+
+    pixelData = data;
+    this->width = width;
+    this->height = height;
+
+    setWindowSurface(env,surface);
 
 }
