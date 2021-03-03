@@ -32,9 +32,9 @@ class BugMediaGLES {
 
     void execRender();
 
-    virtual GLchar *getVertexShaderSource() = 0;
+    virtual const GLchar *getVertexShaderSource() = 0;
 
-    virtual GLchar *getFragmentShaderSource() = 0;
+    virtual const GLchar *getFragmentShaderSource() = 0;
 
     static GLuint createShader(GLenum type, const GLchar *source);
 
