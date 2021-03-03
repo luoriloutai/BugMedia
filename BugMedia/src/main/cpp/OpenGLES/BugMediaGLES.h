@@ -48,12 +48,12 @@ class BugMediaGLES {
     // 在线程中的渲染，不需要再开启新线程
     virtual void onRender()=0;
 
+    GLboolean init();
+
 public:
     BugMediaGLES(ANativeWindow* nativeWindow);
 
     virtual ~BugMediaGLES();
-
-    GLboolean init();
 
     void render();
 

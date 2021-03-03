@@ -38,6 +38,7 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     nativeWindow = ANativeWindow_fromSurface(env, surface);
     videoRenderer = new BugMediaVideoRenderer(nativeWindow,getVideoFrameCallback, getAudioPtsCallback, this);
 
+
 }
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface)

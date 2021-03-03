@@ -114,10 +114,18 @@ void *BugMediaGLES::renderRoutine(void *pVoid) {
 }
 
 void BugMediaGLES::execRender() {
-    pEGL->makeDefaultWindowSurfaceCurrent();
+    EGLBoolean makeRet = pEGL->makeDefaultWindowSurfaceCurrent();
+    if (!makeRet){
+        LOGE("makeCurrent error");
+        return;
+    }
+    init();
     useProgram();
     onRender();
-    pEGL->unmakeCurrent();
+    makeRet = pEGL->unmakeCurrent();
+    if (!makeRet){
+        LOGE("unmakeCurrent failed");
+    }
 }
 
 EGLBoolean BugMediaGLES::swapDefaultBuffers() {
@@ -134,7 +142,7 @@ void BugMediaGLES::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
 //    this->width = width;
 //    this->height = height;
 //    pEGL->makeDefaultWindowSurfaceCurrent();
-    glViewport(x,y,width,height);
+    //glViewport(x,y,width,height);
 //    pEGL->unmakeCurrent();
 }
 
