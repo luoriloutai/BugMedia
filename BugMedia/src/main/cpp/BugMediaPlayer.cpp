@@ -36,7 +36,7 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
 //                                                  env, surface, width, height, createPBufferSurface);
 
     nativeWindow = ANativeWindow_fromSurface(env, surface);
-    videoRenderer = new BugMediaVideoRenderer(nativeWindow,getVideoFrameCallback, getAudioPtsCallback, this);
+    videoRenderer = new BugMediaVideoRenderer(nativeWindow, getVideoFrameCallback, getAudioPtsCallback, this);
 
 
 }
@@ -68,8 +68,13 @@ void BugMediaPlayer::release() {
         videoRenderer = nullptr;
 
         ANativeWindow_release(nativeWindow);
+        JNIEnv *jniEnv;
+        javaVm->AttachCurrentThread(&jniEnv, nullptr);
+        jniEnv->DeleteGlobalRef(surface);
 
-        env->DeleteGlobalRef(surface);
+        // 下面两句不可调用，会崩溃
+        //javaVm->DetachCurrentThread();
+        //javaVm->DestroyJavaVM();
     }
 
 }

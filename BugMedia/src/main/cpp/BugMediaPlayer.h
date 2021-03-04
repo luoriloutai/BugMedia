@@ -14,7 +14,6 @@ extern "C" {
 #include <semaphore.h>
 #include <vector>
 #include "BugMediaSLESAudioRenderer.h"
-#include "BugMediaGLESVideoRenderer.h"
 #include "BugMediaFFmpegDecoder.h"
 #include <queue>
 #include "BugMediaVideoRenderer.h"
