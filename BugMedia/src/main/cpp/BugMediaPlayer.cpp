@@ -17,10 +17,10 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     // 可以获取JavaVM，它是线程共享的
     // 用它可以为线程分配一个JNIEnv。
     // 当跨线程时使用。
-    env->GetJavaVM(&javaVm);
+    env->GetJavaVM(&javaVm); // 暂时没用，直接创建并使用了ANativeWindow
 
     // 全局引用一个java对象，在其他线程也可以用
-    this->surface = env->NewGlobalRef(surface);
+    this->surface = env->NewGlobalRef(surface); // 暂时没用，直接创建并使用了ANativeWindow
 
     maxBufferSize = decoderBufferSize;
     this->url = url;
