@@ -80,7 +80,7 @@ public class TestVideoRenderer implements GLSurfaceView.Renderer {
         vertextFloatBuffer.put(vertexCoords);
         vertextFloatBuffer.position(0);
 
-        // 纹理坐标，即屏幕坐标，左上角为（0，0）
+        // 屏幕坐标，左上角为（0，0）
         float[] textureCoords = {
                 0f, 1f,
                 1f, 1f,

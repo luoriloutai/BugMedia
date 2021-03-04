@@ -14,13 +14,8 @@
 
 #else
 
-#include "openGL/BugMediaBaseRenderer.h"
 #include <jni.h>
 #include "BugMediaBridge.h"
-#include "openGL/BugMediaTriangleRenderer.h"
-#include "openGL/core/BugMediaGraphicsCommon.h"
-#include "openGL/BugMediaPictureRenderer.h"
-#include "BugMediaGLESVideoRenderer.h"
 #include <mutex>
 #include <map>
 #include <thread>
@@ -115,7 +110,7 @@ using namespace std;
 
 BugMediaPlayer *player{};
 
-BugMediaPictureRenderer *testRenderer;
+//BugMediaPictureRenderer *testRenderer;
 
 //^^^^^^^^^^^ jni ^^^^^^^^^^^^
 
@@ -144,9 +139,9 @@ JNIEXPORT void JNICALL
 Java_com_bugmedia_media_BugMediaBridge_destroy(JNIEnv *env, jclass clazz, jint renderer_id) {
     //removeRenderer(renderer_id);
 
-    //delete player;
+    delete player;
 
-    delete testRenderer;
+
 }
 
 extern "C"
@@ -196,7 +191,7 @@ JNIEXPORT void JNICALL
 Java_com_bugmedia_media_BugMediaBridge_startRenderer(JNIEnv *env, jclass thiz, jint renderer_id) {
 
     //startRenderer(renderer_id);
-    testRenderer->render();
+
 }
 
 extern "C"
@@ -222,7 +217,7 @@ Java_com_bugmedia_media_BugMediaBridge_createPlayer(JNIEnv *env, jclass clazz, j
                                                     jboolean createPBufferSurface) {
     player = new BugMediaPlayer(env->GetStringUTFChars(url, nullptr),
                                 decoderBufferSize, env,
-                                surface, width, height, createPBufferSurface);
+                                surface, width, height);
 
 }
 
@@ -240,13 +235,7 @@ int width1;
 int height1;
 uint8_t *buff;
 
-static void *create(void *pVoid) {
-    LOGD("附加开始");
-    javaVm->AttachCurrentThread(&nenv, nullptr);
-    LOGD("附加成功");
-    testRenderer = new BugMediaPictureRenderer(buff, width1, height1,nenv,sur);
-    return nullptr;
-}
+
 
 extern "C"
 JNIEXPORT jint JNICALL
@@ -278,8 +267,8 @@ Java_com_bugmedia_media_BugMediaBridge_createPictureRenderer1(JNIEnv *env, jclas
     width1=width;
     height1=height;
 
-    pthread_t pthread;
-    pthread_create(&pthread, nullptr, create, nullptr);
+//    pthread_t pthread;
+//    pthread_create(&pthread, nullptr, create, nullptr);
 
     // C++线程不行
 //    thread tt([buf,width,height](JavaVM *javaVm1,JNIEnv *env1,jobject surface1){

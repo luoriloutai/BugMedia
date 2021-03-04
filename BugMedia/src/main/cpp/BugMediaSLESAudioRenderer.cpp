@@ -278,8 +278,6 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
     SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->dataSize);
     if (result == SL_RESULT_SUCCESS) {
 
-        delete frame;
-
 #ifdef DEBUGAPP
         LOGD("推入缓冲成功");
 
@@ -288,7 +286,7 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
     } else {
         LOGE("缓冲数据时出错：%s", av_err2str(result));
     }
-
+    delete frame;
 
 }
 

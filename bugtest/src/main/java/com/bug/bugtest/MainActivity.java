@@ -38,11 +38,10 @@ public class MainActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d("BugMedia", "已授权");
-            createPlayer();
+
         }
     }
 
-    Surface _surface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +51,15 @@ public class MainActivity extends AppCompatActivity {
         SurfaceView view = findViewById(R.id.playerView3);
         holder = view.getHolder();
         //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        holder.addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        } else {
+
+            holder.addCallback(new SurfaceHolder.Callback() {
+                @Override
+                public void surfaceCreated(SurfaceHolder surfaceHolder) {
 //                Bitmap pic = BitmapFactory.decodeResource(getResources(),R.drawable.icequeen);
 //                int byteLen= pic.getByteCount();
 //                ByteBuffer buffer = ByteBuffer.allocateDirect(byteLen);
@@ -68,31 +73,40 @@ public class MainActivity extends AppCompatActivity {
 //                //pictureRenderer1.startRenderer();;
 //                Log.d("bugmedia","绘图器创建完成");
 
-                _surface = surfaceHolder.getSurface();
 
-                // 涉及到读写权限了，需要请求权限，AndroidManifest加权限后这里还需要请求授权，6.0以下的不需要
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                } else {
-                    createPlayer();
+                    // 涉及到读写权限了，需要请求权限，AndroidManifest加权限后这里还需要请求授权，6.0以下的不需要
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                    } else {
+                        String dir = Environment.getExternalStorageDirectory().getPath();
+                        String path = dir + "/testfile.mp4";
+                        //String path = dir + "/bingo.aac";
+                        //String path = dir + "/shang.mp3";
+                        player1 = new BugPlayer(path, surfaceHolder.getSurface());
+                        player1.load();
+                    }
+
+
                 }
 
+                @Override
+                public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+                    //pictureRenderer1.resizeView(0, 0, i1, i2);
+                    //player1.resizeView(0,0,i1,i2);
+                }
 
-            }
+                @Override
+                public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+                    player1.destroy();
+                    //pictureRenderer1.destroy();
+                }
+            });
 
-            @Override
-            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-                //pictureRenderer1.resizeView(0, 0, i1, i2);
-                //player1.resizeView(0,0,i1,i2);
-            }
 
-            @Override
-            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-                player1.destroy();
-                //pictureRenderer1.destroy();
-            }
-        });
+        }
+
+
 
 
         Button playBtn = findViewById(R.id.playButton);
@@ -167,15 +181,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    void createPlayer() {
-        String dir = Environment.getExternalStorageDirectory().getPath();
-        String path = dir + "/testfile.mp4";
-        //String path = dir + "/bingo.aac";
-        //String path = dir + "/shang.mp3";
-        player1 = new BugPlayer(path, _surface);
-        player1.load();
-        
-    }
 
 
 }

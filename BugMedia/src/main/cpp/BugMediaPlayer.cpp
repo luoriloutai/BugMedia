@@ -9,7 +9,7 @@
 #define DEBUGAPP
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *env,
-                               jobject surface, EGLint width, EGLint height, bool createPBufferSurface) {
+                               jobject surface, EGLint width, EGLint height) {
 
     // 由于JNIEnv是与线程关联的，不同线程之间不能互相访问
     // 而程序内创建渲染器是在另一个线程中进行的
@@ -17,28 +17,30 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     // 可以获取JavaVM，它是线程共享的
     // 用它可以为线程分配一个JNIEnv。
     // 当跨线程时使用。
-    env->GetJavaVM(&javaVm);
+    env->GetJavaVM(&javaVm); // 暂时没用，直接创建并使用了ANativeWindow
 
     // 全局引用一个java对象，在其他线程也可以用
-    this->surface = env->NewGlobalRef(surface);
+    this->surface = env->NewGlobalRef(surface); // 暂时没用，直接创建并使用了ANativeWindow
 
     maxBufferSize = decoderBufferSize;
     this->url = url;
     this->width = width;
     this->height = height;
-    this->createPBufferSurface = createPBufferSurface;
+
 
     audioDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_AUDIO);
     videoDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_VIDEO);
 
     audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameCallback, this);
-    videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameCallback, getAudioPtsCallback, this,
-                                                  env, surface, width, height, createPBufferSurface);
+
+    nativeWindow = ANativeWindow_fromSurface(env, surface);
+    videoRenderer = new BugMediaVideoRenderer(nativeWindow, getVideoFrameCallback, getAudioPtsCallback, this);
+
 
 }
 
 BugMediaPlayer::BugMediaPlayer(const char *url, int bufferSize, JNIEnv *env, jobject surface)
-        : BugMediaPlayer(url, bufferSize, env, surface, 0, 0, false) {
+        : BugMediaPlayer(url, bufferSize, env, surface, 0, 0) {
 
 }
 
@@ -63,7 +65,14 @@ void BugMediaPlayer::release() {
         delete videoRenderer;
         videoRenderer = nullptr;
 
-        env->DeleteGlobalRef(surface);
+        ANativeWindow_release(nativeWindow);
+        JNIEnv *jniEnv;
+        javaVm->AttachCurrentThread(&jniEnv, nullptr);
+        jniEnv->DeleteGlobalRef(surface);
+
+        // 下面两句不可调用，会崩溃
+        //javaVm->DetachCurrentThread();
+        //javaVm->DestroyJavaVM();
     }
 
 }

@@ -96,17 +96,11 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-
-        openGL/core/BugMediaGraphicsGLES.cpp
-        openGL/core/BugMediaGraphicsEGL.cpp
-        openGL/core/BugMediaGraphics.cpp
-        openGL/BugMediaBaseRenderer.cpp
-        openGL/core/BugMediaGraphicsCommon.cpp
+        EGL/BugMediaEGL.cpp
+        OpenGLES/BugMediaGLES.cpp
+        BugMediaVideoRenderer.cpp
         BugMediaBridge.cpp
-        openGL/BugMediaTriangleRenderer.cpp
-        openGL/BugMediaPictureRenderer.cpp
-        openGL/BugMediaRendererCommon.cpp
-        BugMediaGLESVideoRenderer.cpp
+        BugMediaRendererCommon.cpp
         BugMediaPlayer.cpp
         BugMediaAudioFrame.cpp
         BugMediaVideoFrame.cpp
