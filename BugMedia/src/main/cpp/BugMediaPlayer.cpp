@@ -32,8 +32,6 @@ BugMediaPlayer::BugMediaPlayer(const char *url, int decoderBufferSize, JNIEnv *e
     videoDecoder = new BugMediaFFmpegDecoder(url, maxBufferSize, AVMEDIA_TYPE_VIDEO);
 
     audioRenderer = new BugMediaSLESAudioRenderer(getAudioFrameCallback, this);
-//    videoRenderer = new BugMediaGLESVideoRenderer(getVideoFrameCallback, getAudioPtsCallback, this,
-//                                                  env, surface, width, height, createPBufferSurface);
 
     nativeWindow = ANativeWindow_fromSurface(env, surface);
     videoRenderer = new BugMediaVideoRenderer(nativeWindow, getVideoFrameCallback, getAudioPtsCallback, this);
