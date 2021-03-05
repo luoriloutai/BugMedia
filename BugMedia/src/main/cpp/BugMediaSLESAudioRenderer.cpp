@@ -220,7 +220,7 @@ void BugMediaSLESAudioRenderer::bufferQueueCallback(SLAndroidSimpleBufferQueueIt
     renderer->doBufferQueue();
 }
 
-// 向播放器缓冲填充数据。该方法SLES会自动回调，不需要控制延时
+// 向播放器缓冲填充数据。该方法SLES会自动回调,所以控制播放、暂停都在这里
 void BugMediaSLESAudioRenderer::doBufferQueue() {
     if (simpleBufferQueue == nullptr) {
         LOGE("播入接口未初始化");
