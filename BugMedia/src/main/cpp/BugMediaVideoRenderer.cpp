@@ -3,6 +3,7 @@
 //
 
 #include "BugMediaVideoRenderer.h"
+#include "BugMediaCommon.h"
 
 #define DEBUGAPP
 
@@ -225,6 +226,8 @@ GLboolean BugMediaVideoRenderer::renderOnce() {
         av_usleep(delay * 1000);  // 微秒,delay是毫秒
     }
 
+    // 将画面缩放并移到显示区的中间
+    scaleCenter(this->viewWidth, this->viewHeight,frame->width,frame->height);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame->width, frame->height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, frame->data);

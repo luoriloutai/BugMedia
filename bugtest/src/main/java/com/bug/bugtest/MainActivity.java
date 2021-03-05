@@ -68,10 +68,7 @@ public class MainActivity extends AppCompatActivity {
 //                int width=pic.getWidth();
 //                int height = pic.getHeight();
 //                int len = picBytes.length;
-//
-//                pictureRenderer1 = new PictureRenderer(picBytes,width,height,surfaceHolder.getSurface());
-//                //pictureRenderer1.startRenderer();;
-//                Log.d("bugmedia","绘图器创建完成");
+
 
 
                     // 涉及到读写权限了，需要请求权限，AndroidManifest加权限后这里还需要请求授权，6.0以下的不需要
@@ -92,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-                    //pictureRenderer1.resizeView(0, 0, i1, i2);
-                    //player1.resizeView(0,0,i1,i2);
+
+                    player1.resizeView(0,0,i1,i2);
                 }
 
                 @Override
