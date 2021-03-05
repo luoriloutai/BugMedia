@@ -123,6 +123,11 @@ void BugMediaVideoRenderer::onRender() {
             //startTimeMs = startTimeMs + videoPts;
             startTimeMs = getCurMsTime() - videoPts;
             sem_wait(&playSem);
+            // 暂停期间点击了停止
+            if (currentState==STOP){
+                break;
+            }
+            sem_post(&playSem);
 
         } else if (currentState == STOP) {
             break;
@@ -257,7 +262,12 @@ void BugMediaVideoRenderer::pause() {
 }
 
 void BugMediaVideoRenderer::stop() {
-    currentState = STOP;
+    if (currentState!=STOP){
+        currentState = STOP;
+        sem_post(&playSem);
+    }
+
+
 }
 
 
