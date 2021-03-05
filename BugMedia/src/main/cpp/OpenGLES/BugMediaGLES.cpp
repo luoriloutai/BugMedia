@@ -130,13 +130,11 @@ void BugMediaGLES::execRender() {
 
 
 void BugMediaGLES::resizeView(GLint x, GLint y, GLsizei width, GLsizei height) {
-//    this->x = x;
-//    this->y = y;
-//    this->width = width;
-//    this->height = height;
-//    pEGL->makeDefaultWindowSurfaceCurrent();
-    //glViewport(x,y,width,height);
-//    pEGL->unmakeCurrent();
+    this->x = x;
+    this->y = y;
+    this->viewWidth = width;
+    this->viewHeight = height;
+
 }
 
 

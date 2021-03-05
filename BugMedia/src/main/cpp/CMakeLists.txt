@@ -100,7 +100,6 @@ add_library( # Sets the name of the library.
         OpenGLES/BugMediaGLES.cpp
         BugMediaVideoRenderer.cpp
         BugMediaBridge.cpp
-        BugMediaRendererCommon.cpp
         BugMediaPlayer.cpp
         BugMediaAudioFrame.cpp
         BugMediaVideoFrame.cpp

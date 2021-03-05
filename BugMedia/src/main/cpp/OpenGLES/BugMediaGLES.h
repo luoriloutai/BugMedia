@@ -26,10 +26,7 @@ class BugMediaGLES {
 
     GLuint glProgram{};
     pthread_t renderThread{};
-    GLsizei width{};
-    GLsizei height{};
-    GLint x{};
-    GLint y{};
+
 
 
     static void *renderRoutine(void *pVoid);
@@ -51,6 +48,10 @@ class BugMediaGLES {
 
 protected:
     BugMediaEGL *pEGL{};
+    GLsizei viewWidth{};
+    GLsizei viewHeight{};
+    GLint x{};
+    GLint y{};
 
 public:
     BugMediaGLES(ANativeWindow* nativeWindow);
