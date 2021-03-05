@@ -220,7 +220,7 @@ void BugMediaSLESAudioRenderer::bufferQueueCallback(SLAndroidSimpleBufferQueueIt
     renderer->doBufferQueue();
 }
 
-// 向播放器缓冲填充数据。该方法SLES会自动回调，不需要控制延时
+// 向播放器缓冲填充数据。该方法SLES会自动回调,所以控制播放、暂停都在这里
 void BugMediaSLESAudioRenderer::doBufferQueue() {
     if (simpleBufferQueue == nullptr) {
         LOGE("播入接口未初始化");
@@ -229,6 +229,7 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
 
     if (currentState==STOP){
         (*simpleBufferQueue)->Clear(simpleBufferQueue);
+        (*player)->SetPlayState(player, SL_PLAYSTATE_STOPPED);
         return;
     }
 
@@ -243,17 +244,19 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
     if (frame == nullptr || frame->isEnd) {
         currentState = STOP;
         (*simpleBufferQueue)->Clear(simpleBufferQueue);
-
+        (*player)->SetPlayState(player, SL_PLAYSTATE_STOPPED);
         return;
     }
 
 
     if (currentState == PAUSE) {
+        (*player)->SetPlayState(player, SL_PLAYSTATE_PAUSED);
         startTimeMs = getCurMsTime()-frame->pts;
 
         sem_wait(&playSem);
         if (currentState==STOP){
             (*simpleBufferQueue)->Clear(simpleBufferQueue);
+            (*player)->SetPlayState(player, SL_PLAYSTATE_STOPPED);
             return;
         }
     }
@@ -274,7 +277,7 @@ void BugMediaSLESAudioRenderer::doBufferQueue() {
         av_usleep(delay * 1000);
     }
 
-
+    (*player)->SetPlayState(player,SL_PLAYSTATE_PLAYING);
     SLresult result = (*simpleBufferQueue)->Enqueue(simpleBufferQueue, frame->data, (SLuint32) frame->dataSize);
     if (result == SL_RESULT_SUCCESS) {
 

@@ -166,8 +166,8 @@ void BugMediaPlayer::pause() {
 
 void BugMediaPlayer::stop() {
     if (loaded) {
-        audioRenderer->pause();
-        videoRenderer->pause();
+        audioRenderer->stop();
+        videoRenderer->stop();
     }
 
 }
